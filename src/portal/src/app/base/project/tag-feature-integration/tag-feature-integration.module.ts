@@ -24,6 +24,7 @@ import { AddImmutableRuleComponent } from './immutable-tag/add-rule/add-immutabl
 import { TagRetentionTasksComponent } from './tag-retention/tag-retention-tasks/tag-retention-tasks/tag-retention-tasks.component';
 import { USERSTATICPERMISSION } from '../../../shared/services';
 import { TagFeatureGuardService } from './tag-feature-guard.service';
+import { TagStrategyDefaultTabGuardService } from './tag-strategy-guard.service';
 
 const routes: Routes = [
     {
@@ -52,7 +53,12 @@ const routes: Routes = [
                 },
                 component: ImmutableTagComponent,
             },
-            { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
+            {
+                path: '',
+                pathMatch: 'full',
+                canActivate: [TagStrategyDefaultTabGuardService],
+                children: [],
+            },
         ],
     },
 ];
