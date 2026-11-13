@@ -406,6 +406,36 @@ func (_m *Manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*
 	return r0, r1
 }
 
+// UselessBlobsAfterDeletion provides a mock function with given fields: ctx, timeWindowHours, artifactIDs
+func (_m *Manager) UselessBlobsAfterDeletion(ctx context.Context, timeWindowHours int64, artifactIDs []int64) ([]*models.Blob, error) {
+	ret := _m.Called(ctx, timeWindowHours, artifactIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UselessBlobsAfterDeletion")
+	}
+
+	var r0 []*models.Blob
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, []int64) ([]*models.Blob, error)); ok {
+		return rf(ctx, timeWindowHours, artifactIDs)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, []int64) []*models.Blob); ok {
+		r0 = rf(ctx, timeWindowHours, artifactIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Blob)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, []int64) error); ok {
+		r1 = rf(ctx, timeWindowHours, artifactIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewManager creates a new instance of Manager. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewManager(t interface {
