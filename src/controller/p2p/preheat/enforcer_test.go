@@ -28,6 +28,7 @@ import (
 	car "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/selector"
 	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	ar "github.com/goharbor/harbor/src/pkg/artifact"
@@ -174,6 +175,19 @@ func (suite *EnforcerTestSuite) TestEnforcePolicy() {
 	suite.Condition(func() (success bool) {
 		return eid > 0
 	}, "execution created")
+}
+
+// TestEnforceDisabledPolicy checks a disabled policy is a failed precondition
+func (suite *EnforcerTestSuite) TestEnforceDisabledPolicy() {
+	disabled := mockPolicies()[0]
+	disabled.Enabled = false
+	policyMgr := &policy.Manager{}
+	policyMgr.On("Get", context.TODO(), int64(1)).Return(disabled, nil)
+	enforcer := &defaultEnforcer{policyMgr: policyMgr}
+
+	_, err := enforcer.EnforcePolicy(context.TODO(), 1)
+	suite.True(errors.IsErr(err, errors.PreconditionCode), "got %v", err)
+	suite.Contains(errors.NewErrs(err).Error(), `"code":"PRECONDITION"`)
 }
 
 // TestPreheatArtifact tests the artifact preheating case

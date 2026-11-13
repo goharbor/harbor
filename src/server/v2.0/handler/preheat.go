@@ -509,7 +509,7 @@ func convertPolicyToPayload(policy *policy.Schema) (*models.PreheatPolicy, error
 // convertParamPolicyToModelPolicy converts params policy to pkg model policy
 func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schema, error) {
 	if model == nil {
-		return nil, errors.New("policy can not be nil")
+		return nil, errors.BadRequestError(nil).WithMessage("policy can not be nil")
 	}
 
 	valid, err := regexp.MatchString(nameRegex, model.Name)
@@ -518,7 +518,7 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 	}
 
 	if !valid {
-		return nil, fmt.Errorf("name %s is invalid", model.Name)
+		return nil, errors.BadRequestError(nil).WithMessagef("name %s is invalid", model.Name)
 	}
 
 	return &policy.Schema{
@@ -582,7 +582,7 @@ func authInfoEmpty(m map[string]string) bool {
 
 func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel.Instance, error) {
 	if model == nil {
-		return nil, errors.New("instance can not be nil")
+		return nil, errors.BadRequestError(nil).WithMessage("instance can not be nil")
 	}
 
 	valid, err := regexp.MatchString(nameRegex, model.Name)
@@ -591,7 +591,11 @@ func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel
 	}
 
 	if !valid {
-		return nil, fmt.Errorf("name %s is invalid", model.Name)
+		return nil, errors.BadRequestError(nil).WithMessagef("name %s is invalid", model.Name)
+	}
+
+	if _, ok := provider.GetProvider(model.Vendor); !ok {
+		return nil, errors.BadRequestError(nil).WithMessagef("vendor %s is not supported", model.Vendor)
 	}
 
 	authData, err := json.Marshal(model.AuthInfo)
