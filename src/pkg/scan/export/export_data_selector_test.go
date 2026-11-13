@@ -75,6 +75,7 @@ func (suite *ExportDataSelectorTestSuite) createDataRecords(numRecs int, ownerId
 			ScannerName:    fmt.Sprintf("TestScanner%d", i),
 			Repository:     fmt.Sprintf("Repository%d", i),
 			ArtifactDigest: fmt.Sprintf("Digest%d", i),
+			Tags:           fmt.Sprintf("tag%d", i),
 			CVEId:          fmt.Sprintf("CVEId-%d", i),
 			Package:        fmt.Sprintf("Package%d", i),
 			Version:        fmt.Sprintf("Version%d", i),
