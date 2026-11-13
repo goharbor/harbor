@@ -160,6 +160,9 @@ func (r *retentionAPI) GetRetention(ctx context.Context, params operation.GetRet
 
 func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.CreateRetentionParams) middleware.Responder {
 	p := model.NewRetentionPolicyFromSwagger(params.Policy).Metadata
+	if err := checkRequiredFields(p); err != nil {
+		return r.SendError(ctx, err)
+	}
 	if len(p.Rules) > 15 {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("only 15 rules are allowed at most")))
 	}
@@ -211,6 +214,9 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 
 func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.UpdateRetentionParams) middleware.Responder {
 	p := model.NewRetentionPolicyFromSwagger(params.Policy).Metadata
+	if err := checkRequiredFields(p); err != nil {
+		return r.SendError(ctx, err)
+	}
 	p.ID = params.ID
 	if len(p.Rules) > 15 {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("only 15 rules are allowed at most")))
@@ -231,6 +237,18 @@ func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.Upd
 		return r.SendError(ctx, err)
 	}
 	return operation.NewUpdateRetentionOK()
+}
+
+// checkRequiredFields rejects a policy without the scope or trigger that the
+// handlers and the controller rely on
+func checkRequiredFields(p *policy.Metadata) error {
+	if p == nil || p.Scope == nil {
+		return errors.BadRequestError(nil).WithMessage("the scope of the retention policy is required")
+	}
+	if p.Trigger == nil {
+		return errors.BadRequestError(nil).WithMessage("the trigger of the retention policy is required")
+	}
+	return nil
 }
 
 func (r *retentionAPI) checkRuleConflict(p *policy.Metadata) error {
