@@ -78,9 +78,10 @@ func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artif
 	}
 
 	for _, layer := range manifest.Layers {
-		// chart do have two layers, one is config, we should resolve the other one.
+		// OCI provenance can precede chart content; only extract compressed chart layers.
 		layerDgst := layer.Digest.String()
-		if layerDgst != manifest.Config.Digest.String() {
+		if layer.MediaType == "application/vnd.cncf.helm.chart.content.v1.tar+gzip" ||
+			layer.MediaType == "application/tar+gzip" {
 			_, blob, err := p.RegCli.PullBlob(artifact.RepositoryName, layerDgst)
 			if err != nil {
 				return nil, err
