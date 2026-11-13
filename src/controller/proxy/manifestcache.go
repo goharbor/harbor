@@ -239,7 +239,7 @@ func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) er
 
 func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
 	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
+	bReader, err := openCacheBlobReader(r, remoteRepo, desc)
 	if err != nil {
 		log.Errorf("failed to create blob reader, error %v", err)
 		return err

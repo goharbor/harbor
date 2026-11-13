@@ -325,6 +325,53 @@ func (c *clientTestSuite) TestPullBlob() {
 	c.EqualValues(data, b)
 }
 
+func (c *clientTestSuite) TestPullBlobChunk() {
+	blob := []byte("hello world")
+	for _, tc := range []struct {
+		name         string
+		status       int
+		contentRange string
+		body         []byte
+		blobSize     int64
+		start, end   int64
+		wantErr      bool
+	}{
+		{name: "206 for the requested range", status: http.StatusPartialContent, contentRange: "bytes 6-10/11", body: blob[6:], blobSize: 11, start: 6, end: 10},
+		{name: "206 with a capitalized range unit", status: http.StatusPartialContent, contentRange: "Bytes 6-10/11", body: blob[6:], blobSize: 11, start: 6, end: 10},
+		{name: "200 for the whole blob", status: http.StatusOK, body: blob, blobSize: 11, start: 0, end: 10},
+		{name: "206 for another range", status: http.StatusPartialContent, contentRange: "bytes 0-10/11", body: blob, blobSize: 11, start: 6, end: 10, wantErr: true},
+		{name: "200 ignoring the offset", status: http.StatusOK, body: blob, blobSize: 11, start: 6, end: 10, wantErr: true},
+		// starts at byte 0 like the full body does, but is only a first chunk
+		{name: "200 ignoring the end of a first chunk", status: http.StatusOK, body: blob, blobSize: 61, start: 0, end: 4, wantErr: true},
+	} {
+		c.Run(tc.name, func() {
+			headers := map[string]string{"Content-Length": strconv.Itoa(len(tc.body))}
+			if tc.contentRange != "" {
+				headers["Content-Range"] = tc.contentRange
+			}
+			server := test.NewServer(
+				&test.RequestHandlerMapping{
+					Method:  "GET",
+					Pattern: "/v2/library/hello-world/blobs/digest",
+					Handler: test.Handler(&test.Response{StatusCode: tc.status, Headers: headers, Body: tc.body}),
+				})
+			defer server.Close()
+
+			size, chunk, err := NewClient(server.URL, "", "", true).PullBlobChunk("library/hello-world", "digest", tc.blobSize, tc.start, tc.end)
+			if tc.wantErr {
+				c.Require().Error(err)
+				return
+			}
+			c.Require().NoError(err)
+			defer chunk.Close()
+			c.Equal(int64(len(tc.body)), size)
+			b, err := io.ReadAll(chunk)
+			c.Require().NoError(err)
+			c.EqualValues(tc.body, b)
+		})
+	}
+}
+
 func (c *clientTestSuite) TestPushBlob() {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
