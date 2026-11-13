@@ -22,6 +22,7 @@ import (
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/factory"
 	yaml "github.com/goccy/go-yaml"
+	"github.com/sirupsen/logrus"
 
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -58,6 +59,8 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if detectEnv {
 		c.loadEnvs()
 	}
+
+	c.configureLogging()
 
 	if err := c.setStorageDriver(); err != nil {
 		log.Errorf("failed to load storage driver, err:%v", err)
@@ -135,4 +138,17 @@ func (c *Configuration) loadEnvs() {
 	if len(registryConf) != 0 {
 		c.RegistryConfig = registryConf
 	}
+}
+
+// configureLogging applies registryctl's log level to the embedded
+// Distribution library, which uses the standard Logrus logger.
+func (c *Configuration) configureLogging() {
+	level := logrus.InfoLevel
+	if c.LogLevel != "" {
+		if parsed, err := logrus.ParseLevel(c.LogLevel); err == nil {
+			level = parsed
+		}
+	}
+
+	logrus.SetLevel(level)
 }
