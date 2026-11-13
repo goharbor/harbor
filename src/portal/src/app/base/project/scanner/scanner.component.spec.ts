@@ -17,12 +17,14 @@ import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ScannerComponent } from './scanner.component';
 import { SharedTestingModule } from '../../../shared/shared.module';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
 import { ErrorHandler } from '../../../shared/units/error-handler';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../ng-swagger-gen/models/registry';
+import { UserPermissionService } from '../../../shared/services';
+import { CommonRoutes } from '../../../shared/entities/shared.const';
 
 describe('ScannerComponent', () => {
     const mockScanner1: Scanner = {
@@ -121,5 +123,19 @@ describe('ScannerComponent', () => {
         saveButton.click();
         fixture.detectChanges();
         expect(component.opened).toBeFalsy();
+    });
+    it('should redirect without scanner create permission', () => {
+        const userPermissionService = TestBed.inject(UserPermissionService);
+        const router = TestBed.inject(Router);
+        spyOn(userPermissionService, 'getPermission').and.returnValue(
+            of(false)
+        );
+        spyOn(router, 'navigate');
+        (component.getPermission as jasmine.Spy).and.callThrough();
+        component.getPermission();
+        expect(component.hasCreatePermission).toBeFalsy();
+        expect(router.navigate).toHaveBeenCalledWith([
+            CommonRoutes.HARBOR_DEFAULT,
+        ]);
     });
 });

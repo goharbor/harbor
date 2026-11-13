@@ -17,10 +17,7 @@ import { ClrLoadingState } from '@clr/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import {
-    CommonRoutes,
-    RoleMapping,
-} from 'src/app/shared/entities/shared.const';
+import { CommonRoutes } from 'src/app/shared/entities/shared.const';
 import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
@@ -61,21 +58,6 @@ export class ScannerComponent implements OnInit {
     ) {}
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
-
-        // Check user role and redirect if Limited Guest or Guest
-        const resolverData = this.route.snapshot.parent.parent.data;
-        if (resolverData && resolverData['projectResolver']) {
-            const project = resolverData['projectResolver'];
-            const userRole = project.role_name;
-            const excludedRoles = [RoleMapping.limitedGuest, RoleMapping.guest];
-
-            if (excludedRoles.includes(userRole)) {
-                // Redirect to repositories page
-                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                return;
-            }
-        }
-
         this.getPermission();
         this.init();
     }
@@ -91,6 +73,8 @@ export class ScannerComponent implements OnInit {
                     this.hasCreatePermission = permission;
                     if (this.hasCreatePermission) {
                         this.getScanners();
+                    } else {
+                        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
                     }
                 });
         }
