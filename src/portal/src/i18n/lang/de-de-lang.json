@@ -89,7 +89,8 @@
         "OIDC_AUTOONBOARD": "Überspringe die Startseite, hierdurch können Nutzer ihren Nutzernamen nicht ändern. Der Nutzername wird aus dem ID Token übernommen.",
         "OIDC_USER_CLAIM": "Der Name des Claims im ID Token, aus dem der Nutzername stammt. Falls das Feld leer ist, wird 'name' verwendet.",
         "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer.",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Aktuelles Passwort eingeben",
@@ -661,7 +662,31 @@
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Neuer Endpunkt",
@@ -694,7 +719,8 @@
         "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
         "CA_CERTIFICATE": "CA-Zertifikat",
         "CA_CERTIFICATE_TOOLTIP": "Stellen Sie ein PEM-kodiertes CA-Zertifikat bereit, um zusätzliche CA-Zertifikate für diese Registry zu vertrauen. Das benutzerdefinierte CA wird zum System-CA-Pool hinzugefügt, wodurch Harbor sowohl System-signierte als auch benutzerdefiniert signierte Zertifikate vertrauen kann. Leer lassen, um nur den System-CA-Pool zu verwenden. Dieses Feld ist nur verfügbar, wenn 'Fernzertifikat überprüfen' aktiviert ist.",
-        "CA_CERTIFICATE_HELPER": "Optional. Fügen Sie hier das PEM-kodierte CA-Zertifikat ein, um selbstsignierten oder privaten CA-Zertifikaten für diesen Endpunkt zu vertrauen. Das Zertifikat wird zum System-CA-Pool hinzugefügt, ersetzt es nicht."
+        "CA_CERTIFICATE_HELPER": "Optional. Fügen Sie hier das PEM-kodierte CA-Zertifikat ein, um selbstsignierten oder privaten CA-Zertifikaten für diesen Endpunkt zu vertrauen. Das Zertifikat wird zum System-CA-Pool hinzugefügt, ersetzt es nicht.",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -1088,7 +1114,24 @@
         "FILE_TOO_LARGE": "Die Datei ist zu groß, um verarbeitet zu werden.",
         "ITEMS": "Einträge",
         "SHOW_KV": "Key/Value-Paare",
-        "SHOW_YAML": "YAML Datei"
+        "SHOW_YAML": "YAML Datei",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Erstellt am",

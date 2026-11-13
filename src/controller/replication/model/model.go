@@ -48,6 +48,9 @@ type Policy struct {
 	Speed                     int32           `json:"speed"`
 	CopyByChunk               bool            `json:"copy_by_chunk"`
 	SingleActiveReplication   bool            `json:"single_active_replication"`
+	// RevisionTag makes every copy also tag the artifact with the immutable tag of its source
+	// revision (model.RevisionTag), on sources that declare SupportedRevisionTag.
+	RevisionTag bool `json:"revision_tag"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -59,6 +62,15 @@ func (p *Policy) IsScheduledTrigger() bool {
 		return false
 	}
 	return p.Trigger.Type == model.TriggerTypeScheduled
+}
+
+// SourceOptions returns the settings of the policy that the source adapter must honor.
+func (p *Policy) SourceOptions() (*model.SourceOptions, error) {
+	fileFilter, err := model.FileFilterOf(p.Filters)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SourceOptions{FileFilter: fileFilter, RevisionTag: p.RevisionTag}, nil
 }
 
 // Validate the policy
@@ -82,10 +94,17 @@ func (p *Policy) Validate() error {
 	}
 
 	// valid the filters
+	fileFilters := 0
 	for _, f := range p.Filters {
 		if err := f.Validate(); err != nil {
 			return err
 		}
+		if f.Type == model.FilterTypeFile {
+			fileFilters++
+		}
+	}
+	if fileFilters > 1 {
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("at most one file filter is allowed")
 	}
 
 	// valid the destination namespace
@@ -148,6 +167,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.Speed = policy.Speed
 	p.CopyByChunk = policy.CopyByChunk
 	p.SingleActiveReplication = policy.SingleActiveReplication
+	p.RevisionTag = policy.RevisionTag
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -194,6 +214,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		Speed:                     p.Speed,
 		CopyByChunk:               p.CopyByChunk,
 		SingleActiveReplication:   p.SingleActiveReplication,
+		RevisionTag:               p.RevisionTag,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

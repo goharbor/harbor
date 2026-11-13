@@ -278,7 +278,11 @@
                             title="{{ artifact.digest }}">
                             {{ artifact.digest | slice : 0 : 15 }}</a
                         >
-                        @if ( artifact?.references &&
+                        @if (artifact.type === 'CNAI') {
+                        <span class="label label-purple model-badge">{{
+                            'ARTIFACT.MODEL' | translate
+                        }}</span>
+                        } @if ( artifact?.references &&
                         artifact?.references?.length ) {
                         <clr-tooltip class="fix-width">
                             <div clrTooltipTrigger class="level-border">

@@ -33,7 +33,7 @@ describe('ArtifactLabelComponent', () => {
                 format: 'tensorflow',
                 parameterSize: 50000000000,
                 precision: 'int8',
-                puantization: 'gptq',
+                quantization: 'gptq',
             },
             descriptor: {
                 createdAt: '2025-02-21T15:42:00.309773+08:00',

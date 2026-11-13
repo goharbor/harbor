@@ -18,6 +18,7 @@ import { AdditionsService } from '../additions.service';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { FilesItem } from 'src/app/shared/services/interface';
 import { formatSize } from 'src/app/shared/units/utils';
+import { fileIcon } from 'src/app/shared/units/file-filter';
 
 @Component({
     selector: 'hbr-artifact-files',
@@ -55,6 +56,13 @@ export class ArtifactFilesComponent implements OnInit {
                     }
                 );
         }
+    }
+
+    iconFor(file: FilesItem & { expanded?: boolean }): string {
+        if (file.children) {
+            return file.expanded ? 'folder-open' : 'folder';
+        }
+        return fileIcon(file.name);
     }
 
     getChildren(folder: any) {

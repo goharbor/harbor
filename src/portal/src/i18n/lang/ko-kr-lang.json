@@ -89,7 +89,8 @@
         "OIDC_AUTOONBOARD": "온보딩 화면을 건너뛰면 사용자가 사용자 이름을 변경할 수 없습니다. 사용자 이름은 ID 토큰에서 제공됩니다.",
         "OIDC_USER_CLAIM": "사용자 이름을 검색하는 ID 토큰의 클레임 이름입니다. 지정하지 않으면 기본값은 'name'입니다.",
         "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다",
-        "OIDC_LOGOUT": "ID 공급자에서 현재 세션을 로그아웃합니다."
+        "OIDC_LOGOUT": "ID 공급자에서 현재 세션을 로그아웃합니다.",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "현재 비밀번호를 입력하세요",
@@ -661,7 +662,31 @@
         "COPY_BY_CHUNK": "청크로 복사",
         "COPY_BY_CHUNK_TIP": "Blob을 청크로 복사할지 여부를 지정합니다. 청크별로 전송하면 API 요청 수가 늘어날 수 있습니다.",
         "TRIGGER_STOP_SUCCESS": "실행 중지가 성공적으로 트리거되었습니다.",
-        "CRON_STR": "Cron 문자열"
+        "CRON_STR": "Cron 문자열",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "새 엔드포인트",
@@ -694,7 +719,8 @@
         "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!",
         "CA_CERTIFICATE": "CA 인증서",
         "CA_CERTIFICATE_TOOLTIP": "이 레지스트리에 대한 추가 CA 인증서를 신뢰하기 위해 PEM 인코딩된 CA 인증서를 제공하십시오. 사용자 지정 CA가 시스템 CA 풀에 추가되어 Harbor가 시스템 서명 인증서와 사용자 지정 서명 인증서를 모두 신뢰할 수 있습니다. 시스템 CA 풀만 사용하려면 비워두세요. 이 필드는 '원격 인증서 확인'이 활성화된 경우에만 사용할 수 있습니다.",
-        "CA_CERTIFICATE_HELPER": "선택 사항입니다. 이 엔드포인트에 대한 자체 서명 또는 개인 CA 인증서를 신뢰하려면 여기에 PEM 인코딩된 CA 인증서를 붙여넣으십시오. 인증서가 시스템 CA 풀에 추가되며 이를 바꾸지 않습니다."
+        "CA_CERTIFICATE_HELPER": "선택 사항입니다. 이 엔드포인트에 대한 자체 서명 또는 개인 CA 인증서를 신뢰하려면 여기에 PEM 인코딩된 CA 인증서를 붙여넣으십시오. 인증서가 시스템 CA 풀에 추가되며 이를 바꾸지 않습니다.",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Digest 복사",
@@ -1088,7 +1114,24 @@
         "FILE_TOO_LARGE": "파일이 너무 커서 처리할 수 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
-        "SHOW_YAML": "YAML 파일"
+        "SHOW_YAML": "YAML 파일",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "생성 날짜",

@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -205,9 +206,12 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 	}
 	for _, filter := range info.SupportedResourceFilters {
 		in.SupportedResourceFilters = append(in.SupportedResourceFilters, &models.FilterStyle{
-			Style:  filter.Style,
-			Type:   string(filter.Type),
-			Values: filter.Values,
+			Style:       filter.Style,
+			Type:        string(filter.Type),
+			Values:      filter.Values,
+			Label:       filter.Label,
+			Placeholder: filter.Placeholder,
+			Description: filter.Description,
 		})
 	}
 	for _, trigger := range info.SupportedTriggers {
@@ -217,6 +221,15 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 	// whether support copy by chunk
 	if info.SupportedCopyByChunk {
 		in.SupportedCopyByChunk = &info.SupportedCopyByChunk
+	}
+	if info.SupportedRevisionTag {
+		in.SupportedRevisionTag = &info.SupportedRevisionTag
+	}
+	if info.SourceOnly {
+		in.SourceOnly = &info.SourceOnly
+	}
+	if info.SupportedPreview {
+		in.SupportedPreview = &info.SupportedPreview
 	}
 
 	return operation.NewGetRegistryInfoOK().WithPayload(in)
@@ -319,7 +332,7 @@ func (r *registryAPI) ListRegistryProviderInfos(ctx context.Context, _ operation
 
 	result := map[string]models.RegistryProviderInfo{}
 	for key, info := range infos {
-		item := models.RegistryProviderInfo{}
+		item := models.RegistryProviderInfo{SourceOnly: info.SourceOnly}
 		if info.CredentialPattern != nil {
 			item.CredentialPattern = &models.RegistryProviderCredentialPattern{
 				AccessKeyData:    info.CredentialPattern.AccessKeyData,
@@ -343,4 +356,57 @@ func (r *registryAPI) ListRegistryProviderInfos(ctx context.Context, _ operation
 	}
 
 	return operation.NewListRegistryProviderInfosOK().WithPayload(result)
+}
+
+func (r *registryAPI) PreviewRegistryArtifact(ctx context.Context, params operation.PreviewRegistryArtifactParams) middleware.Responder {
+	if err := r.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceRegistry); err != nil {
+		return r.SendError(ctx, err)
+	}
+	req := params.Preview
+	var filter *model.FileFilter
+	if req.FileFilter != nil {
+		filter = &model.FileFilter{Include: req.FileFilter.Include, Exclude: req.FileFilter.Exclude}
+	}
+	res, err := r.ctl.Preview(ctx, params.ID, *req.Repository, req.Reference, filter)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewPreviewRegistryArtifactOK().WithPayload(convertResolveResult(res))
+}
+
+func convertResolveResult(res *model.ResolveResult) *models.RegistryPreview {
+	out := &models.RegistryPreview{
+		Repository:   res.Repository,
+		SourceID:     res.SourceID,
+		Reference:    res.Reference,
+		Revision:     res.Revision,
+		RevisionTag:  res.RevisionTag,
+		SourceURL:    res.SourceURL,
+		Tags:         res.Tags,
+		Digest:       res.Digest,
+		Licenses:     res.Licenses,
+		Task:         res.Task,
+		TotalFiles:   int64(res.TotalFiles),
+		TotalSize:    res.TotalSize,
+		MatchedFiles: int64(res.MatchedFiles),
+		MatchedSize:  res.MatchedSize,
+		Files:        []*models.RegistryPreviewFile{},
+	}
+	if out.Tags == nil {
+		out.Tags = []string{}
+	}
+	if res.LastModified != nil {
+		t := strfmt.DateTime(*res.LastModified)
+		out.LastModified = &t
+	}
+	for _, f := range res.Files {
+		out.Files = append(out.Files, &models.RegistryPreviewFile{
+			Path:    f.Path,
+			Size:    f.Size,
+			Class:   f.Class,
+			Sha256:  f.SHA256,
+			Matched: f.Matched,
+		})
+	}
+	return out
 }

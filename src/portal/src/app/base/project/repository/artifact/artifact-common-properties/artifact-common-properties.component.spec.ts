@@ -69,4 +69,17 @@ describe('ArtifactCommonPropertiesComponent', () => {
             fixture.nativeElement.getElementsByTagName('clr-stack-content');
         expect(contentRows.length).toEqual(4);
     });
+
+    it('leaves the model metadata of a CNAI artifact to the model panel', () => {
+        component.commonProperties = {};
+        component.artifactDetails = {
+            type: 'CNAI',
+            extra_attrs: { descriptor: { name: 'x' }, config: {}, modelfs: {} },
+            annotations: { 'org.example': 'v' },
+        };
+        component.ngOnChanges({ artifactDetails: {} as any });
+        expect(Object.keys(component.commonProperties)).toEqual([
+            'org.example',
+        ]);
+    });
 });

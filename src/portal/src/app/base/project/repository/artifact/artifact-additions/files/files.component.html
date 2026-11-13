@@ -15,13 +15,7 @@
                             <clr-icon
                                 size="20"
                                 solid
-                                [attr.shape]="
-                                    file.children
-                                        ? file.expanded
-                                            ? 'folder-open'
-                                            : 'folder'
-                                        : 'file'
-                                "></clr-icon>
+                                [attr.shape]="iconFor(file)"></clr-icon>
                             {{ file.name }}
                         </div>
                         @if (file.size === 0 || file.size) {

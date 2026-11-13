@@ -26,7 +26,7 @@ import { InlineAlertComponent } from '../../../../../shared/components/inline-al
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { ReplicationService } from '../../../../../shared/services';
 import { LabelPieceComponent } from '../../../../../shared/components/label/label-piece/label-piece.component';
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
@@ -240,6 +240,42 @@ describe('CreateEditRuleComponent (inline template)', () => {
         getRegistryInfo() {
             return of(mockRegistryInfo).pipe(delay(0));
         },
+        listRegistryProviderInfos() {
+            return of({ hf: { source_only: true }, harbor: {} });
+        },
+        previewRegistryArtifact() {
+            return of(mockPreview);
+        },
+    };
+    const modelSourceInfo: any = {
+        type: 'hf',
+        supported_resource_filters: [
+            { type: 'name', style: 'input', label: 'Model' },
+            { type: 'tag', style: 'input', label: 'Revision' },
+            { type: 'file', style: 'input', label: 'Files' },
+            { type: 'resource', style: 'radio', values: ['artifact'] },
+        ],
+        supported_triggers: ['manual', 'scheduled'],
+        supported_revision_tag: true,
+        supported_preview: true,
+        source_only: true,
+    };
+    const mockPreview: any = {
+        repository: 'org/model',
+        revision: '93efa2f097d58c2a74874c7e644dbc9b0cee75a2',
+        revision_tag: 'sha-93efa2f097d5',
+        source_url: 'https://example.com/org/model',
+        tags: ['main', 'v1'],
+        digest: 'sha256:2dc8',
+        total_files: 3,
+        total_size: 1100,
+        matched_files: 1,
+        matched_size: 100,
+        files: [
+            { path: 'config.json', size: 100, class: 'config', matched: true },
+            { path: 'onnx/config.json', size: 0, class: 'config' },
+            { path: 'model.safetensors', size: 1000, class: 'weight' },
+        ],
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -316,5 +352,118 @@ describe('CreateEditRuleComponent (inline template)', () => {
         expect(closeSpy).toHaveBeenCalled();
         expect(comp.createEditRuleOpened).toBeFalse();
         expect(navigateSpy).toHaveBeenCalledOnceWith(['/harbor/labels']);
+    });
+
+    it('never offers source-only registries as destination', () => {
+        comp.sourceOnlyTypes = new Set(['hf']);
+        comp.targetList = [
+            { id: 1, name: 'a', type: 'harbor' },
+            { id: 2, name: 'b', type: 'hf' },
+        ];
+        expect(comp.destinationList.map(r => r.name)).toEqual(['a']);
+    });
+
+    it('keeps the form of sources without model capabilities', async () => {
+        comp.openCreateEditRule();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const el: HTMLElement = fixture.nativeElement;
+        expect(el.querySelector('#filter_file_include')).toBeNull();
+        expect(el.querySelector('#revision-tag')).toBeNull();
+        expect(el.querySelector('#rule_preview')).toBeNull();
+    });
+
+    describe('with a source that declares model capabilities', () => {
+        beforeEach(async () => {
+            comp.openCreateEditRule();
+            await fixture.whenStable();
+            comp.isPushMode = false;
+            comp.ruleForm.get('src_registry').setValue({ id: 7 });
+            comp.setFilterAndTrigger(modelSourceInfo);
+            fixture.detectChanges();
+        });
+
+        it('shows the file filter, revision tag and preview with the adapter labels', () => {
+            const el: HTMLElement = fixture.nativeElement;
+            expect(el.querySelector('#filter_file_include')).toBeTruthy();
+            expect(el.querySelector('#revision-tag')).toBeTruthy();
+            expect(el.querySelector('#rule_preview')).toBeTruthy();
+            const labels = Array.from(
+                el.querySelectorAll('.filterSelect .sub-label')
+            ).map(l => l.textContent.trim());
+            expect(labels.slice(0, 3)).toEqual([
+                'Model:',
+                'Revision:',
+                'Files:',
+            ]);
+        });
+
+        it('previews with the exact filters and re-matches files locally', () => {
+            const spy = spyOn(
+                TestBed.inject(RegistryService),
+                'previewRegistryArtifact'
+            ).and.callThrough();
+            comp.filters.controls
+                .find(c => c.get('type').value === 'name')
+                .get('value')
+                .setValue('org/model');
+            comp.filters.controls
+                .find(c => c.get('type').value === 'tag')
+                .get('value')
+                .setValue('main');
+            comp.fileInclude = '*.json';
+            comp.doPreview();
+            expect(spy).toHaveBeenCalledWith({
+                id: 7,
+                preview: {
+                    repository: 'org/model',
+                    reference: 'main',
+                    file_filter: { include: ['*.json'], exclude: [] },
+                },
+            });
+            expect(comp.previewMatchedFiles).toBe(2);
+            expect(comp.previewFilterChanged).toBeFalse();
+
+            comp.fileExclude = 'onnx/**';
+            comp.rematchPreview();
+            expect(spy).toHaveBeenCalledTimes(1);
+            expect(comp.previewMatchedFiles).toBe(1);
+            expect(comp.previewMatchedSize).toBe(100);
+            expect(comp.previewFilterChanged).toBeTrue();
+
+            expect(comp.previewTags).toEqual(['main']);
+            comp.ruleForm.get('revision_tag').setValue(true);
+            expect(comp.previewTags).toEqual(['main', 'sha-93efa2f097d5']);
+        });
+
+        it('asks for an example repository when the name filter is a pattern', () => {
+            comp.filters.controls
+                .find(c => c.get('type').value === 'name')
+                .get('value')
+                .setValue('org/**');
+            expect(comp.nameFilterIsExact).toBeFalse();
+            expect(comp.canPreview()).toBeFalse();
+            comp.previewRepositoryInput = 'org/model';
+            expect(comp.previewRepository).toBe('org/model');
+            expect(comp.canPreview()).toBeTrue();
+        });
+
+        it('serializes the file filter and revision tag on submit', () => {
+            const svc = TestBed.inject(ReplicationService) as any;
+            svc.createReplicationRule = jasmine
+                .createSpy('create')
+                .and.returnValue(NEVER);
+            comp.ruleForm.get('name').setValue('m');
+            comp.ruleForm.get('revision_tag').setValue(true);
+            comp.fileInclude = '*.json, *.txt';
+            comp.fileExclude = '';
+            comp.onSubmit();
+            const sent = svc.createReplicationRule.calls.mostRecent().args[0];
+            expect(sent.revision_tag).toBeTrue();
+            expect(sent.filters.find(f => f.type === 'file').value).toEqual({
+                include: ['*.json', '*.txt'],
+            });
+        });
     });
 });
