@@ -98,6 +98,22 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
 	assert.Equal(suite.T(), "core_url", GetCoreURL(), "expect core url 'core_url' but got '%s'", GetCoreURL())
 }
 
+// TestScanAllMaxConcurrencyFromEnv ...
+func (suite *ConfigurationTestSuite) TestScanAllMaxConcurrencyFromEnv() {
+	suite.T().Setenv("JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY", "6")
+	cfg := &Configuration{}
+	require.NoError(suite.T(), cfg.Load("../config_test.yml", true))
+	assert.Equal(suite.T(), uint(6), cfg.ScanAllMaxConcurrency)
+
+	// invalid and negative values should be ignored
+	for _, v := range []string{"abc", "-1"} {
+		suite.T().Setenv("JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY", v)
+		cfg = &Configuration{}
+		require.NoError(suite.T(), cfg.Load("../config_test.yml", true))
+		assert.Equal(suite.T(), uint(0), cfg.ScanAllMaxConcurrency)
+	}
+}
+
 // TestDefaultConfig ...
 func (suite *ConfigurationTestSuite) TestDefaultConfig() {
 	err := DefaultConfig.Load("../config_test.yml", true)

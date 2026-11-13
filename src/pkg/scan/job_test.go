@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -196,4 +197,12 @@ func (suite *JobTestSuite) TestfetchScanReportFromScanner() {
 	rawRept, err := fetchScanReportFromScanner(client, "abc", v1.MimeTypeGenericVulnerabilityReport, parameters)
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), rawContent, rawRept)
+}
+
+func TestBulkJobMaxCurrency(t *testing.T) {
+	t.Cleanup(func() { SetBulkMaxConcurrency(0) })
+	assert.Equal(t, uint(0), (&BulkJob{}).MaxCurrency())
+	SetBulkMaxConcurrency(6)
+	assert.Equal(t, uint(6), (&BulkJob{}).MaxCurrency())
+	assert.Equal(t, uint(0), (&Job{}).MaxCurrency())
 }
