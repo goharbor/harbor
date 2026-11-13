@@ -17,6 +17,7 @@ package lib
 import (
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -64,6 +65,20 @@ func (suite *ReadRequestBodyTestSuite) TestUnbounded() {
 	data, err := ReadRequestBody(r, 0)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), data)
+}
+
+func (suite *ReadRequestBodyTestSuite) TestMaxBytesReaderError() {
+	r := httptest.NewRequest(
+		http.MethodPut,
+		"/v2/project/repo/manifests/latest",
+		strings.NewReader("1234"),
+	)
+	r.Body = http.MaxBytesReader(httptest.NewRecorder(), r.Body, 3)
+
+	data, err := ReadRequestBody(r, 0)
+
+	suite.Nil(data)
+	suite.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
 }
 
 func TestReadRequestBodyTestSuite(t *testing.T) {
