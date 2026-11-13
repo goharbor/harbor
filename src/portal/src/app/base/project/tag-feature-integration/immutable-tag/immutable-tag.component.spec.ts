@@ -22,6 +22,7 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { AddImmutableRuleComponent } from './add-rule/add-immutable-rule.component';
 import { ImmutableService } from '../../../../../../ng-swagger-gen/services/immutable.service';
+import { UserPermissionService } from '../../../../shared/services';
 
 describe('ImmutableTagComponent', () => {
     let component: ImmutableTagComponent;
@@ -161,6 +162,10 @@ describe('ImmutableTagComponent', () => {
             return 'test';
         },
     };
+    let permissions = { create: true, update: true, delete: true };
+    const mockUserPermissionService = {
+        getPermission: (projectId, resource, action) => of(permissions[action]),
+    };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [
@@ -178,6 +183,10 @@ describe('ImmutableTagComponent', () => {
                 {
                     provide: ImmutableService,
                     useValue: mockedImmutableService,
+                },
+                {
+                    provide: UserPermissionService,
+                    useValue: mockUserPermissionService,
                 },
                 {
                     provide: ActivatedRoute,
@@ -200,6 +209,7 @@ describe('ImmutableTagComponent', () => {
     });
 
     beforeEach(() => {
+        permissions = { create: true, update: true, delete: true };
         fixture = TestBed.createComponent(ImmutableTagComponent);
         component = fixture.componentInstance;
         component.projectId = 1;
@@ -321,5 +331,43 @@ describe('ImmutableTagComponent', () => {
         expect(elRepRule.textContent).toEqual('rep');
         mockRules[0].tag_selectors[0].pattern = '**';
         component.addRuleComponent.isAdd = true;
+    });
+
+    async function render(): Promise<HTMLElement> {
+        fixture = TestBed.createComponent(ImmutableTagComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        return fixture.nativeElement;
+    }
+
+    function disabled(el: HTMLElement, selector: string): boolean {
+        return el.querySelector<HTMLButtonElement>(selector).disabled;
+    }
+
+    it('should enable write actions with the permissions', async () => {
+        const el = await render();
+        expect(disabled(el, '#add-rule')).toBeFalse();
+        expect(disabled(el, '#action0')).toBeFalse();
+        expect(disabled(el, '#edit-btn0')).toBeFalse();
+        expect(disabled(el, '#delete-btn0')).toBeFalse();
+    });
+
+    it('should disable write actions without the permissions', async () => {
+        permissions = { create: false, update: false, delete: false };
+        const el = await render();
+        expect(disabled(el, '#add-rule')).toBeTrue();
+        expect(disabled(el, '#action0')).toBeTrue();
+        expect(disabled(el, '#edit-btn0')).toBeTrue();
+        expect(disabled(el, '#delete-btn0')).toBeTrue();
+    });
+
+    it('should allow delete only with the delete permission', async () => {
+        permissions = { create: false, update: false, delete: true };
+        const el = await render();
+        expect(disabled(el, '#action0')).toBeFalse();
+        expect(disabled(el, '#edit-btn0')).toBeTrue();
+        expect(disabled(el, '#delete-btn0')).toBeFalse();
     });
 });

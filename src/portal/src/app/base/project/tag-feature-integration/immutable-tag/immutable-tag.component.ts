@@ -18,9 +18,14 @@ import {
     ImmutableRetentionRule,
     RuleMetadate,
 } from '../tag-retention/retention';
+import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { clone } from '../../../../shared/units/utils';
+import {
+    USERSTATICPERMISSION,
+    UserPermissionService,
+} from '../../../../shared/services';
 import { AddImmutableRuleComponent } from './add-rule/add-immutable-rule.component';
 import { ImmutableService } from '../../../../../../ng-swagger-gen/services/immutable.service';
 import { RetentionService } from '../../../../../../ng-swagger-gen/services/retention.service';
@@ -40,6 +45,9 @@ export class ImmutableTagComponent implements OnInit {
     rules: ImmutableRetentionRule[] = [];
     editIndex: number;
     loadingRule: boolean = false;
+    hasCreatePermission: boolean = false;
+    hasUpdatePermission: boolean = false;
+    hasDeletePermission: boolean = false;
 
     @ViewChild('addRule') addRuleComponent: AddImmutableRuleComponent;
     constructor(
@@ -48,13 +56,46 @@ export class ImmutableTagComponent implements OnInit {
         private immutableService: ImmutableService,
         private retentionService: RetentionService,
         public errorHandler: ErrorHandler,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private userPermissionService: UserPermissionService
     ) {}
 
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.parent.parent.params['id'];
         this.getRules();
         this.getMetadata();
+        this.getPermissions();
+    }
+
+    getPermissions() {
+        const resource = USERSTATICPERMISSION.IMMUTABLE_TAG.KEY;
+        const actions = USERSTATICPERMISSION.IMMUTABLE_TAG.VALUE;
+        forkJoin([
+            this.userPermissionService.getPermission(
+                this.projectId,
+                resource,
+                actions.CREATE
+            ),
+            this.userPermissionService.getPermission(
+                this.projectId,
+                resource,
+                actions.UPDATE
+            ),
+            this.userPermissionService.getPermission(
+                this.projectId,
+                resource,
+                actions.DELETE
+            ),
+        ]).subscribe({
+            next: ([hasCreate, hasUpdate, hasDelete]) => {
+                this.hasCreatePermission = hasCreate;
+                this.hasUpdatePermission = hasUpdate;
+                this.hasDeletePermission = hasDelete;
+            },
+            error: err => {
+                this.errorHandler.error(err);
+            },
+        });
     }
 
     getMetadata() {
