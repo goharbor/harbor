@@ -134,7 +134,10 @@
                                 'TAG_RETENTION.AND' | translate
                             }}</span>
                             <span>{{
-                                'TAG_RETENTION.LOWER_LABELS' | translate
+                                (rule?.tag_selectors[1]?.kind === 'doublestar'
+                                    ? 'TAG_RETENTION.LOWER_TAGS'
+                                    : 'TAG_RETENTION.LOWER_LABELS'
+                                ) | translate
                             }}</span>
                             <span>{{
                                 getI18nKey(rule?.tag_selectors[1]?.decoration)
