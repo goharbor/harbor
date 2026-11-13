@@ -169,6 +169,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
     doSearch(searchMember: string) {
         this.searchMember = searchMember;
+        this.page = 1;
         this.retrieve(this.searchMember);
     }
 
@@ -180,7 +181,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         this.retrieve('');
     }
     clrDgRefresh(state: ClrDatagridStateInterface) {
-        this.retrieve('', state);
+        this.retrieve(this.searchMember || '', state);
     }
     retrieve(username: string, state?: ClrDatagridStateInterface) {
         if (state && state.page) {

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { MemberComponent } from './member.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -57,7 +58,12 @@ describe('MemberComponent', () => {
         getUsersNameList: () => {
             return of([]);
         },
-        listProjectMembersResponse: () => {
+        listProjectMembersResponse: (_params: {
+            entityname?: string;
+            page?: number;
+            pageSize?: number;
+            projectNameOrId?: string;
+        }) => {
             const response: HttpResponse<Array<Registry>> = new HttpResponse<
                 Array<Registry>
             >({
@@ -167,5 +173,39 @@ describe('MemberComponent', () => {
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
         expect(rows.length).toEqual(2);
+    });
+
+    it('should preserve search filter when datagrid refreshes', () => {
+        const spy = spyOn(
+            mockMemberService,
+            'listProjectMembersResponse'
+        ).and.callThrough();
+
+        component.searchMember = 'tanvir';
+        component.clrDgRefresh({} as ClrDatagridStateInterface);
+
+        expect(spy).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                entityname: 'tanvir',
+            })
+        );
+    });
+
+    it('should reset to first page when searching', () => {
+        const spy = spyOn(
+            mockMemberService,
+            'listProjectMembersResponse'
+        ).and.callThrough();
+
+        component.page = 3;
+        component.doSearch('tanvir');
+
+        expect(component.page).toBe(1);
+        expect(spy).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                entityname: 'tanvir',
+                page: 1,
+            })
+        );
     });
 });
