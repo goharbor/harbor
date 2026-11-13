@@ -10,6 +10,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	usertesting "github.com/goharbor/harbor/src/testing/controller/user"
@@ -83,7 +84,7 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	}
 	{
 		url := "/users/1/password"
-		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 		uts.Security.On("GetUsername").Return("admin")
 
 		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
@@ -94,14 +95,36 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	}
 	{
 		url := "/users/1/password"
-		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 
-		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
-		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", mock.Anything).Return(false, nil).Times(1)
-		uts.uCtl.On("UpdatePassword", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Once()
+		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", mock.Anything).Return(false, nil).Once()
+		uts.uCtl.On("UpdatePassword", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 		res, err := uts.Suite.PutJSON(url, &body)
 		uts.NoError(err)
 		uts.Equal(200, res.StatusCode)
+	}
+	{
+		url := "/users/1/password"
+		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+
+		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Once()
+		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", mock.Anything).Return(false, nil).Once()
+		uts.uCtl.On("UpdatePassword", mock.Anything, mock.Anything, mock.Anything).Return(errors.ConflictError(nil)).Once()
+		res, err := uts.Suite.PutJSON(url, &body)
+		uts.NoError(err)
+		uts.Equal(409, res.StatusCode)
+	}
+	{
+		url := "/users/1/password"
+		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+
+		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Once()
+		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", mock.Anything).Return(false, nil).Once()
+		uts.uCtl.On("UpdatePassword", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("db error")).Once()
+		res, err := uts.Suite.PutJSON(url, &body)
+		uts.NoError(err)
+		uts.Equal(500, res.StatusCode)
 	}
 }
 
