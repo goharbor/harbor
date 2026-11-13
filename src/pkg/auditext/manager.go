@@ -43,6 +43,8 @@ type Manager interface {
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
 	// UpdateUsername Replace all log records username with its hash
 	UpdateUsername(ctx context.Context, username string, replaceWith string) error
+	// UpdateUsernameForUserResource Replace the username with its hash in the resource and op_desc of user related records
+	UpdateUsernameForUserResource(ctx context.Context, username string, replaceWith string) error
 }
 
 // New returns a default implementation of Manager
@@ -58,6 +60,10 @@ type manager struct {
 
 func (m *manager) UpdateUsername(ctx context.Context, username string, replaceWith string) error {
 	return m.dao.UpdateUsername(ctx, username, replaceWith)
+}
+
+func (m *manager) UpdateUsernameForUserResource(ctx context.Context, username string, replaceWith string) error {
+	return m.dao.UpdateUsernameForUserResource(ctx, username, replaceWith)
 }
 
 // Count ...
