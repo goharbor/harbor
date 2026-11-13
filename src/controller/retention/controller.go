@@ -338,6 +338,7 @@ func (r *defaultController) ListRetentionExecs(ctx context.Context, policyID int
 }
 
 func convertExecution(exec *task.Execution) *retention.Execution {
+	dryRun, _ := exec.ExtraAttrs["dry_run"].(bool)
 	retentionExec := &retention.Execution{
 		ID:        exec.ID,
 		PolicyID:  exec.VendorID,
@@ -345,7 +346,7 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 		EndTime:   exec.EndTime,
 		Status:    exec.Status,
 		Trigger:   exec.Trigger,
-		DryRun:    exec.ExtraAttrs["dry_run"].(bool),
+		DryRun:    dryRun,
 		Type:      exec.VendorType,
 	}
 
