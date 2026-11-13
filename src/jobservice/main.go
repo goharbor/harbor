@@ -35,6 +35,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/notation"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/vex"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 	_ "github.com/goharbor/harbor/src/pkg/scan/sbom"
