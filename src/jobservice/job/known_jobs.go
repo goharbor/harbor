@@ -40,6 +40,8 @@ const (
 	RetentionVendorType = "RETENTION"
 	// P2PPreheatVendorType : the name of the P2P preheat job
 	P2PPreheatVendorType = "P2P_PREHEAT"
+	// ModelSyncVendorType : the vendor type of model sync executions; their tasks run the replication job
+	ModelSyncVendorType = "MODEL_SYNC"
 	// PurgeAuditVendorType : the name of purge audit job
 	PurgeAuditVendorType = "PURGE_AUDIT_LOG"
 	// SystemArtifactCleanupVendorType : the name of the SystemArtifact cleanup job
@@ -69,6 +71,7 @@ var (
 		ScanDataExportVendorType:        lib.GetEnvInt64("SCAN_DATA_EXPORT_EXECUTION_RETENTION_COUNT", 50),
 		SystemArtifactCleanupVendorType: lib.GetEnvInt64("SYSTEM_ARTIFACT_CLEANUP_EXECUTION_RETENTION_COUNT", 50),
 		P2PPreheatVendorType:            lib.GetEnvInt64("P2P_PREHEAT_EXECUTION_RETENTION_COUNT", 50),
+		ModelSyncVendorType:             lib.GetEnvInt64("MODEL_SYNC_EXECUTION_RETENTION_COUNT", 50),
 		RetentionVendorType:             lib.GetEnvInt64("RETENTION_EXECUTION_RETENTION_COUNT", 50),
 	}
 )

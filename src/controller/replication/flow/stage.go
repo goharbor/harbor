@@ -88,9 +88,13 @@ func assembleDestinationResources(resources []*model.Resource,
 	policy *repctlmodel.Policy, dstRepoComponentPathType string) ([]*model.Resource, error) {
 	var result []*model.Resource
 	for _, resource := range resources {
-		name, err := replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount, dstRepoComponentPathType)
-		if err != nil {
-			return nil, err
+		name := policy.DestRepository
+		if name == "" {
+			var err error
+			name, err = replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount, dstRepoComponentPathType)
+			if err != nil {
+				return nil, err
+			}
 		}
 		res := &model.Resource{
 			Type:         resource.Type,

@@ -1,0 +1,261 @@
+<div class="model-sync-tasks">
+    <section class="overview-section">
+        <div class="title-wrapper">
+            <div>
+                <a (click)="onBack()" class="onback"
+                    ><{{ 'SIDE_NAV.SYSTEM_MGMT.MODEL_SYNC' | translate }}</a
+                >
+            </div>
+            <div class="title-block">
+                <div>
+                    <h2 class="custom-h2 h2-style">
+                        {{ 'MODEL_SYNC.EXECUTION' | translate }}
+                    </h2>
+                    <span class="id-divider"></span>
+                    <h2 class="custom-h2 h2-style">{{ executionId }}</h2>
+                </div>
+                <div class="margin-top-16px">
+                    @if (execution && execution.status === 'InProgress') {
+                    <div class="status-progress">
+                        <span class="spinner spinner-inline"></span>
+                        <span>{{ 'REPLICATION.IN_PROGRESS' | translate }}</span>
+                    </div>
+                    } @if (execution && execution.status === 'Succeed') {
+                    <div class="status-success">
+                        <clr-icon
+                            size="18"
+                            shape="success-standard"
+                            class="color-green"></clr-icon>
+                        <span>{{ 'REPLICATION.SUCCESS' | translate }}</span>
+                    </div>
+                    } @if (execution && execution.status === 'Failed') {
+                    <div class="status-failed">
+                        <clr-icon
+                            size="18"
+                            shape="error-standard"
+                            class="color-red"></clr-icon>
+                        <span>{{ 'REPLICATION.FAILURE' | translate }}</span>
+                    </div>
+                    } @if (execution && execution.status === 'Stopped') {
+                    <div class="status-stopped">
+                        <span>{{ 'REPLICATION.STOPPED' | translate }}</span>
+                    </div>
+                    }
+                </div>
+                <div class="button-stop">
+                    <button
+                        class="btn btn-primary"
+                        (click)="stop()"
+                        [disabled]="!canStop()">
+                        {{ 'REPLICATION.STOPJOB' | translate }}
+                    </button>
+                    <span
+                        class="spinner spinner-inline"
+                        [hidden]="!executionLoading"></span>
+                </div>
+            </div>
+        </div>
+        <div class="execution-block">
+            <div class="executions-detail">
+                <div>
+                    <label
+                        >{{ 'REPLICATION.TRIGGER_MODE' | translate }} :</label
+                    >
+                    <span>{{ execution?.trigger }}</span>
+                </div>
+                <div>
+                    <label
+                        >{{ 'REPLICATION.CREATION_TIME' | translate }} :</label
+                    >
+                    <span>{{
+                        execution?.start_time | harborDatetime : 'short'
+                    }}</span>
+                </div>
+                @if (execution?.operator) {
+                <div>
+                    <label>{{ 'MODEL_SYNC.OPERATOR' | translate }} :</label>
+                    <span>{{ execution.operator }}</span>
+                </div>
+                } @if (execution?.status_text) {
+                <div>
+                    <label>{{ 'MODEL_SYNC.MESSAGE' | translate }} :</label>
+                    <span>{{ execution.status_text }}</span>
+                </div>
+                }
+            </div>
+            <div class="flex-block">
+                <section class="execution-detail-label">
+                    <section class="detail-row">
+                        <div class="num-success common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.SUCCESS' | translate
+                        }}</label>
+                        <div class="execution-details">
+                            {{ execution?.succeed }}
+                        </div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-failed common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.FAILURE' | translate
+                        }}</label>
+                        <div class="execution-details">
+                            {{ execution?.failed }}
+                        </div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-progress common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.IN_PROGRESS' | translate
+                        }}</label>
+                        <div class="execution-details">
+                            {{ execution?.in_progress }}
+                        </div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-stopped common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.STOPPED' | translate
+                        }}</label>
+                        <div class="execution-details">
+                            {{ execution?.stopped }}
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <div class="tasks-detail">
+        <h3 class="modal-title">{{ 'MODEL_SYNC.TASKS' | translate }}</h3>
+        <div class="row flex-items-xs-between flex-items-xs-bottom">
+            <div class="action-select">
+                <span class="refresh-btn">
+                    <clr-icon shape="refresh" (click)="refresh()"></clr-icon>
+                </span>
+            </div>
+        </div>
+        <clr-datagrid
+            (clrDgRefresh)="clrLoadTasks(true, $event)"
+            [clrDgLoading]="loading">
+            <clr-dg-column>{{
+                'REPLICATION.TASK_ID' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{
+                'REPLICATION.SOURCE' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{
+                'REPLICATION.DESTINATION' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{
+                'MODEL_SYNC.RESOLVED_REVISION' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{ 'MODEL_SYNC.TAGS' | translate }}</clr-dg-column>
+            <clr-dg-column>{{
+                'MODEL_SYNC.FILE_COUNT' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{ 'MODEL_SYNC.SIZE' | translate }}</clr-dg-column>
+            <clr-dg-column>{{
+                'REPLICATION.STATUS' | translate
+            }}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'start_time'">{{
+                'REPLICATION.CREATION_TIME' | translate
+            }}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'end_time'">{{
+                'REPLICATION.END_TIME' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{ 'REPLICATION.LOGS' | translate }}</clr-dg-column>
+            <clr-dg-placeholder>{{
+                'MODEL_SYNC.TASKS_PLACEHOLDER' | translate
+            }}</clr-dg-placeholder>
+            @for (t of tasks; track t) {
+            <clr-dg-row>
+                <clr-dg-cell>{{ t.id }}</clr-dg-cell>
+                <clr-dg-cell>
+                    {{ t.src_repository }}
+                    @if (t.src_revision) {
+                    <span class="mono">:{{ t.src_revision }}</span>
+                    }
+                </clr-dg-cell>
+                <clr-dg-cell>{{ t.dest_repository }}</clr-dg-cell>
+                <clr-dg-cell>
+                    @if (t.revision) {
+                    <span class="mono">{{ t.revision | slice : 0 : 12 }}</span>
+                    <clr-signpost>
+                        <clr-signpost-content *clrIfOpen>
+                            <div>{{ t.revision }}</div>
+                            @if (t.digest) {
+                            <div class="mono">{{ t.digest }}</div>
+                            }
+                        </clr-signpost-content>
+                    </clr-signpost>
+                    } @else { - }
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    @for (tag of t.tags; track tag) {
+                    <span class="label mono">{{ tag }}</span>
+                    }
+                </clr-dg-cell>
+                <clr-dg-cell>{{ t.files }}</clr-dg-cell>
+                <clr-dg-cell>{{ t.size ? size(t.size) : '-' }}</clr-dg-cell>
+                <clr-dg-cell>
+                    {{ getStatusStr(t.status) }}
+                    @if (t.skipped) {
+                    <span class="label">{{
+                        'MODEL_SYNC.SKIPPED' | translate
+                    }}</span>
+                    } @if (t.status_message) {
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="20"></clr-icon>
+                        <clr-tooltip-content
+                            [clrPosition]="'left'"
+                            clrSize="md"
+                            *clrIfOpen>
+                            <span>{{ t.status_message }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                    }
+                </clr-dg-cell>
+                <clr-dg-cell>{{
+                    t.start_time | harborDatetime : 'short'
+                }}</clr-dg-cell>
+                <clr-dg-cell>{{
+                    t.end_time | harborDatetime : 'short'
+                }}</clr-dg-cell>
+                <clr-dg-cell>
+                    <a
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        [href]="viewLog(t.id)">
+                        <clr-icon shape="list"></clr-icon>
+                    </a>
+                </clr-dg-cell>
+            </clr-dg-row>
+            }
+            <clr-dg-footer>
+                <clr-dg-pagination
+                    #pagination
+                    [(clrDgPage)]="currentPage"
+                    [clrDgTotalItems]="totalCount"
+                    [clrDgPageSize]="pageSize">
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
+                    @if (totalCount) {
+                    <span
+                        >{{ pagination.firstItem + 1 }} -
+                        {{ pagination.lastItem + 1 }}
+                        {{ 'REPLICATION.OF' | translate }}
+                    </span>
+                    }{{ totalCount }} {{ 'REPLICATION.ITEMS' | translate }}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>

@@ -76,6 +76,10 @@ export const enum ConfirmationTargets {
     STOPS_JOBS,
     PAUSE_JOBS,
     RESUME_JOBS,
+    MODEL_SYNC_EXECUTE,
+    MODEL_SYNC_DELETE,
+    MODEL_SYNC_TOGGLE,
+    MODEL_SYNC_STOP,
 }
 
 export const enum ActionType {

@@ -22,8 +22,11 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	regmodel "github.com/goharbor/harbor/src/pkg/reg/model"
 	pkgmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -183,14 +186,95 @@ func (c *controller) validatePolicy(ctx context.Context, policy *model.Policy) e
 		return err
 	}
 	if policy.SrcRegistry != nil {
-		if _, err := c.regMgr.Get(ctx, policy.SrcRegistry.ID); err != nil {
+		src, err := c.regMgr.Get(ctx, policy.SrcRegistry.ID)
+		if err != nil {
+			return err
+		}
+		if err := validateSourceOptions(policy, src); err != nil {
+			return err
+		}
+	} else if opts, err := policy.SourceOptions(); err != nil {
+		return err
+	} else if !opts.IsEmpty() {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("source options need a remote source registry")
+	}
+	if policy.DestRegistry != nil {
+		dest, err := c.regMgr.Get(ctx, policy.DestRegistry.ID)
+		if err != nil {
+			return err
+		}
+		if err := validateDestination(ctx, dest); err != nil {
 			return err
 		}
 	}
-	if policy.DestRegistry != nil {
-		if _, err := c.regMgr.Get(ctx, policy.DestRegistry.ID); err != nil {
-			return err
+	return nil
+}
+
+// registryInfo returns the capabilities of a registry without a network call for adapters
+// whose factory and Info need none.
+func registryInfo(registry *regmodel.Registry) (*regmodel.RegistryInfo, error) {
+	factory, err := adapter.GetFactory(registry.Type)
+	if err != nil {
+		return nil, err
+	}
+	a, err := factory.Create(registry)
+	if err != nil {
+		return nil, err
+	}
+	return a.Info()
+}
+
+func supportsFilter(info *regmodel.RegistryInfo, filterType string) bool {
+	for _, f := range info.SupportedResourceFilters {
+		if f != nil && f.Type == filterType {
+			return true
 		}
+	}
+	return false
+}
+
+// validateDestination rejects a source-only registry as destination. The local Harbor (ID 0) is
+// skipped: it is never source-only and its adapter calls the core API on creation. When the
+// capabilities cannot be read, e.g. the registry is unreachable, the policy is accepted as
+// before; the replication itself fails later with the real cause.
+func validateDestination(ctx context.Context, dest *regmodel.Registry) error {
+	if dest == nil || dest.ID == 0 {
+		return nil
+	}
+	info, err := registryInfo(dest)
+	if err != nil {
+		log.GetLogger(ctx).Warningf("skip the source-only check of the destination registry %s: %v", dest.Name, err)
+		return nil
+	}
+	if info.SourceOnly {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("the %s registry %s can only be a replication source", dest.Type, dest.Name)
+	}
+	return nil
+}
+
+// validateSourceOptions rejects source options the source registry cannot honor.
+func validateSourceOptions(policy *model.Policy, src *regmodel.Registry) error {
+	opts, err := policy.SourceOptions()
+	if err != nil {
+		return err
+	}
+	if opts.IsEmpty() {
+		return nil
+	}
+	info, err := registryInfo(src)
+	if err != nil {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("failed to get the capabilities of the source registry %s: %v", src.Name, err)
+	}
+	if !opts.FileFilter.IsEmpty() && !supportsFilter(info, regmodel.FilterTypeFile) {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("the source registry %s does not support the %s filter", src.Name, regmodel.FilterTypeFile)
+	}
+	if opts.RevisionTag && !info.SupportedRevisionTag {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("the source registry %s does not support the revision tag", src.Name)
 	}
 	return nil
 }
