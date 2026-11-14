@@ -74,7 +74,7 @@ func tagListFixture(tb testing.TB, names []string) context.Context {
 // repository lookup, tag retrieval and response encoding. It requires the same
 // POSTGRESQL_* and POSTGRES_MIGRATION_SCRIPTS_PATH settings as the DAO tests.
 func BenchmarkTagList(b *testing.B) {
-	for _, total := range []int{2, 10000} {
+	for _, total := range []int{2, 1500, 10000} {
 		b.Run(fmt.Sprintf("tags=%d", total), func(b *testing.B) {
 			names := make([]string, total)
 			for i := range names {
@@ -82,7 +82,7 @@ func BenchmarkTagList(b *testing.B) {
 			}
 			ctx := tagListFixture(b, names)
 			h := newTagHandler()
-			req := httptest.NewRequest(http.MethodGet, "/v2/library/tag-list-test/tags/list?n=100", nil).WithContext(ctx)
+			req := httptest.NewRequest(http.MethodGet, "/v2/library/tag-list-test/tags/list?n=1000", nil).WithContext(ctx)
 			b.ReportAllocs()
 			for b.Loop() {
 				w := httptest.NewRecorder()
