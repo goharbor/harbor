@@ -270,6 +270,9 @@ proxy:
 #   allowlist:
 #     - 10.20.0.0/16
 #     - "*.svc.cluster.local"
+#   # Send the proxy the address Harbor validated instead of the hostname, so it cannot resolve
+#   # the name to a blocked address. Off by default: proxies that filter by domain reject a bare IP.
+#   pin_proxied_targets: false
 
 # metric:
 #   enabled: false
