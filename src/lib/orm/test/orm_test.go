@@ -19,6 +19,7 @@ import (
 	"errors"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
@@ -163,6 +164,31 @@ func (suite *OrmSuite) TestWithTransaction() {
 	suite.Nil(t1(ctx))
 	suite.True(existFoo(ctx, id))
 	suite.Nil(deleteFoo(ctx, id))
+}
+
+func (suite *OrmSuite) TestWithTransactionRollsBackOnPanic() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var id int64
+	t := WithTransaction(func(ctx context.Context) (err error) {
+		id, err = addFoo(ctx, Foo{Name: "panic"})
+		suite.Nil(err)
+		panic("boom")
+	})
+
+	// the panic still reaches the caller
+	suite.PanicsWithValue("boom", func() { _ = t(ctx) })
+
+	// the transaction was rolled back, so the row is gone ...
+	suite.False(existFoo(ctx, id))
+
+	// ... and its unique key lock is released: a second writer must not wait on it
+	waitCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	o := orm.NewOrm()
+	id2, err := o.InsertWithCtx(waitCtx, &Foo{Name: "panic"})
+	suite.Nil(err)
+	suite.Nil(deleteFoo(ctx, id2))
 }
 
 func (suite *OrmSuite) TestSequentialTransactions() {
