@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/testing/controller/project"
@@ -116,5 +117,32 @@ func TestAll(t *testing.T) {
 
 	for _, c := range cases {
 		assert.Equal(t, c.expect, sc.Can(ctx, c.action, c.resource))
+	}
+}
+
+func TestCatalog(t *testing.T) {
+	ctx := context.TODO()
+	catalog := system.NewNamespace().Resource(rbac.ResourceCatalog)
+	repo := token.ResourceActions{Type: "repository", Name: "library/ubuntu", Actions: []string{"pull"}}
+
+	cases := []struct {
+		name     string
+		access   []*token.ResourceActions
+		resource types.Resource
+		action   types.Action
+		expect   bool
+	}{
+		{"catalog grant reads catalog", []*token.ResourceActions{{Type: "registry", Name: "catalog", Actions: []string{"*"}}}, catalog, rbac.ActionRead, true},
+		{"catalog grant is read only", []*token.ResourceActions{{Type: "registry", Name: "catalog", Actions: []string{"*"}}}, catalog, rbac.ActionCreate, false},
+		{"filtered catalog grant", []*token.ResourceActions{{Type: "registry", Name: "catalog", Actions: []string{}}}, catalog, rbac.ActionRead, false},
+		{"repository grant only", []*token.ResourceActions{&repo}, catalog, rbac.ActionRead, false},
+		{"other registry name", []*token.ResourceActions{{Type: "registry", Name: "other", Actions: []string{"*"}}}, catalog, rbac.ActionRead, false},
+		{"catalog grant opens no other system resource", []*token.ResourceActions{{Type: "registry", Name: "catalog", Actions: []string{"*"}}}, system.NewNamespace().Resource(rbac.ResourceUser), rbac.ActionRead, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			sc := New(ctx, "robot$sys", c.access)
+			assert.Equal(t, c.expect, sc.Can(ctx, c.action, c.resource))
+		})
 	}
 }
