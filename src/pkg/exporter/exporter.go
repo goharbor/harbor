@@ -52,6 +52,7 @@ func NewExporter(opt *Opt) *Exporter {
 		NewProjectCollector(),
 		NewJobServiceCollector(),
 		NewStatisticsCollector(),
+		NewVulnerabilityCollector(),
 	)
 	if err != nil {
 		log.Warningf("calling RegisterCollector() errored out, error: %v", err)

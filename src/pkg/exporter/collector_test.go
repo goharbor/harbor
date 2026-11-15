@@ -26,4 +26,5 @@ func TestCollectorsTestSuite(t *testing.T) {
 	suite.Run(t, &StatisticsCollectorTestSuite{
 		collector: NewStatisticsCollector(),
 	})
+	suite.Run(t, new(VulnerabilityCollectorTestSuite))
 }
