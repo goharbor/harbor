@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	testifymock "github.com/stretchr/testify/mock"
@@ -128,6 +129,58 @@ func (m *mgrTestSuite) TestOnboard() {
 		m.Equal(existingUser.Email, newUser.Email)
 		m.Equal(existingUser.UserID, newUser.UserID)
 	}
+}
+
+func (m *mgrTestSuite) TestMatchLocalPasswordUsesVerifyCache() {
+	salt := "test-salt"
+	stored := &models.User{
+		UserID:          7,
+		Username:        "alice",
+		Salt:            salt,
+		Password:        utils.Encrypt("Harbor12345", salt, utils.PBKDF2SHA256),
+		PasswordVersion: utils.PBKDF2SHA256,
+	}
+	// MatchLocalPassword clears Password on the returned entry, so hand out a
+	// fresh copy of the DB row on every call, as the real DAO does.
+	m.dao.On("List", mock.Anything, mock.Anything).Return(
+		func(context.Context, *q.Query) []*models.User {
+			u := *stored
+			return []*models.User{&u}
+		}, nil)
+
+	cache := newVerifyCache(time.Minute, 10)
+	mgr := &manager{dao: m.dao, verifyCache: cache}
+	ctx := context.Background()
+
+	u, err := mgr.MatchLocalPassword(ctx, "alice", "Harbor12345")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
+	m.Equal(7, u.UserID)
+	m.Empty(u.Password)
+	m.Len(cache.entries, 1, "a successful verification should be cached")
+
+	// Served from the cache this time; result must be identical.
+	u, err = mgr.MatchLocalPassword(ctx, "alice", "Harbor12345")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
+	m.Equal(7, u.UserID)
+
+	// A wrong password is never accepted and never cached.
+	u, err = mgr.MatchLocalPassword(ctx, "alice", "wrong")
+	m.Nil(err)
+	m.Nil(u)
+	m.Len(cache.entries, 1)
+
+	// After a password change the stored salt and hash differ, so the old
+	// password must stop working immediately despite the cached entry.
+	stored.Salt = "new-salt"
+	stored.Password = utils.Encrypt("NewPassw0rd", stored.Salt, utils.PBKDF2SHA256)
+	u, err = mgr.MatchLocalPassword(ctx, "alice", "Harbor12345")
+	m.Nil(err)
+	m.Nil(u)
+	u, err = mgr.MatchLocalPassword(ctx, "alice", "NewPassw0rd")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
 }
 
 func TestManager(t *testing.T) {
