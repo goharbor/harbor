@@ -52,6 +52,16 @@ WHERE name IN ('projectAdmin', 'developer', 'guest', 'maintainer', 'limitedGuest
 -- makes the database reject deleting a role that is still assigned to a member,
 -- closing the count-then-delete race in the role Delete controller (a concurrent
 -- member assignment can no longer leave a dangling project_member.role).
+--
+-- The constraint is validating, so it scans every existing project_member row on
+-- creation: a single row whose role is not present in the role table would abort
+-- this migration and leave core unable to start. Harbor only ever writes role ids
+-- 1-5 (all present), so this is reachable only via a hand-edited or partially
+-- restored database, but the failure mode is a hard-down upgrade with no obvious
+-- recovery path. Sweep any such orphans first so the ADD CONSTRAINT always succeeds;
+-- an orphaned membership already references a non-existent role and is dead data.
+DELETE FROM project_member pm
+ WHERE NOT EXISTS (SELECT 1 FROM role r WHERE r.role_id = pm.role);
 DO $$
 BEGIN
     IF NOT EXISTS (
