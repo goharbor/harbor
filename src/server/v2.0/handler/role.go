@@ -257,6 +257,7 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 
 	provider := rbac.GetPermissionProvider()
 	// to validate the access scope
+	var granted []*types.Policy
 	for _, perm := range permissions {
 		if perm.Kind == role.LEVELROLE {
 			polices := provider.GetPermissions(rbac.ScopeRole)
@@ -265,10 +266,14 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 				if !containsAccess(polices, acc) {
 					return errors.New(nil).WithMessagef("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
 				}
+				granted = append(granted, &types.Policy{Resource: types.Resource(acc.Resource), Action: types.Action(acc.Action)})
 			}
 		} else {
 			return errors.New(nil).WithMessagef("bad request permission level: %s", perm.Kind).WithCode(errors.BadRequestCode)
 		}
+	}
+	if missing := rbac.MissingPermissionDependencies(granted); len(missing) > 0 {
+		return errors.New(nil).WithMessagef("bad request permission: %s", strings.Join(missing, "; ")).WithCode(errors.BadRequestCode)
 	}
 
 	return nil
