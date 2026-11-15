@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	beegoorm "github.com/beego/beego/v2/client/orm"
@@ -152,6 +153,35 @@ func (d *daoTestSuite) TestUpdate() {
 	var e *errors.Error
 	d.Require().True(errors.As(err, &e))
 	d.Equal(errors.NotFoundCode, e.Code)
+}
+
+func (d *daoTestSuite) TestListBySourceRegistries() {
+	ids := []int64{}
+	for i, registryID := range []int64{1002, 1003, 1004} {
+		id, err := d.dao.Create(d.ctx, &model.Policy{
+			Name:           fmt.Sprintf("by-registry-%d", i),
+			SrcRegistryID:  registryID,
+			DestRepository: "my-model",
+		})
+		d.Require().Nil(err)
+		ids = append(ids, id)
+	}
+	defer func() {
+		for _, id := range ids {
+			d.Require().Nil(d.dao.Delete(d.ctx, id))
+		}
+	}()
+
+	// the query the Model Sync page sends: rules whose source is one of the model registries
+	query, err := q.Build("src_registry_id={1002 1004}", "", 1, 10)
+	d.Require().Nil(err)
+	policies, err := d.dao.List(d.ctx, query)
+	d.Require().Nil(err)
+	d.Require().Len(policies, 2)
+	for _, p := range policies {
+		d.Contains([]int64{1002, 1004}, p.SrcRegistryID)
+		d.Equal("my-model", p.DestRepository)
+	}
 }
 
 func TestDaoTestSuite(t *testing.T) {

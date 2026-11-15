@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/reg"
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/replication"
 )
@@ -53,6 +54,10 @@ type Controller interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// GetInfo returns the basic information and capabilities of the registry
 	GetInfo(ctx context.Context, id int64) (info *model.RegistryInfo, err error)
+	// Preview resolves what copying repository:reference from the registry with the file filter
+	// would produce, without copying. Only registries whose adapter is an adapter.ArtifactResolver
+	// support it, see RegistryInfo.SupportedPreview.
+	Preview(ctx context.Context, id int64, repository, reference string, filter *model.FileFilter) (result *model.ResolveResult, err error)
 	// IsHealthy checks whether the provided registry is healthy or not
 	IsHealthy(ctx context.Context, registry *model.Registry) (healthy bool, err error)
 	// ListRegistryProviderTypes returns all the registered registry provider type
@@ -205,7 +210,31 @@ func (c *controller) GetInfo(ctx context.Context, id int64) (*model.RegistryInfo
 		info.SupportedTriggers = append(info.SupportedTriggers, model.TriggerTypeEventBased)
 	}
 	info = process(info)
+	_, info.SupportedPreview = adapter.(adp.ArtifactResolver)
 	return info, nil
+}
+
+func (c *controller) Preview(ctx context.Context, id int64, repository, reference string, filter *model.FileFilter) (*model.ResolveResult, error) {
+	if strings.TrimSpace(repository) == "" {
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the repository is required")
+	}
+	if err := filter.Validate(); err != nil {
+		return nil, err
+	}
+	registry, err := c.regMgr.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	adapter, err := c.regMgr.CreateAdapter(ctx, registry)
+	if err != nil {
+		return nil, err
+	}
+	resolver, ok := adapter.(adp.ArtifactResolver)
+	if !ok {
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("the registry %s does not support previews", registry.Name)
+	}
+	return resolver.Resolve(repository, reference, filter)
 }
 
 func getWhitelistedAdapters(ctx context.Context) map[string]struct{} {

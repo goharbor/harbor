@@ -148,12 +148,18 @@ type RegistryInfo struct {
 	SourceOnly bool `json:"source_only,omitempty"`
 	// SupportedRevisionTag declares that the source honors SourceOptions.RevisionTag.
 	SupportedRevisionTag bool `json:"supported_revision_tag,omitempty"`
+	// SupportedPreview is set by the registry controller when the adapter implements
+	// adapter.ArtifactResolver; adapters do not declare it.
+	SupportedPreview bool `json:"supported_preview,omitempty"`
 }
 
 // AdapterPattern provides base info and capability declarations of the registry
 type AdapterPattern struct {
 	EndpointPattern   *EndpointPattern   `json:"endpoint_pattern"`
 	CredentialPattern *CredentialPattern `json:"credential_pattern"`
+	// SupportedPreview declares at type level that the adapter implements adapter.ArtifactResolver,
+	// so a UI can tell model sources apart without creating an adapter per registry.
+	SupportedPreview bool `json:"supported_preview,omitempty"`
 }
 
 // NewDefaultAdapterPattern ...

@@ -35,6 +35,8 @@ func TestFactory(t *testing.T) {
 	require.NoError(t, err)
 	_, ok := a.(adp.ArtifactRegistry)
 	assert.True(t, ok)
+	_, resolver := a.(adp.ArtifactResolver)
+	assert.Equal(t, resolver, f.AdapterPattern().SupportedPreview)
 	assert.Equal(t, hub.DefaultEndpoint, a.(*adapter).hub.Endpoint())
 
 	p := f.AdapterPattern()

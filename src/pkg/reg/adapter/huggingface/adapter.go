@@ -61,6 +61,7 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 // has an access key; the Hub itself only sees "Authorization: Bearer <token>".
 func getAdapterPattern() *model.AdapterPattern {
 	return &model.AdapterPattern{
+		SupportedPreview: true,
 		EndpointPattern: &model.EndpointPattern{
 			EndpointType: model.EndpointPatternTypeList,
 			Endpoints: []*model.Endpoint{

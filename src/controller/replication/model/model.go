@@ -17,6 +17,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -27,6 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 )
+
+// destRepositoryRe is one path component of a repository name, see reference.NameRegexp.
+var destRepositoryRe = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*$`)
 
 // Policy defines the structure of a replication policy
 type Policy struct {
@@ -51,6 +55,9 @@ type Policy struct {
 	// RevisionTag makes every copy also tag the artifact with the immutable tag of its source
 	// revision (model.RevisionTag), on sources that declare SupportedRevisionTag.
 	RevisionTag bool `json:"revision_tag"`
+	// DestRepository, when set, replaces the last path component of the source repository, the
+	// one the namespace rewrite keeps, so a single repository can be copied under another name.
+	DestRepository string `json:"dest_repository"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -115,6 +122,11 @@ func (p *Policy) Validate() error {
 		}
 	}
 
+	if len(p.DestRepository) > 0 && !destRepositoryRe.MatchString(p.DestRepository) {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("invalid destination repository %q: it must be a single path component", p.DestRepository)
+	}
+
 	// valid trigger
 	if p.Trigger != nil {
 		switch p.Trigger.Type {
@@ -168,6 +180,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.CopyByChunk = policy.CopyByChunk
 	p.SingleActiveReplication = policy.SingleActiveReplication
 	p.RevisionTag = policy.RevisionTag
+	p.DestRepository = policy.DestRepository
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -215,6 +228,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		CopyByChunk:               p.CopyByChunk,
 		SingleActiveReplication:   p.SingleActiveReplication,
 		RevisionTag:               p.RevisionTag,
+		DestRepository:            p.DestRepository,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

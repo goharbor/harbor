@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -308,4 +309,25 @@ func TestValidateFileFilter(t *testing.T) {
 	opts, err = p.SourceOptions()
 	assert.NoError(t, err)
 	assert.True(t, opts.RevisionTag)
+}
+
+func TestValidateDestRepository(t *testing.T) {
+	base := func(name string) *Policy {
+		return &Policy{Name: "p", SrcRegistry: &model.Registry{ID: 1}, DestRepository: name}
+	}
+	assert.NoError(t, base("").Validate())
+	assert.NoError(t, base("smollm2-135m").Validate())
+	for _, name := range []string{"a/b", "Upper", "-x", "x-", "a..b"} {
+		assert.Error(t, base(name).Validate(), name)
+	}
+}
+
+func TestPolicyDestRepositoryRoundTrip(t *testing.T) {
+	p := &Policy{Name: "p", DestRepository: "my-model"}
+	dao, err := p.To()
+	require.NoError(t, err)
+	assert.Equal(t, "my-model", dao.DestRepository)
+	back := &Policy{}
+	require.NoError(t, back.From(dao))
+	assert.Equal(t, "my-model", back.DestRepository)
 }
