@@ -63,6 +63,8 @@ import {
 } from '../../../../project/p2p-provider/p2p-provider.service';
 import { ScheduleService } from '../../../../../../../ng-swagger-gen/services/schedule.service';
 import { JobType } from '../../../job-service-dashboard/job-service-dashboard.interface';
+import { ModelSyncService } from '../../../model-sync/model-sync.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'hbr-list-replication-rule',
@@ -107,15 +109,24 @@ export class ListReplicationRuleComponent implements OnInit, OnDestroy {
     );
     @ViewChild('datagrid')
     datagrid: ClrDatagrid;
+    // rules from a model source are owned by Model Sync, whose form keeps their file filter
+    // and destination name; the replication form would drop them
+    modelSourceTypes: string[] = [];
     constructor(
         private replicationService: ReplicationService,
         private translateService: TranslateService,
         private errorHandlerEntity: ErrorHandler,
         private operationService: OperationService,
-        private scheduleService: ScheduleService
+        private scheduleService: ScheduleService,
+        private modelSyncService: ModelSyncService,
+        private router: Router
     ) {}
 
     ngOnInit() {
+        this.modelSyncService.sourceTypes().subscribe(
+            types => (this.modelSourceTypes = types),
+            () => (this.modelSourceTypes = [])
+        );
         this.scheduleService
             .getSchedulePaused({ jobType: JobType.ALL })
             .subscribe(res => {
@@ -236,7 +247,20 @@ export class ListReplicationRuleComponent implements OnInit, OnDestroy {
         this.openNewRule.emit();
     }
 
+    isModelRule(rule: ReplicationPolicy): boolean {
+        return (
+            !!rule?.src_registry?.type &&
+            this.modelSourceTypes.includes(rule.src_registry.type)
+        );
+    }
+
     editRule(rule: ReplicationPolicy) {
+        if (this.isModelRule(rule)) {
+            this.router.navigate(['harbor', 'model-sync'], {
+                queryParams: { edit: rule.id },
+            });
+            return;
+        }
         this.editOne.emit(rule);
     }
 
