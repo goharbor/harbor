@@ -28,7 +28,7 @@ import (
 type PushArtifactEventMetadata struct {
 	Ctx      context.Context
 	Artifact *artifact.Artifact
-	Tag      string
+	Tags     []string
 	Labels   []string
 }
 
@@ -41,9 +41,7 @@ func (p *PushArtifactEventMetadata) Resolve(event *event.Event) error {
 		Labels:     p.Labels,
 		OccurAt:    time.Now(),
 	}
-	if p.Tag != "" {
-		ae.Tags = []string{p.Tag}
-	}
+	ae.Tags = p.Tags
 	data := &event2.PushArtifactEvent{
 		ArtifactEvent: ae,
 	}
