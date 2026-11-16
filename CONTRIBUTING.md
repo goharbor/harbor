@@ -249,19 +249,19 @@ Write code on the new branch in your fork. The coding style used in Harbor is su
 
 Try to limit column width to 120 characters for both code and markdown documents such as this one.
 
-As we are enforcing standards set by [golint](https://github.com/golang/lint), please always run golint on source code before committing your changes. If it reports an issue, in general, the preferred action is to fix the code to comply with the linter's recommendation
-because golint gives suggestions according to the stylistic conventions listed in [Effective Go](https://golang.org/doc/effective_go.html) and the [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments).
+Before committing Go changes, run the project's `golangci-lint` checks from the repository root.
+Use the version required by `GOLANGCI_LINT_VERSION` in the [Makefile](Makefile).
+If the linter is missing or has the wrong version, `make lint` prints the matching installation command.
+
+On a fresh checkout, generate the API code before linting. API generation requires a running Docker daemon.
+
 ```sh
-#Install fgt and golint
-
-go install golang.org/x/lint/golint@latest
-go install github.com/GeertJohan/fgt@latest
-
-#In the #working_dir/harbor, run
-
-go list ./... | grep -v -E 'tests' | xargs -L1 fgt golint
-
+make gen_apis
+make lint
 ```
+
+The `lint` target runs in the Go module under `src/` using its `.golangci.yaml` configuration.
+Fix any reported issues before submitting the pull request.
 
 ## Recommended Make Commands
 
@@ -269,7 +269,7 @@ Harbor provides a Makefile-driven developer workflow. Use these commands during 
 
 ### Testing & Validation
 ```sh
-make go_check      # Run tests, API generation, lint, vet, race, spell checks
+make go_check      # Generate APIs/mocks; check mocks, spelling, comment formatting, and Go lint
 ```
 
 ### Build Specific Services
