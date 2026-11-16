@@ -195,8 +195,38 @@ func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
 	suite.local.On("CheckDependencies", ctx, artInfo.Repository, man).Once().Return([]distribution.Descriptor{})
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
+	suite.local.On("UpdatePullTime", ctx, artInfo).Once().Return(nil)
 
 	suite.mCache.CacheContent(ctx, repo, man, artInfo, nil, "")
+}
+
+func (suite *CacheTestSuite) TestManifestCache_CacheContent_PushFails() {
+	// Use a separate mock, since the suite's mock may still accept UpdatePullTime from other tests.
+	local := &localInterfaceMock{}
+	mCache := &ManifestCache{local: local}
+	defer local.AssertExpectations(suite.T())
+
+	manifest := ociManifest
+	man, desc, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
+	suite.Require().NoError(err)
+
+	ctx := context.Background()
+	repo := "library/hello-world"
+
+	artInfo := lib.ArtifactInfo{
+		Repository: repo,
+		Digest:     string(desc.Digest),
+		Tag:        "latest",
+	}
+
+	local.On("CheckDependencies", ctx, artInfo.Repository, man).Once().Return([]distribution.Descriptor{})
+	local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(fmt.Errorf("push failed"))
+	local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
+
+	mCache.CacheContent(ctx, repo, man, artInfo, nil, "")
+
+	// The pull time must not be set when the manifest wasn't cached.
+	local.AssertNotCalled(suite.T(), "UpdatePullTime", mock.Anything, mock.Anything)
 }
 
 func (suite *CacheTestSuite) TestManifestCache_push_succeeds() {

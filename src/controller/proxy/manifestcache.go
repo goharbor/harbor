@@ -215,6 +215,13 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 	err := m.push(art, man)
 	if err != nil {
 		log.Errorf("error occurred on manifest push to local: %v", err)
+		return
+	}
+	// The pull event updates the pull time later, in a batch. Set it now so tag retention
+	// doesn't see a zero pull time and remove the artifact that was just cached, like
+	// ManifestListCache does.
+	if err := m.local.UpdatePullTime(ctx, art); err != nil {
+		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", art.Repository, getReference(art), err)
 	}
 }
 
