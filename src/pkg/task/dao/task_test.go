@@ -335,6 +335,15 @@ func (t *taskDAOTestSuite) TestListWithNonExactExtraAttrsPattern() {
 	t.Require().NotNil(err)
 	t.True(errors.IsErr(err, errors.BadRequestCode))
 
+	// a non-exact filter next to an exact one is rejected whichever is picked
+	query, err = q.Build("ExtraAttrs.key=value,ExtraAttrs.other=~value", "", 0, 0)
+	t.Require().Nil(err)
+	for i := 0; i < 20; i++ {
+		_, err = t.taskDAO.Count(t.ctx, query)
+		t.Require().NotNil(err)
+		t.True(errors.IsErr(err, errors.BadRequestCode))
+	}
+
 	// the exact match pattern isn't affected
 	query, err = q.Build("ExtraAttrs.key=value", "", 0, 0)
 	t.Require().Nil(err)
