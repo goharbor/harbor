@@ -64,6 +64,7 @@ podman() {
                     return 1
                     ;;
             esac
+            if [[ ${FIXTURE_PREPARE_FAILURE:-false} == true ]]; then return 42; fi
             ;;
         *)
             echo "Unexpected Podman invocation: $*" >&2
@@ -91,6 +92,34 @@ export TERM="${TERM:-xterm}"
 
 CONTAINER_RUNTIME=podman "$test_root/install.sh"
 CONTAINER_RUNTIME=docker "$test_root/install.sh"
+
+# Execute the real installer/prepare control flow. A failed runtime preparation
+# must propagate instead of starting Compose and printing installation success.
+if CONTAINER_RUNTIME=podman FIXTURE_PREPARE_FAILURE=true "$test_root/install.sh" > "$test_root/failure.log" 2>&1; then
+    echo "Failed Podman preparation was accepted by the installer." >&2
+    exit 1
+else
+    prepare_status=$?
+fi
+if [[ $prepare_status -ne 42 ]]; then
+    echo "Installer did not preserve the Podman preparation exit status." >&2
+    exit 1
+fi
+if grep -q 'starting Harbor\|installed and started successfully' "$test_root/failure.log"; then
+    echo "Installer continued after failed Podman preparation." >&2
+    exit 1
+fi
+rm -rf "$test_root/input"
+
+if CONTAINER_RUNTIME=unsupported "$test_root/install.sh" > "$test_root/unsupported.log" 2>&1; then
+    echo "Unsupported runtime was accepted." >&2
+    exit 1
+fi
+grep -q 'Unsupported container runtime' "$test_root/unsupported.log"
+if [[ -e "$test_root/input" ]]; then
+    echo "Unsupported runtime reached preparation." >&2
+    exit 1
+fi
 
 python3 - "$repository_root/make/photon/prepare/templates/docker_compose/docker-compose.yml.jinja" <<'PY'
 import pathlib
