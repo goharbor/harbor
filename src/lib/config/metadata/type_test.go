@@ -69,6 +69,8 @@ func TestParseInt64Bounds(t *testing.T) {
 	for _, str := range []string{
 		"9223372036854775808",
 		"9.223372036854775808e18",
+		"-9223372036854775809",
+		"-9.223372036854775809e18",
 		"1e30",
 		"Inf",
 		"+Inf",
@@ -80,7 +82,7 @@ func TestParseInt64Bounds(t *testing.T) {
 		assert.Error(t, err, str)
 	}
 
-	// float64(math.MinInt64) is exact, so the lower bound stays inclusive.
+	// math.MinInt64 itself is still accepted in both spellings.
 	for str, want := range map[string]int64{
 		"9223372036854775807":      math.MaxInt64,
 		"-9223372036854775808":     math.MinInt64,
@@ -94,7 +96,7 @@ func TestParseInt64Bounds(t *testing.T) {
 }
 
 func TestParseIntBounds(t *testing.T) {
-	for _, str := range []string{"1e30", "Inf", "-Inf", "NaN"} {
+	for _, str := range []string{"1e30", "Inf", "-Inf", "NaN", "-9223372036854775809"} {
 		_, err := parseInt(str)
 		assert.Error(t, err, str)
 	}
@@ -102,9 +104,10 @@ func TestParseIntBounds(t *testing.T) {
 	// Values that already worked must keep working; verifyValueLengthCfg
 	// allows ten digits, which is beyond int32.
 	for str, want := range map[string]int{
-		"60":         60,
-		"2147483647": 2147483647,
-		"1e10":       10000000000,
+		"60":                   60,
+		"2147483647":           2147483647,
+		"1e10":                 10000000000,
+		"-9223372036854775808": math.MinInt64,
 	} {
 		got, err := parseInt(str)
 		assert.NoError(t, err, str)
