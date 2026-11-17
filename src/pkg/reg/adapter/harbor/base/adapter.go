@@ -126,7 +126,19 @@ func (a *Adapter) Info() (*model.RegistryInfo, error) {
 
 	labels, err := a.Client.ListLabels()
 	if err != nil {
-		return nil, err
+		// Registries may be configured without an access key and secret, which
+		// earlier versions allowed. Listing labels then fails with 401; log it
+		// and continue with no label values instead of failing Info, which
+		// would break replication for such registries.
+		if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusUnauthorized {
+			return nil, err
+		}
+		url := ""
+		if a.Registry != nil {
+			url = a.Registry.URL
+		}
+		log.Warningf("failed to list labels of the Harbor registry %s, unauthorized, continue with empty labels: %v", url, err)
+		labels = nil
 	}
 	info.SupportedResourceFilters = append(info.SupportedResourceFilters,
 		&model.FilterStyle{
