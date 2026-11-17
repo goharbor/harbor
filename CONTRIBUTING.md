@@ -177,7 +177,7 @@ Ensure your GOPATH and PATH have been configured in accordance with the Go envir
 
 #### Web
 
-Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup a web UI development environment, please make sure that the [npm](https://www.npmjs.com/get-npm) tool is installed first.
+Harbor web UI is built based on [Clarity](https://clarity.design/) and [Angular](https://angular.io/) web framework. To setup a web UI development environment, please make sure that the [npm](https://www.npmjs.com/get-npm) tool is installed first.
 
 |  Harbor  |  Requires Angular  |  Requires Clarity  |
 |----------|--------------------|--------------------|
