@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 
@@ -216,7 +217,21 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 			if ol == nil || len(ol.Values) == 0 {
 				qs = qs.Filter(key+"__in", nil)
 			} else {
-				qs = qs.Filter(key+"__in", ol.Values...)
+				values := make([]any, len(ol.Values))
+				for i, v := range ol.Values {
+					// The query values are parsed from the query string, the digits-only
+					// values are parsed as int64 by the query builder. The pgx driver
+					// requires the bind parameter types to be compatible with the column
+					// types, so an int64 value cannot be bound to a text/varchar column
+					// ("cannot convert ... to Text"). Converting the numeric values to
+					// strings is safe for both text and integer columns as pgx accepts
+					// numeric strings for integer columns.
+					if _, ok := v.(time.Time); !ok {
+						v = fmt.Sprintf("%v", v)
+					}
+					values[i] = v
+				}
+				qs = qs.Filter(key+"__in", values...)
 			}
 			continue
 		}
