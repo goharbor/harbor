@@ -79,6 +79,8 @@ type Client interface {
 	DeleteManifest(repository, reference string) (err error)
 	// BlobExist checks the existence of the specified blob
 	BlobExist(repository, digest string) (exist bool, err error)
+	// BlobStat checks the existence of the specified blob and returns its size
+	BlobStat(repository, digest string) (exist bool, size int64, err error)
 	// PullBlob pulls the specified blob. The caller must close the returned "blob"
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	// PullBlobChunk pulls the specified blob, but by chunked
@@ -354,6 +356,30 @@ func (c *client) BlobExist(repository, digest string) (bool, error) {
 	}
 	defer resp.Body.Close()
 	return true, nil
+}
+
+func (c *client) BlobStat(repository, digest string) (bool, int64, error) {
+	req, err := http.NewRequest(http.MethodHead, buildBlobURL(c.url, repository, digest), nil)
+	if err != nil {
+		return false, 0, err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		if errors.IsErr(err, errors.NotFoundCode) {
+			return false, 0, nil
+		}
+		return false, 0, err
+	}
+	defer resp.Body.Close()
+	n := resp.Header.Get("Content-Length")
+	if len(n) == 0 {
+		return false, 0, errors.Errorf("no Content-Length in the response of head blob %s", digest)
+	}
+	size, err := strconv.ParseInt(n, 10, 64)
+	if err != nil {
+		return false, 0, errors.Wrapf(err, "invalid Content-Length %q in the response of head blob %s", n, digest)
+	}
+	return true, size, nil
 }
 
 func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, error) {
