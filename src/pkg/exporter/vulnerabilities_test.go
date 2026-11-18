@@ -52,17 +52,17 @@ func (v *VulnerabilityCollectorTestSuite) SetupSuite() {
 	})
 	v.Require().NoError(err)
 
-	// art1 (project test1): a native report with 2 critical, 1 high, 3 low, 2 fixable
+	// art1 (project test1): a native report with 2 critical, 1 high, 3 low
 	v.createReport("exporter-vuln-report-1", art1.Digest, v1.MimeTypeNativeReport, &scan.Report{
-		CriticalCnt: 2, HighCnt: 1, LowCnt: 3, FixableCnt: 2,
+		CriticalCnt: 2, HighCnt: 1, LowCnt: 3,
 	})
 	// art2 (project test2): a native report and a generic report for the same artifact,
 	// only the native one must be counted
 	v.createReport("exporter-vuln-report-2", art2.Digest, v1.MimeTypeNativeReport, &scan.Report{
-		MediumCnt: 4, UnknownCnt: 1, NoneCnt: 2, FixableCnt: 1,
+		MediumCnt: 4, UnknownCnt: 1, NoneCnt: 2,
 	})
 	v.createReport("exporter-vuln-report-3", art2.Digest, v1.MimeTypeGenericVulnerabilityReport, &scan.Report{
-		CriticalCnt: 100, HighCnt: 100, MediumCnt: 100, FixableCnt: 100,
+		CriticalCnt: 100, HighCnt: 100, MediumCnt: 100,
 	})
 	// a report of an artifact that does not exist must be ignored
 	v.createReport("exporter-vuln-report-4", "sha256:0000000000000000000000000000000000000000000000000000000000000000", v1.MimeTypeNativeReport, &scan.Report{
@@ -105,7 +105,6 @@ func (v *VulnerabilityCollectorTestSuite) TestGetVulnerabilityInfo() {
 			severityCritical: 2, severityHigh: 1, severityMedium: 0,
 			severityLow: 3, severityUnknown: 0, severityNone: 0,
 		}, p1.severityCounts())
-		v.Equal(float64(2), p1.FixableCnt)
 	}
 
 	p2, ok := projects[testPro2.ProjectID]
@@ -116,7 +115,6 @@ func (v *VulnerabilityCollectorTestSuite) TestGetVulnerabilityInfo() {
 			severityCritical: 0, severityHigh: 0, severityMedium: 4,
 			severityLow: 0, severityUnknown: 1, severityNone: 2,
 		}, p2.severityCounts(), "only the native report must be counted")
-		v.Equal(float64(1), p2.FixableCnt)
 	}
 }
 
@@ -145,7 +143,7 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorDescribe() {
 	ch := make(chan *prometheus.Desc, 10)
 	vc.Describe(ch)
 	close(ch)
-	v.Len(ch, 3)
+	v.Len(ch, 2)
 }
 
 func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
@@ -176,8 +174,8 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
 		}
 		values[key] = d.GetGauge().GetValue()
 	}
-	// 2 projects * (6 severities + fixable + scanned)
-	v.Len(values, 16)
+	// 2 projects * (6 severities + scanned)
+	v.Len(values, 14)
 
 	get := func(desc typedDesc, labels ...string) float64 {
 		key := desc.Desc().String()
@@ -191,6 +189,5 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
 	v.Equal(float64(2), get(projectVulnerabilityTotal, "project_name="+testPro1.Name, "severity="+severityCritical))
 	v.Equal(float64(4), get(projectVulnerabilityTotal, "project_name="+testPro2.Name, "severity="+severityMedium))
 	v.Equal(float64(3), get(projectVulnerabilityTotal, "project_name="+testPro1.Name, "severity="+severityLow))
-	v.Equal(float64(2), get(projectVulnerabilityFixableTotal, "project_name="+testPro1.Name))
 	v.Equal(float64(1), get(projectScannedArtifactTotal, "project_name="+testPro2.Name))
 }

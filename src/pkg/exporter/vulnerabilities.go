@@ -55,8 +55,7 @@ var (
 			COALESCE(s.medium_cnt, 0) AS medium_cnt,
 			COALESCE(s.low_cnt, 0) AS low_cnt,
 			COALESCE(s.unknown_cnt, 0) AS unknown_cnt,
-			COALESCE(s.none_cnt, 0) AS none_cnt,
-			COALESCE(s.fixable_cnt, 0) AS fixable_cnt
+			COALESCE(s.none_cnt, 0) AS none_cnt
 		FROM scan_report s
 		WHERE s.registration_uuid = ? AND s.mime_type IN (?, ?)
 		ORDER BY s.digest, CASE WHEN s.mime_type = ? THEN 0 ELSE 1 END
@@ -68,8 +67,7 @@ var (
 		SUM(report.medium_cnt) AS medium_cnt,
 		SUM(report.low_cnt) AS low_cnt,
 		SUM(report.unknown_cnt) AS unknown_cnt,
-		SUM(report.none_cnt) AS none_cnt,
-		SUM(report.fixable_cnt) AS fixable_cnt
+		SUM(report.none_cnt) AS none_cnt
 	FROM project
 	INNER JOIN artifact ON project.project_id = artifact.project_id
 	INNER JOIN report ON artifact.digest = report.digest
@@ -80,10 +78,6 @@ var (
 var (
 	projectVulnerabilityTotal = typedDesc{
 		desc:      newDescWithLables("", "project_vulnerability_total", "Total number of vulnerabilities found in the scanned artifacts of a project", "project_name", "severity"),
-		valueType: prometheus.GaugeValue,
-	}
-	projectVulnerabilityFixableTotal = typedDesc{
-		desc:      newDescWithLables("", "project_vulnerability_fixable_total", "Total number of fixable vulnerabilities found in the scanned artifacts of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectScannedArtifactTotal = typedDesc{
@@ -108,7 +102,6 @@ func (vc *VulnerabilityCollector) GetName() string {
 // Describe implements prometheus.Collector
 func (vc *VulnerabilityCollector) Describe(c chan<- *prometheus.Desc) {
 	c <- projectVulnerabilityTotal.Desc()
-	c <- projectVulnerabilityFixableTotal.Desc()
 	c <- projectScannedArtifactTotal.Desc()
 }
 
@@ -129,7 +122,6 @@ type projectVulnerabilityInfo struct {
 	LowCnt       float64 `orm:"column(low_cnt)"`
 	UnknownCnt   float64 `orm:"column(unknown_cnt)"`
 	NoneCnt      float64 `orm:"column(none_cnt)"`
-	FixableCnt   float64 `orm:"column(fixable_cnt)"`
 }
 
 // severityCounts returns the vulnerability counters of the project keyed by severity label
@@ -172,10 +164,7 @@ func (vc *VulnerabilityCollector) getVulnerabilityMetrics() []prometheus.Metric 
 		for severity, count := range p.severityCounts() {
 			result = append(result, projectVulnerabilityTotal.MustNewConstMetric(count, p.Name, severity))
 		}
-		result = append(result,
-			projectVulnerabilityFixableTotal.MustNewConstMetric(p.FixableCnt, p.Name),
-			projectScannedArtifactTotal.MustNewConstMetric(p.ScannedTotal, p.Name),
-		)
+		result = append(result, projectScannedArtifactTotal.MustNewConstMetric(p.ScannedTotal, p.Name))
 	}
 
 	if CacheEnabled() {
