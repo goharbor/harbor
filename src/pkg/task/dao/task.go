@@ -293,6 +293,14 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...or
 			keyPrefix string
 			value     any
 		)
+		// only one filter is applied below, but every one must be supported
+		for k, v := range query.Keywords {
+			if strings.HasPrefix(k, "ExtraAttrs.") || strings.HasPrefix(k, "extra_attrs.") {
+				if err := validateExtraAttrsValue(k, v); err != nil {
+					return nil, err
+				}
+			}
+		}
 		for key, value = range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {
 				keyPrefix = "ExtraAttrs."
