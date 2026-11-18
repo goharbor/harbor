@@ -32,7 +32,7 @@ type nopCloser struct {
 // to have it ready for next read-cycle
 func (n nopCloser) Read(p []byte) (int, error) {
 	num, err := n.ReadSeeker.Read(p)
-	if err == io.EOF { // move to start to have it ready for next read cycle
+	if errors.Is(err, io.EOF) { // move to start to have it ready for next read cycle
 		_, _ = n.Seek(0, io.SeekStart)
 	}
 	return num, err

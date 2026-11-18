@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -134,7 +135,7 @@ func (p *pgsql) UpgradeSchema() error {
 	}()
 	log.Infof("Upgrading schema for pgsql ...")
 	err = m.Up()
-	if err == migrate.ErrNoChange {
+	if errors.Is(err, migrate.ErrNoChange) {
 		log.Infof("No change in schema, skip.")
 	} else if err != nil { // migrate.ErrLockTimeout will be thrown when another process is doing migration and timeout.
 		log.Errorf("Failed to upgrade schema, error: %q", err)

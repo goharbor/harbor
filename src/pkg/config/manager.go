@@ -86,7 +86,7 @@ func (c *CfgManager) GetAll(ctx context.Context) map[string]any {
 	for _, item := range metaDataList {
 		cfgValue, err := c.Store.GetAnyType(item.Name)
 		if err != nil {
-			if err != metadata.ErrValueNotSet {
+			if !errors.Is(err, metadata.ErrValueNotSet) {
 				log.Errorf("Failed to get Value of key %v, error %v", item.Name, err)
 			}
 			continue
@@ -108,7 +108,7 @@ func (c *CfgManager) GetUserCfgs(ctx context.Context) map[string]any {
 		if item.Scope == metadata.UserScope {
 			cfgValue, err := c.Store.GetAnyType(item.Name)
 			if err != nil {
-				if err == metadata.ErrValueNotSet {
+				if errors.Is(err, metadata.ErrValueNotSet) {
 					if _, ok := item.ItemType.(*metadata.StringType); ok {
 						cfgValue = ""
 					}
