@@ -16,23 +16,15 @@ package security
 
 import (
 	"net/http"
-	"strings"
 
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 func bearerToken(req *http.Request) string {
-	if req == nil {
-		return ""
-	}
-	h := req.Header.Get("Authorization")
-	token := strings.Split(h, "Bearer")
-	if len(token) < 2 {
-		return ""
-	}
-	return strings.TrimSpace(token[1])
+	return lib.BearerToken(req)
 }
 
 // FromJobservice detects whether this request is from jobservice.

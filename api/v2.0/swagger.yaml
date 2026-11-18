@@ -4500,6 +4500,51 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /oidc/onboard:
+    post:
+      summary: Onboard an OIDC user with a bearer token.
+      description: |
+        Onboard the OIDC user identified by the token in the Authorization header, using the Bearer scheme.
+        Intended for non-interactive clients, such as CI jobs that obtained the token via OAuth 2.0 Token Exchange.
+
+        The token must be a JWT issued by the configured OIDC provider with the client ID of Harbor in its `aud` claim,
+        such as an ID token, or a JWT access token. Opaque access tokens are not supported.
+
+        The request's username is ignored if the user was already previously onboarded.
+        The stored OIDC token is replaced, unless it expires later or has a refresh token from a web-based login.
+        A refresh token is kept even if it has expired or been revoked, in which case only a new web-based login fixes the CLI secret.
+
+        This API is only available when the authentication mode is OIDC.
+      tags:
+        - oidc
+      operationId: onboardOIDCUser
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: onboard
+          in: body
+          description: The user to onboard. Username defaults to the configured username claim of the token.
+          required: false
+          schema:
+            $ref: '#/definitions/OIDCOnboardReq'
+      responses:
+        '200':
+          description: The onboarded user.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/UserResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
   /system/gc:
     get:
       summary: Get gc results.
@@ -10093,6 +10138,12 @@ definitions:
         type: string
         format: date-time
         description: The update time of the OIDC user info record.
+  OIDCOnboardReq:
+    type: object
+    properties:
+      username:
+        type: string
+        description: The username of the user to onboard. Must be 1 to 255 bytes long, and must not contain any of the characters `,"~#%$:`
   UserResp:
     type: object
     properties:
