@@ -295,6 +295,20 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 		log.Errorf("failed to pull blob, error %v", err)
 		return 0, nil, err
 	}
+	// the caller serves this with Docker-Content-Digest set to art.Digest; parsing the
+	// digest first keeps a malformed one a bad request regardless of the upstream size
+	vReader, err := NewVerifyingReader(bReader, art.Digest)
+	if err != nil {
+		bReader.Close()
+		return 0, nil, err
+	}
+	// the caller copies exactly size bytes, so at size 0 the verifying reader is
+	// never read and an unverified empty 200 goes out under the requested digest
+	if size == 0 && !isEmptyBlobDigest(art.Digest) {
+		vReader.Close()
+		return 0, nil, errors.New(nil).WithCode(errors.BadGatewayCode).
+			WithMessagef("upstream gave no content length for blob %s in repository %s", art.Digest, remoteRepo)
+	}
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
 	go func() {
 		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
@@ -302,7 +316,7 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 			log.Errorf("error while putting blob to local repo, %v", err)
 		}
 	}()
-	return size, bReader, nil
+	return size, vReader, nil
 }
 
 func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
