@@ -33,6 +33,7 @@ export const ADAPTERS_MAP = {
     'docker-registry': 'Docker Registry',
     gitlab: 'Gitlab',
     'google-gcr': 'Google GCR',
+    'google-gar': 'Google GAR',
     harbor: 'Harbor',
     'helm-hub': 'Helm Hub',
     'artifact-hub': 'Artifact Hub',
