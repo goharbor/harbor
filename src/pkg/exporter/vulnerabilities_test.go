@@ -37,14 +37,11 @@ const (
 type VulnerabilityCollectorTestSuite struct {
 	suite.Suite
 	reportDao scan.DAO
-	vulnDao   scan.VulnerabilityRecordDao
-	reports   []string
 }
 
 func (v *VulnerabilityCollectorTestSuite) SetupSuite() {
 	ctx := orm.Context()
 	v.reportDao = scan.New()
-	v.vulnDao = scan.NewVulnerabilityRecordDao()
 
 	_, err := scanner.AddRegistration(ctx, &scanner.Registration{
 		UUID:      vulnTestScannerUUID,
@@ -71,27 +68,11 @@ func (v *VulnerabilityCollectorTestSuite) SetupSuite() {
 	v.createReport("exporter-vuln-report-4", "sha256:0000000000000000000000000000000000000000000000000000000000000000", v1.MimeTypeNativeReport, &scan.Report{
 		CriticalCnt: 50,
 	})
-
-	// vulnerability records: CVE-1 is shared by both artifacts and must be counted once
-	cve1 := v.createVulnRecord("CVE-2024-0001", "openssl", "1.0", "Critical")
-	cve2 := v.createVulnRecord("CVE-2024-0002", "bash", "5.0", "Critical")
-	cve3 := v.createVulnRecord("CVE-2024-0003", "zlib", "1.2", "Medium")
-	cve4 := v.createVulnRecord("CVE-2024-0004", "curl", "7.0", "High")
-	v.Require().NoError(v.vulnDao.InsertForReport(ctx, "exporter-vuln-report-1", cve1, cve2))
-	v.Require().NoError(v.vulnDao.InsertForReport(ctx, "exporter-vuln-report-2", cve1, cve3))
-	// only linked to the report of the missing artifact
-	v.Require().NoError(v.vulnDao.InsertForReport(ctx, "exporter-vuln-report-4", cve4))
 }
 
 func (v *VulnerabilityCollectorTestSuite) TearDownSuite() {
 	ctx := orm.Context()
-	for _, uuid := range v.reports {
-		_, err := v.vulnDao.DeleteForReport(ctx, uuid)
-		v.NoError(err)
-	}
-	_, err := v.vulnDao.DeleteForScanner(ctx, vulnTestScannerUUID)
-	v.NoError(err)
-	_, err = dao.GetOrmer().Raw("DELETE FROM scan_report WHERE registration_uuid = ?", vulnTestScannerUUID).Exec()
+	_, err := dao.GetOrmer().Raw("DELETE FROM scan_report WHERE registration_uuid = ?", vulnTestScannerUUID).Exec()
 	v.NoError(err)
 	v.NoError(scanner.DeleteRegistration(ctx, vulnTestScannerUUID))
 }
@@ -104,20 +85,6 @@ func (v *VulnerabilityCollectorTestSuite) createReport(uuid, digest, mimeType st
 	counts.Report = "{}"
 	_, err := v.reportDao.Create(orm.Context(), counts)
 	v.Require().NoError(err)
-	v.reports = append(v.reports, uuid)
-}
-
-func (v *VulnerabilityCollectorTestSuite) createVulnRecord(cveID, pkg, version, severity string) int64 {
-	id, err := v.vulnDao.Create(orm.Context(), &scan.VulnerabilityRecord{
-		CVEID:            cveID,
-		RegistrationUUID: vulnTestScannerUUID,
-		Package:          pkg,
-		PackageVersion:   version,
-		PackageType:      "debian",
-		Severity:         severity,
-	})
-	v.Require().NoError(err)
-	return id
 }
 
 func (v *VulnerabilityCollectorTestSuite) TestGetVulnerabilityInfo() {
@@ -151,18 +118,11 @@ func (v *VulnerabilityCollectorTestSuite) TestGetVulnerabilityInfo() {
 		}, p2.severityCounts(), "only the native report must be counted")
 		v.Equal(float64(1), p2.FixableCnt)
 	}
-
-	cves := make(map[string]float64)
-	for _, c := range overview.UniqueCVEs {
-		cves[c.Severity] = c.CVETotal
-	}
-	v.Equal(map[string]float64{severityCritical: 2, severityMedium: 1}, cves)
 }
 
 func (v *VulnerabilityCollectorTestSuite) TestGetVulnerabilityInfoUnknownScanner() {
 	overview := getVulnerabilityInfo("not-existing-scanner")
 	v.Empty(overview.Projects)
-	v.Empty(overview.UniqueCVEs)
 }
 
 func (v *VulnerabilityCollectorTestSuite) TestGetDefaultScannerUUID() {
@@ -185,7 +145,7 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorDescribe() {
 	ch := make(chan *prometheus.Desc, 10)
 	vc.Describe(ch)
 	close(ch)
-	v.Len(ch, 4)
+	v.Len(ch, 3)
 }
 
 func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
@@ -216,8 +176,8 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
 		}
 		values[key] = d.GetGauge().GetValue()
 	}
-	// 2 projects * (6 severities + fixable + scanned) + 2 unique CVE severities
-	v.Len(values, 18)
+	// 2 projects * (6 severities + fixable + scanned)
+	v.Len(values, 16)
 
 	get := func(desc typedDesc, labels ...string) float64 {
 		key := desc.Desc().String()
@@ -230,8 +190,7 @@ func (v *VulnerabilityCollectorTestSuite) TestCollectorCollect() {
 	}
 	v.Equal(float64(2), get(projectVulnerabilityTotal, "project_name="+testPro1.Name, "severity="+severityCritical))
 	v.Equal(float64(4), get(projectVulnerabilityTotal, "project_name="+testPro2.Name, "severity="+severityMedium))
+	v.Equal(float64(3), get(projectVulnerabilityTotal, "project_name="+testPro1.Name, "severity="+severityLow))
 	v.Equal(float64(2), get(projectVulnerabilityFixableTotal, "project_name="+testPro1.Name))
 	v.Equal(float64(1), get(projectScannedArtifactTotal, "project_name="+testPro2.Name))
-	v.Equal(float64(2), get(vulnerabilityUniqueCVETotal, "severity="+severityCritical))
-	v.Equal(float64(1), get(vulnerabilityUniqueCVETotal, "severity="+severityMedium))
 }

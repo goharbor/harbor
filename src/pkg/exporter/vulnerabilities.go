@@ -75,19 +75,6 @@ var (
 	INNER JOIN report ON artifact.digest = report.digest
 	WHERE project.deleted = FALSE
 	GROUP BY project.project_id, project.name;`
-
-	// uniqueCVESQL counts the distinct CVEs per severity that are referenced by a scan
-	// report of the given scanner belonging to an artifact that still exists.
-	uniqueCVESQL = `SELECT LOWER(vr.severity) AS severity, COUNT(DISTINCT vr.cve_id) AS cve_total
-	FROM vulnerability_record vr
-	WHERE vr.registration_uuid = ?
-	AND EXISTS (
-		SELECT 1 FROM report_vulnerability_record rvr
-		INNER JOIN scan_report s ON s.uuid = rvr.report_uuid
-		INNER JOIN artifact a ON a.digest = s.digest
-		WHERE rvr.vuln_record_id = vr.id
-	)
-	GROUP BY LOWER(vr.severity);`
 )
 
 var (
@@ -101,10 +88,6 @@ var (
 	}
 	projectScannedArtifactTotal = typedDesc{
 		desc:      newDescWithLables("", "project_scanned_artifact_total", "Total number of artifacts of a project that have a vulnerability report", "project_name"),
-		valueType: prometheus.GaugeValue,
-	}
-	vulnerabilityUniqueCVETotal = typedDesc{
-		desc:      newDescWithLables("", "vulnerability_unique_cve_total", "Total number of distinct CVEs found in all scanned artifacts", "severity"),
 		valueType: prometheus.GaugeValue,
 	}
 )
@@ -127,7 +110,6 @@ func (vc *VulnerabilityCollector) Describe(c chan<- *prometheus.Desc) {
 	c <- projectVulnerabilityTotal.Desc()
 	c <- projectVulnerabilityFixableTotal.Desc()
 	c <- projectScannedArtifactTotal.Desc()
-	c <- vulnerabilityUniqueCVETotal.Desc()
 }
 
 // Collect implements prometheus.Collector
@@ -162,14 +144,8 @@ func (p *projectVulnerabilityInfo) severityCounts() map[string]float64 {
 	}
 }
 
-type cveCount struct {
-	Severity string  `orm:"column(severity)"`
-	CVETotal float64 `orm:"column(cve_total)"`
-}
-
 type vulnerabilityOverview struct {
-	Projects   []*projectVulnerabilityInfo
-	UniqueCVEs []*cveCount
+	Projects []*projectVulnerabilityInfo
 }
 
 func (vc *VulnerabilityCollector) getVulnerabilityMetrics() []prometheus.Metric {
@@ -201,9 +177,6 @@ func (vc *VulnerabilityCollector) getVulnerabilityMetrics() []prometheus.Metric 
 			projectScannedArtifactTotal.MustNewConstMetric(p.ScannedTotal, p.Name),
 		)
 	}
-	for _, c := range overview.UniqueCVEs {
-		result = append(result, vulnerabilityUniqueCVETotal.MustNewConstMetric(c.CVETotal, c.Severity))
-	}
 
 	if CacheEnabled() {
 		CachePut(VulnerabilityCollectorName, result)
@@ -225,17 +198,13 @@ func getDefaultScannerUUID() (string, error) {
 // getVulnerabilityInfo reads the vulnerability data of the given scanner from the database
 func getVulnerabilityInfo(scannerUUID string) *vulnerabilityOverview {
 	overview := &vulnerabilityOverview{
-		Projects:   make([]*projectVulnerabilityInfo, 0),
-		UniqueCVEs: make([]*cveCount, 0),
+		Projects: make([]*projectVulnerabilityInfo, 0),
 	}
 
 	_, err := dao.GetOrmer().Raw(projectVulnerabilitySQL,
 		scannerUUID, v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport, v1.MimeTypeNativeReport,
 	).QueryRows(&overview.Projects)
 	checkErr(err, "get project vulnerability data from DB failure")
-
-	_, err = dao.GetOrmer().Raw(uniqueCVESQL, scannerUUID).QueryRows(&overview.UniqueCVEs)
-	checkErr(err, "get unique CVE data from DB failure")
 
 	return overview
 }
