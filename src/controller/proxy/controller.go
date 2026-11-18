@@ -296,25 +296,49 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 		return 0, nil, err
 	}
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
+	pr, pw := io.Pipe()
 	go func() {
-		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
+		defer pr.Close()
+		log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, art.Repository, desc.Digest)
+		err := c.local.PushBlob(art.Repository, desc, pr)
 		if err != nil {
 			log.Errorf("error while putting blob to local repo, %v", err)
 		}
 	}()
-	return size, bReader, nil
+	return size, &teeBlob{upstream: bReader, store: pw}, nil
 }
 
-func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
-	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
-	if err != nil {
-		log.Errorf("failed to create blob reader, error %v", err)
-		return err
+type teeBlob struct {
+	upstream    io.ReadCloser
+	store       *io.PipeWriter
+	storeFailed bool
+	err         error
+}
+
+func (t *teeBlob) Read(p []byte) (int, error) {
+	n, err := t.upstream.Read(p)
+	if n > 0 && !t.storeFailed {
+		if _, werr := t.store.Write(p[:n]); werr != nil {
+			t.storeFailed = true
+		}
 	}
-	defer bReader.Close()
-	err = c.local.PushBlob(localRepo, desc, bReader)
-	return err
+	if err != nil {
+		t.err = err
+	}
+	return n, err
+}
+
+func (t *teeBlob) Close() error {
+	go func() {
+		err := t.err
+		// keep draining upstream into store so a client disconnect does not abort caching the blob
+		if !t.storeFailed && err == nil {
+			_, err = io.Copy(t.store, t.upstream)
+		}
+		_ = t.store.CloseWithError(err)
+		_ = t.upstream.Close()
+	}()
+	return nil
 }
 
 func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r RemoteInterface) {
