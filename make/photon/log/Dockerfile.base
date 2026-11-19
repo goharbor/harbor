@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 FROM goharbor/photon:5.0
 
 RUN tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo >> /dev/null\

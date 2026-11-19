@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 # pg15 and pg18 can't share one libxml2: pg15 needs libxml2.so.2, pg18 needs
 # libxml2.so.16, and no single libxml2 package provides both. So build pg15
 # (only used by pg_upgrade) in its own stage and copy it into the pg18 image.
@@ -16,7 +19,7 @@ RUN if [ "${TARGETARCH:-amd64}" = "amd64" ]; then \
         tdnf install -y postgresql15-server; \
     fi
 
-FROM goharbor/photon:5.0
+FROM goharbor/photon:5.0 AS pg18
 
 ARG TARGETARCH
 

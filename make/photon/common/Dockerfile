@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 FROM photon:5.0-20260214
 
 RUN tdnf install photon-repos -y \

@@ -1,7 +1,10 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 ARG NODE
-FROM ${NODE} as nodeportal
+FROM ${NODE} AS nodeportal
 
 WORKDIR /build_dir
 
@@ -34,9 +37,12 @@ COPY --from=nodeportal /build_dir/app-swagger-ui/dist /usr/share/nginx/html
 
 VOLUME /var/cache/nginx /var/log/nginx /run
 
+USER nginx
+
 STOPSIGNAL SIGQUIT
 
-HEALTHCHECK CMD curl --fail -s http://localhost:8080 || curl -k --fail -s https://localhost:8443 || exit 1
-USER nginx
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail -s http://localhost:8080 || curl -k --fail -s https://localhost:8443 || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]
 

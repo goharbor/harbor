@@ -1,5 +1,9 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+
 FROM ${harbor_base_namespace}/harbor-db-base:${harbor_base_image_version}
 
 VOLUME /var/lib/postgresql/data
@@ -13,7 +17,9 @@ RUN chown -R postgres:postgres /docker-entrypoint.sh /initdb.sh /upgrade.sh \
     /docker-healthcheck.sh /docker-entrypoint-initdb.d \
     && chmod u+x /initdb.sh /upgrade.sh /docker-entrypoint.sh /docker-healthcheck.sh
 
-ENTRYPOINT ["/docker-entrypoint.sh", "15", "18"]
-HEALTHCHECK CMD ["/docker-healthcheck.sh"]
-
 USER postgres
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \ 
+    CMD ["/docker-healthcheck.sh"]
+
+ENTRYPOINT ["/docker-entrypoint.sh", "15", "18"]
