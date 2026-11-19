@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"regexp"
+	"net/url"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -40,10 +40,9 @@ func init() {
 }
 
 const (
-	opLogout       = "logout"
-	opLogin        = "login"
-	logoutSuffix   = "log_out"
-	payloadPattern = `principal=(.*?)&password`
+	opLogout     = "logout"
+	opLogin      = "login"
+	logoutSuffix = "log_out"
 )
 
 type loginResolver struct {
@@ -60,13 +59,13 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 		IsSuccessful:         ce.ResponseCode <= http.StatusTemporaryRedirect,
 	}
 
-	// Extract the username from payload
-	re := regexp.MustCompile(payloadPattern)
+	// Extract the username from payload, which is the url-encoded login form. ParseQuery keeps
+	// the fields that parse even when another field is malformed, so its error is ignored.
 	if len(ce.RequestPayload) > 0 {
-		match := re.FindStringSubmatch(ce.RequestPayload)
-		if len(match) > 1 {
-			e.ResourceName = match[1]
-			e.Operator = match[1]
+		form, _ := url.ParseQuery(ce.RequestPayload)
+		if principal := form.Get("principal"); len(principal) > 0 {
+			e.ResourceName = principal
+			e.Operator = principal
 		}
 	} else if ce.RequestMethod == http.MethodGet {
 		e.IsSuccessful = true // for OIDC login event, always success
