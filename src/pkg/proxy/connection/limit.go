@@ -16,8 +16,9 @@ package connection
 
 import (
 	"context"
-	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/log"
@@ -30,50 +31,65 @@ type ConnLimiter struct {
 // Limiter is a global connection limiter instance
 var Limiter = &ConnLimiter{}
 
-// Used to compare and increase connection number in redis
+// SlotTTL is how long a held connection outlives its last Acquire or Refresh.
+// A holder that neither releases nor refreshes within this time, because the
+// process died, stops counting against the limit.
+const SlotTTL = 60 * time.Second
+
+// The held connections under a key are a sorted set of tokens scored by
+// their expiry, so that each holder's connection expires on its own: one
+// holder refreshing its token does not keep a dead holder's counted.
 //
 // KEYS[1]: key of max_conn_upstream
 // ARGV[1]: max connection limit
-var increaseWithLimitText = `
-local current = tonumber(redis.call('GET', KEYS[1]) or '0')
-local max = tonumber(ARGV[1])
-
-if current + 1 <= max then
-    redis.call('INCRBY', KEYS[1], 1)
-	redis.call('EXPIRE', KEYS[1], 3600) -- set expire to avoid always lock
+// ARGV[2]: token of the connection to acquire
+// ARGV[3]: now, unix milliseconds
+// ARGV[4]: expiry of the connection, unix milliseconds
+// ARGV[5]: milliseconds until the whole key expires unless refreshed
+var acquireText = `
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[3])
+if redis.call('ZCARD', KEYS[1]) < tonumber(ARGV[1]) then
+    redis.call('ZADD', KEYS[1], ARGV[4], ARGV[2])
+    redis.call('PEXPIRE', KEYS[1], ARGV[5])
     return 1
-else
-    return 0
-end
-`
-
-var acquireScript = redis.NewScript(increaseWithLimitText)
-
-// Acquire tries to acquire a connection, returns true if successful
-func (c *ConnLimiter) Acquire(ctx context.Context, rdb *redis.Client, key string, limit int) bool {
-	result, err := acquireScript.Run(ctx, rdb, []string{key}, fmt.Sprintf("%v", limit)).Int()
-	if err != nil {
-		log.Errorf("failed to get the connection lock in redis, error %v", err)
-		return false
-	}
-	log.Debugf("Acquire script result is %d", result)
-	return result == 1
-}
-
-var decreaseText = `
-local val = tonumber(redis.call("GET", KEYS[1]) or "0")
-if val > 0 then
-    redis.call("DECR", KEYS[1])
 end
 return 0
 `
 
-var decreaseScript = redis.NewScript(decreaseText)
+var acquireScript = redis.NewScript(acquireText)
 
-// Release releases a connection in redis
-func (c *ConnLimiter) Release(ctx context.Context, rdb *redis.Client, key string) {
-	_, err := decreaseScript.Run(ctx, rdb, []string{key}).Int()
+// Acquire tries to acquire a connection. On success it returns the token that
+// identifies the connection to Refresh and Release.
+func (c *ConnLimiter) Acquire(ctx context.Context, rdb *redis.Client, key string, limit int) (string, bool) {
+	token := uuid.NewString()
+	now := time.Now()
+	result, err := acquireScript.Run(ctx, rdb, []string{key},
+		limit, token, now.UnixMilli(), now.Add(SlotTTL).UnixMilli(), SlotTTL.Milliseconds()).Int()
 	if err != nil {
+		log.Errorf("failed to get the connection lock in redis, error %v", err)
+		return "", false
+	}
+	log.Debugf("Acquire script result is %d", result)
+	return token, result == 1
+}
+
+// Refresh extends the connection's expiry by SlotTTL. It is a no-op on a
+// connection that has already expired, so a late refresh cannot bring it back.
+func (c *ConnLimiter) Refresh(ctx context.Context, rdb *redis.Client, key, token string) {
+	expiry := float64(time.Now().Add(SlotTTL).UnixMilli())
+	if err := rdb.ZAddXX(ctx, key, redis.Z{Score: expiry, Member: token}).Err(); err != nil {
+		log.Warningf("failed to refresh the connection lock in redis, key: %s, error: %v", key, err)
+		return
+	}
+	// Every live token expires within SlotTTL, so the key may go with them.
+	if err := rdb.PExpire(ctx, key, SlotTTL).Err(); err != nil {
+		log.Warningf("failed to refresh the connection lock's expiry in redis, key: %s, error: %v", key, err)
+	}
+}
+
+// Release releases the connection in redis
+func (c *ConnLimiter) Release(ctx context.Context, rdb *redis.Client, key, token string) {
+	if err := rdb.ZRem(ctx, key, token).Err(); err != nil {
 		log.Infof("release connection failed:%v", err)
 	}
 }

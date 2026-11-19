@@ -16,6 +16,8 @@ package proxy
 
 import (
 	"context"
+	"io"
+	"strings"
 	"testing"
 	"time"
 
@@ -105,6 +107,47 @@ func (lh *localHelperTestSuite) TestBlobExist_True() {
 	exist, err := lh.local.BlobExist(ctx, art)
 	lh.Require().Nil(err)
 	lh.Assert().Equal(true, exist)
+}
+
+func (lh *localHelperTestSuite) TestPushBlob_DuplicateWaitsForTheInflightPush() {
+	// Given a push of the blob that is still running
+	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
+	desc := distribution2.Descriptor{Digest: "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f", Size: 4}
+	pushing := make(chan struct{})
+	finish := make(chan struct{})
+	lh.registryClient.On("PushBlob", "library/hello-world", dig, int64(4), mock.Anything).
+		Run(func(mock.Arguments) {
+			close(pushing)
+			<-finish
+		}).Return(nil).Once()
+	firstDone := make(chan error, 1)
+	go func() {
+		firstDone <- lh.local.PushBlob("library/hello-world", desc, io.NopCloser(strings.NewReader("blob")))
+	}()
+	<-pushing
+
+	// When a second push of the same blob starts
+	secondDone := make(chan error, 1)
+	go func() {
+		secondDone <- lh.local.PushBlob("library/hello-world", desc, io.NopCloser(strings.NewReader("blob")))
+	}()
+
+	// Then it returns only once the first push has finished, without pushing
+	// itself
+	select {
+	case <-secondDone:
+		lh.FailNow("the duplicate push returned while the first was still running")
+	case <-time.After(20 * time.Millisecond):
+	}
+	close(finish)
+	lh.Require().NoError(<-firstDone)
+	select {
+	case err := <-secondDone:
+		lh.Require().NoError(err)
+	case <-time.After(time.Second):
+		lh.FailNow("the duplicate push did not return after the first finished")
+	}
+	lh.registryClient.AssertNumberOfCalls(lh.T(), "PushBlob", 1)
 }
 
 func (lh *localHelperTestSuite) TestPushManifest() {
