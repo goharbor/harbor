@@ -124,6 +124,12 @@ export class CreateEditEndpointComponent
             this.adapterInfo[this.target.type].credential_pattern
         );
     }
+    isFileCredential(): boolean {
+        return (
+            this.adapterInfo?.[this.target?.type]?.credential_pattern
+                ?.access_secret_type === 'AccessSecretTypeFile'
+        );
+    }
     selectedEndpoint(endpoint: string) {
         this.targetForm.controls.endpointUrl.reset(endpoint);
         this.showEndpointList = false;

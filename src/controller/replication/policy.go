@@ -22,8 +22,10 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	regmodel "github.com/goharbor/harbor/src/pkg/reg/model"
 	pkgmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -182,14 +184,17 @@ func (c *controller) validatePolicy(ctx context.Context, policy *model.Policy) e
 	if err := policy.Validate(); err != nil {
 		return err
 	}
-	if policy.SrcRegistry != nil {
-		if _, err := c.regMgr.Get(ctx, policy.SrcRegistry.ID); err != nil {
+	for _, registry := range []*regmodel.Registry{policy.SrcRegistry, policy.DestRegistry} {
+		if registry == nil {
+			continue
+		}
+		stored, err := c.regMgr.Get(ctx, registry.ID)
+		if err != nil {
 			return err
 		}
-	}
-	if policy.DestRegistry != nil {
-		if _, err := c.regMgr.Get(ctx, policy.DestRegistry.ID); err != nil {
-			return err
+		if stored.Type == regmodel.RegistryTypeHuggingFace {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("Hugging Face registries only support model sync and cannot be used for replication")
 		}
 	}
 	return nil

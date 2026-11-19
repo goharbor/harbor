@@ -170,7 +170,7 @@
                 }}</label>
                 <div class="clr-control-container">
                     <div class="clr-textarea-wrapper mt-0">
-                        @if (isNormalCredential()) {
+                        @if (!isFileCredential()) {
                         <input
                             autocomplete="off"
                             class="clr-input"

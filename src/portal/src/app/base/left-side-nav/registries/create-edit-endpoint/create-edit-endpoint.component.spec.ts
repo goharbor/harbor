@@ -546,6 +546,13 @@ describe('CreateEditEndpointComponent (inline template)', () => {
             },
             credential_pattern: null,
         },
+        huggingface: {
+            credential_pattern: {
+                access_key_type: 'AccessKeyTypeFix',
+                access_key_data: 'token',
+                access_secret_type: 'AccessSecretTypePass',
+            },
+        },
         'google-gcr': {
             endpoint_pattern: {
                 endpoint_type: 'EndpointPatternTypeList',
@@ -633,6 +640,85 @@ describe('CreateEditEndpointComponent (inline template)', () => {
     it('should be created', () => {
         fixture.detectChanges();
         expect(comp).toBeTruthy();
+    });
+
+    [false, true].forEach(editing => {
+        it(`should mask Hugging Face tokens when ${
+            editing ? 'editing' : 'creating'
+        } a registry and preserve the fixed access key`, async () => {
+            if (editing) {
+                spy.and.returnValue(
+                    of({
+                        ...mockData,
+                        type: 'huggingface',
+                        credential: {
+                            type: 'basic',
+                            access_key: 'token',
+                            access_secret: '',
+                        },
+                    })
+                );
+                comp.openCreateEditTarget(true, 1);
+            } else {
+                comp.openCreateEditTarget(true);
+                comp.target.type = 'huggingface';
+            }
+            fixture.detectChanges();
+            await fixture.whenStable();
+            if (!editing) {
+                comp.adapterChange('huggingface');
+                fixture.detectChanges();
+                await fixture.whenStable();
+            }
+
+            const secret: HTMLInputElement =
+                fixture.nativeElement.querySelector('#destination_password');
+            expect(secret.tagName).toBe('INPUT');
+            expect(secret.type).toBe('password');
+            secret.value = 'hf_new_token';
+            secret.dispatchEvent(new Event('input'));
+            fixture.detectChanges();
+            await fixture.whenStable();
+
+            expect(comp.target.credential.access_secret).toBe('hf_new_token');
+            expect(comp.target.credential.access_key).toBe('token');
+            expect(
+                fixture.nativeElement.querySelector('#destination_access_key')
+                    .value
+            ).toBe('token');
+        });
+    });
+
+    it('should retain a textarea and fixed access key for file credentials', async () => {
+        comp.openCreateEditTarget(true);
+        comp.target.type = 'google-gcr';
+        fixture.detectChanges();
+        await fixture.whenStable();
+        comp.adapterChange('google-gcr');
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(
+            fixture.nativeElement.querySelector('#destination_password').tagName
+        ).toBe('TEXTAREA');
+        expect(comp.target.credential.access_key).toBe('_json_key');
+    });
+
+    it('should mask secrets when no credential pattern is provided', async () => {
+        comp.openCreateEditTarget(true);
+        comp.target.type = 'docker-hub';
+        fixture.detectChanges();
+        await fixture.whenStable();
+        comp.adapterChange('docker-hub');
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const secret: HTMLInputElement = fixture.nativeElement.querySelector(
+            '#destination_password'
+        );
+        expect(secret.tagName).toBe('INPUT');
+        expect(secret.type).toBe('password');
+        expect(comp.target.credential.access_key).toBe('');
     });
 
     it('should get endpoint be called', () => {

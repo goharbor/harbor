@@ -35,6 +35,9 @@ const (
 	RegistryTypeTencentTcr       = "tencent-tcr"
 	RegistryTypeGithubCR         = "github-ghcr"
 	RegistryTypeVolcCR           = "volcengine-cr"
+	// RegistryTypeHuggingFace is the registry type for Hugging Face model hub, it's only used
+	// as the source of model sync, and doesn't support replication.
+	RegistryTypeHuggingFace = "huggingface"
 
 	RegistryTypeHelmHub     = "helm-hub"
 	RegistryTypeArtifactHub = "artifact-hub"

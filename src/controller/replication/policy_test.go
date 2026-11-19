@@ -16,12 +16,53 @@ package replication
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	repmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/testing/mock"
+	testreg "github.com/goharbor/harbor/src/testing/pkg/reg"
 )
+
+func TestPolicyRejectsHuggingFace(t *testing.T) {
+	for _, operation := range []string{"create", "update"} {
+		for _, direction := range []string{"source", "destination"} {
+			t.Run(operation+"/"+direction, func(t *testing.T) {
+				ctx := context.Background()
+				regMgr := &testreg.Manager{}
+				regMgr.On("Get", ctx, int64(1)).Return(&model.Registry{
+					ID:   1,
+					Type: model.RegistryTypeHuggingFace,
+				}, nil).Once()
+				ctl := &controller{regMgr: regMgr}
+				policy := &repmodel.Policy{Name: "model-sync-only"}
+				// The saved type must be checked even if the caller supplies another type.
+				registry := &model.Registry{ID: 1, Type: model.RegistryTypeHarbor}
+				if direction == "source" {
+					policy.SrcRegistry = registry
+				} else {
+					policy.DestRegistry = registry
+				}
+				var err error
+				if operation == "create" {
+					var id int64
+					id, err = ctl.CreatePolicy(ctx, policy)
+					require.Zero(t, id)
+				} else {
+					err = ctl.UpdatePolicy(ctx, policy)
+				}
+				require.Error(t, err)
+				require.True(t, errors.IsErr(err, errors.BadRequestCode))
+				require.Contains(t, err.Error(), "Hugging Face")
+				regMgr.AssertExpectations(t)
+			})
+		}
+	}
+}
 
 func (r *replicationTestSuite) TestPolicyCount() {
 	mock.OnAnything(r.repMgr, "Count").Return(int64(1), nil)
