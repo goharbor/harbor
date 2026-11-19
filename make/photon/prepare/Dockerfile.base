@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
 FROM goharbor/photon:5.0
 
 RUN tdnf install -y python3 python3-pip python3-PyYAML python3-jinja2 && tdnf clean all

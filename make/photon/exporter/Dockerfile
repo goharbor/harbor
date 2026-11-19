@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace

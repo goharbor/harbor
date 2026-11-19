@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 # TARGETARCH is auto-populated by BuildKit via --platform; default ensures
 # graceful fallback to amd64 if built without explicit platform flag.
 ARG TARGETARCH=amd64
