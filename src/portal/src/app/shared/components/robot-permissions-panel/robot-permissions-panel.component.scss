@@ -34,3 +34,15 @@
   }
 }
 
+.checkbox-cell {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 8px 4px;
+
+  clr-checkbox-wrapper {
+    margin: 0;
+  }
+}
+
+
