@@ -120,6 +120,10 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
+	if params.Policy.RevisionTag != nil {
+		policy.RevisionTag = *params.Policy.RevisionTag
+	}
+	policy.DestRepository = params.Policy.DestRepository
 
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
@@ -196,6 +200,10 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
+	if params.Policy.RevisionTag != nil {
+		policy.RevisionTag = *params.Policy.RevisionTag
+	}
+	policy.DestRepository = params.Policy.DestRepository
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
 		return r.SendError(ctx, err)
@@ -463,6 +471,8 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
 		SingleActiveReplication:   &policy.SingleActiveReplication,
+		RevisionTag:               &policy.RevisionTag,
+		DestRepository:            policy.DestRepository,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)

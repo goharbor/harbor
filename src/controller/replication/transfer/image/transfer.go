@@ -15,6 +15,7 @@
 package image // nolint:revive
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"os"
@@ -136,6 +137,13 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 		t.logger.Errorf("failed to create client for source registry: %v", err)
 		return err
 	}
+	if err := adapter.ConfigureSource(srcReg, src.SourceOptions); err != nil {
+		t.logger.Errorf("failed to configure the source registry client: %v", err)
+		return err
+	}
+	if !src.SourceOptions.IsEmpty() {
+		t.logger.Infof("source options: %s", sourceOptionsString(src.SourceOptions))
+	}
 	t.src = srcReg
 	t.logger.Infof("client for source registry [type: %s, URL: %s, insecure: %v] created",
 		src.Registry.Type, src.Registry.URL, src.Registry.Insecure)
@@ -151,6 +159,14 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 		dst.Registry.Type, dst.Registry.URL, dst.Registry.Insecure)
 
 	return nil
+}
+
+func sourceOptionsString(opts *model.SourceOptions) string {
+	data, err := json.Marshal(opts)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }
 
 func createRegistry(reg *model.Registry) (adapter.ArtifactRegistry, error) {

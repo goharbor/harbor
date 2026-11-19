@@ -61,6 +61,14 @@ func (f *Filter) Validate() error {
 					WithMessage("only tag and label filter support decoration")
 			}
 		}
+	case FilterTypeFile:
+		if f.Decoration != "" {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("only tag and label filter support decoration")
+		}
+		if _, err := ParseFileFilter(f.Value); err != nil {
+			return err
+		}
 	case FilterTypeLabel:
 		labels, ok := f.Value.([]any)
 		if !ok {

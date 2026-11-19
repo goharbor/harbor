@@ -31,6 +31,9 @@ type Resource struct {
 	Metadata     *ResourceMetadata `json:"metadata"`
 	Registry     *Registry         `json:"registry"`
 	ExtendedInfo map[string]any    `json:"extended_info"`
+	// SourceOptions is set on source resources of a copy whose policy changes what the source
+	// adapter produces.
+	SourceOptions *SourceOptions `json:"source_options,omitempty"`
 	// Indicate if the resource is a deleted resource
 	Deleted bool `json:"deleted"`
 	// indicate the resource is a tag deletion
