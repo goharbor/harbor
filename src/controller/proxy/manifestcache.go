@@ -212,19 +212,38 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 		}
 	}
 
-	err := m.push(art, man)
+	pushed, err := m.pushManifests(art, man)
 	if err != nil {
 		log.Errorf("error occurred on manifest push to local: %v", err)
+	}
+	if pushed == 0 {
+		return
+	}
+	// The pull event updates the pull time later, in a batch. Set it now so tag retention
+	// doesn't see a zero pull time and remove the artifact that was just cached, like
+	// ManifestListCache does.
+	if err := m.local.UpdatePullTime(ctx, art); err != nil {
+		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", art.Repository, getReference(art), err)
 	}
 }
 
 func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) error {
+	_, err := m.pushManifests(art, man)
+	return err
+}
+
+// pushManifests pushes the manifest by digest and by tag, and returns how many pushes succeeded
+// along with the joined errors of the ones that failed.
+func (m *ManifestCache) pushManifests(art lib.ArtifactInfo, man distribution.Manifest) (int, error) {
 	errs := []error{}
+	pushed := 0
 	if len(art.Digest) > 0 {
 		err := m.local.PushManifest(art.Repository, art.Digest, man)
 		if err != nil {
 			log.Errorf("failed to push manifest referencing digest, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
 			errs = append(errs, err)
+		} else {
+			pushed++
 		}
 	}
 	if len(art.Tag) > 0 {
@@ -232,9 +251,11 @@ func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) er
 		if err != nil {
 			log.Errorf("failed to push manifest referencing tag, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
 			errs = append(errs, err)
+		} else {
+			pushed++
 		}
 	}
-	return errors.Join(errs...)
+	return pushed, errors.Join(errs...)
 }
 
 func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
