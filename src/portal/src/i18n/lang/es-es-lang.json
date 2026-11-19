@@ -455,6 +455,7 @@
     },
     "GROUP": {
         "GROUP": "Grupo",
+        "FILTER_PLACEHOLDER": "Filtrar Grupos",
         "NAME": "Nombre",
         "IMPORT_LDAP_GROUP": "Importar Grupo LDAP",
         "IMPORT_HTTP_GROUP": "Nuevo Grupo HTTP",

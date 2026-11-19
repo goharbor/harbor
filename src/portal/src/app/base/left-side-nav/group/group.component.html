@@ -5,7 +5,7 @@
             <hbr-filter
                 [withDivider]="true"
                 class="filter-pos"
-                filterPlaceholder="group name"
+                filterPlaceholder="{{ 'GROUP.FILTER_PLACEHOLDER' | translate }}"
                 (filterEvt)="doFilter($event)"
                 [currentValue]="currentTerm"></hbr-filter>
             <span class="refresh-btn">
