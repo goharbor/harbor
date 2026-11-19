@@ -280,6 +280,56 @@ func (suite *ErrorTestSuite) TestErrors() {
 	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`, NewErrs(err).Error())
 }
 
+func (suite *ErrorTestSuite) TestIsErr_WrappedChain() {
+	target := New(nil).WithCode(NotFoundCode).WithMessage("not found")
+	suite.True(IsErr(target, NotFoundCode))
+	suite.True(IsNotFoundErr(target))
+
+	// wrapped via Wrap
+	wrapped := Wrap(target, "outer error")
+	suite.True(IsErr(wrapped, NotFoundCode))
+	suite.True(IsNotFoundErr(wrapped))
+
+	// wrapped via fmt.Errorf with %w
+	fmtWrapped := fmt.Errorf("fmt wrapped: %w", target)
+	suite.True(IsErr(fmtWrapped, NotFoundCode))
+	suite.True(IsNotFoundErr(fmtWrapped))
+
+	// multi-layer wrapped
+	multiWrapped := fmt.Errorf("outer: %w", Wrap(target, "inner"))
+	suite.True(IsErr(multiWrapped, NotFoundCode))
+	suite.True(IsNotFoundErr(multiWrapped))
+
+	// unrelated error
+	unrelated := errors.New("unrelated error")
+	suite.False(IsErr(unrelated, NotFoundCode))
+	suite.False(IsNotFoundErr(unrelated))
+}
+
+func (suite *ErrorTestSuite) TestErrors_Unwrap() {
+	sentinel := errors.New("sentinel failure")
+	harborErr := New(nil).WithCode(ConflictCode)
+
+	errs := Errors{sentinel, harborErr}
+
+	// Verify standard library errors.Is works through Errors
+	suite.True(errors.Is(errs, sentinel))
+
+	// Verify standard library errors.As works through Errors
+	var extracted *Error
+	suite.True(errors.As(errs, &extracted))
+	suite.Equal(ConflictCode, extracted.Code)
+}
+
+func (suite *ErrorTestSuite) TestErrors_Error_Wrapped() {
+	notFound := New(nil).WithCode(NotFoundCode).WithMessage("user not found")
+	wrapped := fmt.Errorf("service failed: %w", notFound)
+
+	// Wrapped Harbor error in Errors should retain its code in JSON
+	errs := Errors{wrapped}
+	suite.Equal(`{"errors":[{"code":"NOT_FOUND","message":"service failed: user not found"}]}`, errs.Error())
+}
+
 func TestErrorTestSuite(t *testing.T) {
 	suite.Run(t, &ErrorTestSuite{})
 }
