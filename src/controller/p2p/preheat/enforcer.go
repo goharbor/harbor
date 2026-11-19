@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
@@ -58,7 +59,6 @@ const (
 	resourcePullAction      = "pull"
 	manifestAPIPattern      = "%s/v2/%s/manifests/%s"
 	accessCredHeaderKey     = "Authorization"
-	proMetaKeyContentTrust  = "enable_content_trust"
 	proMetaKeyVulnerability = "prevent_vul"
 	proMetaKeySeverity      = "severity"
 )
@@ -250,6 +250,18 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 		return nil, enforceErrorExt(err, art)
 	}
 
+	// The artifact carried by the events has no accessories, look them up when the project
+	// requires signed artifacts as they tell whether the artifact is signed.
+	if len(requiredSignatureTypes(p)) > 0 {
+		loaded, err := de.artCtl.Get(ctx, art.ID, &artifact.Option{WithAccessory: true})
+		if err != nil {
+			return nil, enforceErrorExt(err, art)
+		}
+		withAccessories := *art
+		withAccessories.Accessories = loaded.Accessories
+		art = &withAccessories
+	}
+
 	// Convert to candidates
 	candidates, err := de.toCandidates(ctx, p, []*artifact.Artifact{art})
 	if err != nil {
@@ -358,6 +370,8 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 	}, &artifact.Option{
 		WithLabel: true,
 		WithTag:   true,
+		// the accessories tell whether the artifact is signed
+		WithAccessory: len(requiredSignatureTypes(p)) > 0,
 	})
 	if err != nil {
 		return nil, err
@@ -508,6 +522,8 @@ func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *proModels
 func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Project, arts []*artifact.Artifact) ([]*selector.Candidate, error) {
 	// Convert to filtering candidates first
 	candidates := make([]*selector.Candidate, 0)
+	// The signing status is only needed when the project requires signed artifacts
+	signatureTypes := requiredSignatureTypes(p)
 
 	for _, a := range arts {
 		// Vulnerability severity is property of artifact
@@ -519,6 +535,10 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Projec
 		// If artifact has more than one tag, then split them into separate candidate for easy filtering.
 		// TODO: Do we need to support untagged artifacts here?
 		for _, t := range a.Tags {
+			var signatures map[string]bool
+			if len(signatureTypes) > 0 {
+				signatures = map[string]bool{t.Name: isSigned(a, signatureTypes)}
+			}
 			candidates = append(candidates, &selector.Candidate{
 				NamespaceID:           p.ProjectID,
 				Namespace:             p.Name,
@@ -527,6 +547,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Projec
 				Digest:                a.Digest,
 				Tags:                  []string{t.Name},
 				Labels:                getLabels(a.Labels),
+				Signatures:            signatures,
 				VulnerabilitySeverity: sev,
 			})
 		}
@@ -593,6 +614,41 @@ func checkProviderHealthy(inst *provider.Instance) error {
 	return nil
 }
 
+// requiredSignatureTypes returns the types of the signatures that the content trust settings of the
+// project require for pulling an artifact: cosign for "enable_content_trust_cosign" and notation for
+// "enable_content_trust", the same as the content trust middleware checks.
+func requiredSignatureTypes(pro *proModels.Project) []string {
+	var types []string
+	if pro == nil {
+		return types
+	}
+	if pro.ContentTrustCosignEnabled() {
+		types = append(types, accessorymodel.TypeCosignSignature)
+	}
+	if pro.ContentTrustEnabled() {
+		types = append(types, accessorymodel.TypeNotationSignature)
+	}
+	return types
+}
+
+// isSigned reports whether the artifact carries a signature of every given type. The accessories of
+// the artifact must have been loaded.
+func isSigned(art *artifact.Artifact, signatureTypes []string) bool {
+	for _, typ := range signatureTypes {
+		found := false
+		for _, acc := range art.Accessories {
+			if acc.GetData().Type == typ {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
 // the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
@@ -610,7 +666,7 @@ func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]any {
 	}
 
 	// Append signature filter if content trust config is set at project configurations
-	if ct, ok := pro.Metadata[proMetaKeyContentTrust]; ok && ct == "true" {
+	if len(requiredSignatureTypes(pro)) > 0 {
 		filters = append(filters, &pol.Filter{
 			Type:  pol.FilterTypeSignature,
 			Value: true,
