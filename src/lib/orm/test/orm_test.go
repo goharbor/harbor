@@ -425,6 +425,33 @@ func (suite *OrmSuite) TestPaginationOnRawSQL() {
 	suite.Equal(int64(0), params[2])
 }
 
+func (suite *OrmSuite) TestQuerySetterWithOrListOnStringColumn() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	// a digits-only project name, the query builder parses it as int64
+	name := "123"
+	id, err := addFoo(ctx, Foo{Name: name})
+	suite.Nil(err)
+	defer func() {
+		suite.Nil(deleteFoo(ctx, id))
+	}()
+
+	query := q.MustClone(q.New(map[string]interface{}{
+		"name": q.NewOrList([]interface{}{name, "library"}),
+	}))
+	_, err = QuerySetter(ctx, &Foo{}, query)
+	suite.Nil(err)
+
+	foos := []*Foo{}
+	qs, err := QuerySetter(ctx, &Foo{}, query)
+	if suite.Nil(err) {
+		_, err = qs.All(&foos)
+		suite.Nil(err)
+		suite.Len(foos, 1)
+		suite.Equal(name, foos[0].Name)
+	}
+}
+
 func TestRunOrmSuite(t *testing.T) {
 	suite.Run(t, new(OrmSuite))
 }
