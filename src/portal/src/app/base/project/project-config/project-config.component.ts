@@ -13,11 +13,12 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-    CommonRoutes,
-    RoleMapping,
-} from 'src/app/shared/entities/shared.const';
+import { CommonRoutes } from 'src/app/shared/entities/shared.const';
 import { SessionUser } from '../../../shared/entities/session-user';
+import {
+    UserPermissionService,
+    USERSTATICPERMISSION,
+} from '../../../shared/services';
 import { SessionService } from '../../../shared/services/session.service';
 import { Project } from '../project';
 
@@ -36,7 +37,8 @@ export class ProjectConfigComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private session: SessionService
+        private session: SessionService,
+        private userPermissionService: UserPermissionService
     ) {}
 
     ngOnInit() {
@@ -50,16 +52,17 @@ export class ProjectConfigComponent implements OnInit {
             if (pro.registry_id) {
                 this.isProxyCacheProject = true;
             }
-
-            // Check user role and redirect if Limited Guest or Guest
-            const userRole = pro.role_name;
-            const excludedRoles = [RoleMapping.limitedGuest, RoleMapping.guest];
-
-            if (excludedRoles.includes(userRole)) {
-                // Redirect to repositories page
-                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                return;
-            }
         }
+        this.userPermissionService
+            .getPermission(
+                this.projectId,
+                USERSTATICPERMISSION.CONFIGURATION.KEY,
+                USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE
+            )
+            .subscribe(permission => {
+                if (!permission) {
+                    this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                }
+            });
     }
 }

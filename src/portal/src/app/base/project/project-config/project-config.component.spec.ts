@@ -18,6 +18,8 @@ import { SessionService } from '../../../shared/services/session.service';
 import { of } from 'rxjs';
 import { ProjectConfigComponent } from './project-config.component';
 import { SharedTestingModule } from '../../../shared/shared.module';
+import { UserPermissionService } from '../../../shared/services';
+import { CommonRoutes } from '../../../shared/entities/shared.const';
 
 describe('ProjectConfigComponent', () => {
     let component: ProjectConfigComponent;
@@ -27,7 +29,15 @@ describe('ProjectConfigComponent', () => {
             return { has_admin_role: true };
         },
     };
-    let fakeRouter = null;
+    let fakeRouter = {
+        navigate: jasmine.createSpy('navigate'),
+    };
+    let hasUpdatePermission = true;
+    let fakeUserPermissionService = {
+        getPermission() {
+            return of(hasUpdatePermission);
+        },
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -59,11 +69,17 @@ describe('ProjectConfigComponent', () => {
                 },
                 { provide: Router, useValue: fakeRouter },
                 { provide: SessionService, useValue: fakeSessionService },
+                {
+                    provide: UserPermissionService,
+                    useValue: fakeUserPermissionService,
+                },
             ],
         }).compileComponents();
     });
 
     beforeEach(() => {
+        fakeRouter.navigate.calls.reset();
+        hasUpdatePermission = true;
         fixture = TestBed.createComponent(ProjectConfigComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -71,5 +87,14 @@ describe('ProjectConfigComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+        expect(fakeRouter.navigate).not.toHaveBeenCalled();
+    });
+
+    it('should redirect without configuration update permission', () => {
+        hasUpdatePermission = false;
+        component.ngOnInit();
+        expect(fakeRouter.navigate).toHaveBeenCalledWith([
+            CommonRoutes.HARBOR_DEFAULT,
+        ]);
     });
 });
