@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/docker/distribution"
@@ -64,7 +63,7 @@ type ManifestListCache struct {
 }
 
 // CacheContent ...
-func (m *ManifestListCache) CacheContent(ctx context.Context, _ string, man distribution.Manifest, art lib.ArtifactInfo, _ RemoteInterface, contentType string) {
+func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string) {
 	_, payload, err := man.Payload()
 	if err != nil {
 		log.Errorf("failed to get payload, error %v", err)
@@ -86,20 +85,27 @@ func (m *ManifestListCache) CacheContent(ctx context.Context, _ string, man dist
 	if err := m.cache.Save(ctx, key, payload, manifestListCacheInterval); err != nil {
 		log.Errorf("failed to cache payload, error %v", err)
 	}
-	if err := m.push(ctx, art.Repository, getReference(art), man); err != nil {
+	if err := m.waitAndPush(ctx, remoteRepo, art, man, r); err != nil {
 		log.Errorf("error when push manifest list to local :%v", err)
 	}
 }
 
-// cacheTrimmedDigest - cache the change Trimmed Digest for controller.EnsureTag when digest is changed
-func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig string) {
+func trimmedDigestKey(repo, dig string) string {
+	return TrimmedManifestlist + repo + ":" + dig
+}
+
+// cacheTrimmedDigest - cache the change Trimmed Digest for controller.EnsureTag when digest is changed,
+// and per repository for controller.manifestListTagged
+func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, repo, dig, newDig string) {
 	if m.cache == nil {
 		return
 	}
-	art := lib.GetArtifactInfo(ctx)
-	key := TrimmedManifestlist + string(art.Digest)
-	err := m.cache.Save(ctx, key, newDig)
-	if err != nil {
+	key := TrimmedManifestlist + dig
+	if err := m.cache.Save(ctx, key, newDig); err != nil {
+		log.Warningf("failed to cache the trimmed manifest, err %v", err)
+		return
+	}
+	if err := m.cache.Save(ctx, trimmedDigestKey(repo, dig), newDig, manifestListCacheInterval); err != nil {
 		log.Warningf("failed to cache the trimmed manifest, err %v", err)
 		return
 	}
@@ -125,23 +131,49 @@ func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string,
 	return nil, fmt.Errorf("current manifest list type is unknown, manifest type[%T], content [%+v]", manifest, manifest)
 }
 
-func (m *ManifestListCache) push(ctx context.Context, repo, reference string, man distribution.Manifest) error {
+func (m *ManifestListCache) waitAndPush(ctx context.Context, remoteRepo string, art lib.ArtifactInfo, man distribution.Manifest, r RemoteInterface) error {
+	key := manifestListKey(art.Repository, art) + ":" + art.Tag
+	if !inflightChecker.addRequest(key) {
+		return nil
+	}
+	defer inflightChecker.removeRequest(key)
 	// For manifest list, it might include some different manifest
 	// it will wait and check for 30 mins, if all depend manifests are ready then push it
 	// if time exceed, then push a updated manifest list which contains existing manifest
-	var newMan distribution.Manifest
-	var err error
-	for range maxManifestListWait {
-		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, reference)
+	newMan, err := m.updateManifestList(ctx, art.Repository, man)
+	for i := 0; err == nil && len(newMan.References()) < len(man.References()) && i < maxManifestListWait; i++ {
+		log.Debugf("waiting for the manifest ready, repo %v, reference:%v", art.Repository, getReference(art))
 		time.Sleep(sleepIntervalSec * time.Second)
-		newMan, err = m.updateManifestList(ctx, repo, man)
-		if err != nil {
-			return err
-		}
-		if len(newMan.References()) == len(man.References()) {
-			break
-		}
+		newMan, err = m.updateManifestList(ctx, art.Repository, man)
 	}
+	if err != nil {
+		return err
+	}
+	if len(art.Tag) > 0 && tagMoved(r, remoteRepo, art) {
+		log.Debugf("the tag %v:%v doesn't point to %v anymore, push the manifest list by digest", art.Repository, art.Tag, art.Digest)
+		art.Tag = ""
+	}
+	return m.push(ctx, art, newMan)
+}
+
+// tagMoved checks whether the tag of art points to another manifest in the remote registry
+func tagMoved(r RemoteInterface, remoteRepo string, art lib.ArtifactInfo) bool {
+	if r == nil {
+		return false
+	}
+	exist, desc, err := r.ManifestExist(remoteRepo, art.Tag)
+	if err != nil {
+		log.Debugf("failed to check the tag %v:%v in the remote registry, error: %v", remoteRepo, art.Tag, err)
+		return false
+	}
+	if !exist || desc == nil {
+		return true
+	}
+	return len(desc.Digest) > 0 && string(desc.Digest) != art.Digest
+}
+
+// push pushes the trimmed manifest list by the tag of art, or by its own digest when art has no tag
+func (m *ManifestListCache) push(ctx context.Context, art lib.ArtifactInfo, newMan distribution.Manifest) error {
 	if len(newMan.References()) == 0 {
 		return libErrors.New("manifest list doesn't contain any pushed manifest")
 	}
@@ -151,32 +183,28 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 		return err
 	}
 	log.Debugf("The manifest list payload: %v", string(pl))
-	newDig := digest.FromBytes(pl)
-	m.cacheTrimmedDigest(ctx, string(newDig))
+	newDig := string(digest.FromBytes(pl))
+	m.cacheTrimmedDigest(ctx, art.Repository, art.Digest, newDig)
+	reference := art.Tag
+	if len(reference) == 0 {
+		reference = newDig
+	}
 	// Because the manifest list maybe updated, need to recheck if it is exist in local
-	art := lib.ArtifactInfo{Repository: repo, Tag: reference}
-	a, err := m.local.GetManifest(ctx, art)
+	a, err := m.local.GetManifest(ctx, lib.ArtifactInfo{Repository: art.Repository, Tag: reference})
 	if err != nil {
 		return err
 	}
-	if a != nil && a.Digest == string(newDig) {
-		return nil
+	if a == nil || a.Digest != newDig {
+		if err := m.local.PushManifest(art.Repository, reference, newMan); err != nil {
+			log.Errorf("failed to push manifest list, error: %v", err)
+			return err
+		}
+		log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", art.Repository, reference, newDig)
 	}
-	// when pushing with digest, should push to its actual digest
-	if strings.HasPrefix(reference, "sha256:") {
-		reference = string(newDig)
-	}
-	err = m.local.PushManifest(repo, reference, newMan)
-	if err != nil {
-		log.Errorf("failed to push manifest list, error: %v", err)
-		return err
-	}
-	log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
 	log.Debug("update artifact pull time to avoid it is removed by GC before the manifest list is pushed to local")
-	artForPullTime := art
-	artForPullTime.Digest = reference
+	artForPullTime := lib.ArtifactInfo{Repository: art.Repository, Tag: art.Tag, Digest: newDig}
 	if err := m.local.UpdatePullTime(ctx, artForPullTime); err != nil {
-		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", artForPullTime.Repository, reference, err)
+		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", art.Repository, newDig, err)
 	}
 	return nil
 }
