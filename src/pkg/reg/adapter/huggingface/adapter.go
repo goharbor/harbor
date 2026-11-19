@@ -53,6 +53,9 @@ type factory struct{}
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	if r.Credential != nil && r.Credential.AccessKey == "" && r.Credential.AccessSecret != "" {
+		r.Credential.AccessKey = AccessKeyData
+	}
 	return New(r), nil
 }
 
