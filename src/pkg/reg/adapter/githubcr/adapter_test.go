@@ -38,6 +38,13 @@ func mockGHCR() (mock *httptest.Server) {
 	return test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  http.MethodGet,
+			Pattern: "/orgs/kofj/packages",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				writePackages(w, "a1", "b2", "c3/l3")
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
 			Pattern: "/v2/_catalog",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				r.Response.StatusCode = http.StatusNotFound
@@ -80,6 +87,7 @@ func Test_native_FetchArtifacts(t *testing.T) {
 	}
 	adapter := newAdapter(registry)
 	assert.NotNil(t, adapter)
+	adapter.apiURL = mock.URL
 
 	tests := []struct {
 		name    string
@@ -184,6 +192,62 @@ func Test_native_FetchArtifacts(t *testing.T) {
 					Value: "kofj/b*",
 				},
 			},
+			want: []*model.Resource{
+				{
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{Name: "kofj/b2"},
+						Artifacts: []*model.Artifact{
+							{Tags: []string{"tag11"}},
+							{Tags: []string{"tag2"}},
+							{Tags: []string{"tag13"}},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "wildcard repository with nested path",
+			filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "kofj/**",
+				},
+			},
+			want: []*model.Resource{
+				{
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{Name: "kofj/a1"},
+						Artifacts:  []*model.Artifact{{Tags: []string{"tag11"}}},
+					},
+				},
+				{
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{Name: "kofj/b2"},
+						Artifacts: []*model.Artifact{
+							{Tags: []string{"tag11"}},
+							{Tags: []string{"tag2"}},
+							{Tags: []string{"tag13"}},
+						},
+					},
+				},
+				{
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{Name: "kofj/c3/l3"},
+						Artifacts:  []*model.Artifact{{Tags: []string{"tag4"}}},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "wildcard owner",
+			filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "*/b2",
+				},
+			},
 			want:    []*model.Resource{},
 			wantErr: true,
 		},
@@ -210,8 +274,18 @@ func Test_native_FetchArtifacts(t *testing.T) {
 					Value: "tag1*",
 				},
 			},
-			want:    []*model.Resource{},
-			wantErr: true,
+			want: []*model.Resource{
+				{
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{Name: "kofj/b2"},
+						Artifacts: []*model.Artifact{
+							{Tags: []string{"tag11"}},
+							{Tags: []string{"tag13"}},
+						},
+					},
+				},
+			},
+			wantErr: false,
 		},
 	}
 

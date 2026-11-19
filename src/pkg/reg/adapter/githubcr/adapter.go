@@ -15,7 +15,6 @@
 package githubcr
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -80,16 +79,20 @@ type adapter struct {
 	client *common_http.Client
 	*native.Adapter
 	registry *model.Registry
+	// apiURL is the GitHub REST API URL. The adapter uses it to list the
+	// packages of an owner for wildcard repository name filters.
+	apiURL string
 }
 
 var _ adp.Adapter = &adapter{}
 
 func newAdapter(registry *model.Registry) *adapter {
-	var authorizer modifier.Modifier
+	// the client calls each modifier, so add the authorizer only if it is set
+	var modifiers []modifier.Modifier
 	if registry.Credential != nil {
-		authorizer = basic.NewAuthorizer(
+		modifiers = append(modifiers, basic.NewAuthorizer(
 			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
+			registry.Credential.AccessSecret))
 	}
 
 	var transport = common_http.GetHTTPTransport(
@@ -100,12 +103,13 @@ func newAdapter(registry *model.Registry) *adapter {
 	return &adapter{
 		Adapter:  native.NewAdapter(registry),
 		registry: registry,
+		apiURL:   githubAPIURL,
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
 				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
-			authorizer,
+			modifiers...,
 		),
 	}
 }
@@ -145,12 +149,15 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	}
 	var repositories []string
 	// if the pattern of repository name filter is a specific repository name, just returns
-	// the parsed repositories and will check the existence later when filtering the tags
+	// the parsed repositories and will check the existence later when filtering the tags.
+	// Otherwise, list the packages of the owner with the GitHub Packages API and filter them
 	if paths, ok := util.IsSpecificPath(pattern); ok {
 		repositories = paths
 	} else {
-		err = errors.New("only support specific repository name")
-		return
+		repositories, err = a.listRepositories(pattern)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if len(repositories) == 0 {
