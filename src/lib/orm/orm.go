@@ -163,7 +163,25 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		// When set multiple times, context.WithValue returns only the last ormer.
 		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
 		cx = NewContext(cx, tx.TxOrmer)
-		if err := f(cx); err != nil {
+
+		// If f panics or exits its goroutine, neither Commit nor Rollback below runs and the
+		// transaction would keep its connection and row locks until the process restarts.
+		// Roll it back here; a panic keeps propagating after the deferred call.
+		finished := false
+		defer func() {
+			if finished {
+				return
+			}
+			span.AddEvent("rollback transaction after panic")
+			if e := tx.Rollback(); e != nil {
+				tracelib.RecordError(span, e, "rollback transaction after panic failed")
+				log.Errorf("rollback transaction after panic failed: %v", e)
+			}
+		}()
+
+		err = f(cx)
+		finished = true
+		if err != nil {
 			span.AddEvent("rollback transaction")
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
