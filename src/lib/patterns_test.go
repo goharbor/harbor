@@ -15,6 +15,7 @@
 package lib
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -135,12 +136,54 @@ func TestMatchReferrersURLPattern(t *testing.T) {
 			match: true,
 		},
 		{
+			// the reference is a single path segment
 			url:   "/v2/library/hello-world/referrers//v2/library/photon/referrers/sha256:0000000000000000000000000000000000000000000000000000000000000000",
-			match: true,
+			match: false,
 		},
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.match, V2ReferrersURLRe.MatchString(c.url), "failed for %s", c.url)
+	}
+}
+
+// TestV2URLPatternsRepositoryWithKeywordComponents checks that a URL whose repository name has the
+// components "manifests", "referrers", "tags/list" or "blobs" matches only the pattern of its own API
+func TestV2URLPatternsRepositoryWithKeywordComponents(t *testing.T) {
+	dgt := "sha256:e5785cb0c62cebbed4965129bae371f0589cadd6d84798fb58c2c5f9e237efd9"
+	patterns := map[string]*regexp.Regexp{
+		"manifest":  V2ManifestURLRe,
+		"tag_list":  V2TagListURLRe,
+		"referrers": V2ReferrersURLRe,
+		"blob":      V2BlobURLRe,
+	}
+	cases := []struct {
+		url        string
+		pattern    string
+		repository string
+	}{
+		{"/v2/library/x/manifests/y/blobs/" + dgt, "blob", "library/x/manifests/y"},
+		{"/v2/library/x/manifests/blobs/" + dgt, "blob", "library/x/manifests"},
+		{"/v2/library/x/referrers/y/blobs/" + dgt, "blob", "library/x/referrers/y"},
+		{"/v2/library/x/tags/list/blobs/" + dgt, "blob", "library/x/tags/list"},
+		{"/v2/library/x/manifests/y/tags/list", "tag_list", "library/x/manifests/y"},
+		{"/v2/library/x/manifests/y/tags/list/", "tag_list", "library/x/manifests/y"},
+		{"/v2/library/x/tags/list/manifests/latest/", "manifest", "library/x/tags/list"},
+		{"/v2/library/x/blobs/uploads/tags/list", "tag_list", "library/x/blobs/uploads"},
+		{"/v2/library/x/tags/list/manifests/latest", "manifest", "library/x/tags/list"},
+		{"/v2/library/x/referrers/manifests/" + dgt, "manifest", "library/x/referrers"},
+		{"/v2/library/x/manifests/y/referrers/" + dgt, "referrers", "library/x/manifests/y"},
+	}
+	for _, c := range cases {
+		for name, re := range patterns {
+			l := re.FindStringSubmatch(c.url)
+			if name != c.pattern {
+				assert.Empty(t, l, "%s must not match %s", name, c.url)
+				continue
+			}
+			if assert.NotEmpty(t, l, "%s must match %s", name, c.url) {
+				assert.Equal(t, c.repository, l[re.SubexpIndex(RepositorySubexp)], c.url)
+			}
+		}
 	}
 }
 
