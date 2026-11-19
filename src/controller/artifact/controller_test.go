@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/vex"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -387,6 +388,14 @@ func (c *controllerTestSuite) TestPopulateIcon() {
 				Type:   "other",
 			},
 			ico: icon.DigestOfIconDefault,
+		},
+		{
+			art: &artifact.Artifact{
+				ID:     6,
+				Digest: "sha256:3456",
+				Type:   vex.ArtifactTypeVEX,
+			},
+			ico: icon.DigestOfIconAccOpenVEX,
 		},
 		{
 			art: &artifact.Artifact{

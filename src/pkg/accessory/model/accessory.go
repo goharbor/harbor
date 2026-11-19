@@ -80,6 +80,9 @@ const (
 	// TypeHarborSBOM identifies sbom.harbor
 	TypeHarborSBOM = "sbom.harbor"
 
+	// TypeOpenVEX identifies vex.openvex
+	TypeOpenVEX = "vex.openvex"
+
 	// TypeLocalReferrer identifies local referrer
 	TypeLocalReferrer = "local"
 

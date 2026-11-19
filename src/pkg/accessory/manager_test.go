@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	iconlib "github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
@@ -125,6 +126,8 @@ func (m *managerTestSuite) TestGetIcon() {
 	m.Require().Empty(icon, "empty icon")
 	icon = m.mgr.GetIcon("signature.cosign")
 	m.Require().Equal("sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882", icon)
+	icon = m.mgr.GetIcon(model.TypeOpenVEX)
+	m.Require().Equal(iconlib.DigestOfIconAccOpenVEX, icon)
 	icon = m.mgr.GetIcon("unknown")
 	m.Require().Empty(icon, "empty icon")
 }
