@@ -22,7 +22,9 @@
 package huggingface
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -163,6 +165,34 @@ func (a *Adapter) HealthCheck() (string, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Errorf("unexpected status code %d when pinging hugging face endpoint %s", resp.StatusCode, endpoint)
 		return model.Unhealthy, nil
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("failed to read hugging face health response from %s: %v", endpoint, err)
+		return model.Unhealthy, nil
+	}
+	if token != "" {
+		var identity struct {
+			Name string `json:"name"`
+		}
+		if err := json.Unmarshal(body, &identity); err != nil || strings.TrimSpace(identity.Name) == "" {
+			log.Errorf("invalid whoami response from hugging face endpoint %s", endpoint)
+			return model.Unhealthy, nil
+		}
+	} else {
+		var models []struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(body, &models); err != nil || models == nil {
+			log.Errorf("invalid models response from hugging face endpoint %s", endpoint)
+			return model.Unhealthy, nil
+		}
+		for _, m := range models {
+			if strings.TrimSpace(m.ID) == "" {
+				log.Errorf("missing model ID in response from hugging face endpoint %s", endpoint)
+				return model.Unhealthy, nil
+			}
+		}
 	}
 	return model.Healthy, nil
 }

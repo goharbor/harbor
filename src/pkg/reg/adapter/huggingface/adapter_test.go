@@ -60,7 +60,13 @@ func TestHealthCheck(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
 		gotAuth = r.Header.Get("Authorization")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
+		if r.URL.Path == "/api/whoami-v2" {
+			_, _ = w.Write([]byte(`{"type":"user","name":"test-user"}`))
+		} else {
+			_, _ = w.Write([]byte(`[{"id":"test/model"}]`))
+		}
 	}))
 	defer server.Close()
 
@@ -91,6 +97,74 @@ func TestHealthCheck(t *testing.T) {
 	s, err = a.HealthCheck()
 	require.NoError(t, err)
 	assert.Equal(t, model.Unhealthy, s)
+}
+
+func TestHealthCheckResponse(t *testing.T) {
+	tests := []struct {
+		name     string
+		token    string
+		body     string
+		redirect bool
+		healthy  bool
+	}{
+		{name: "models", body: `[{"id":"test/model","private":false}]`, healthy: true},
+		{name: "empty models", body: `[]`, healthy: true},
+		{name: "models HTML fallback", body: `<html><body>Model hub</body></html>`},
+		{name: "models empty body"},
+		{name: "models null", body: `null`},
+		{name: "models object", body: `{}`},
+		{name: "models error", body: `{"error":"unavailable"}`},
+		{name: "models missing ID", body: `[{}]`},
+		{name: "models blank ID", body: `[{"id":" "}]`},
+		{name: "models invalid ID type", body: `[{"id":123}]`},
+		{name: "models null entry", body: `[null]`},
+		{name: "models malformed JSON", body: `[{"id":"test/model"}`},
+		{name: "models trailing HTML", body: `[{"id":"test/model"}]<html></html>`},
+		{name: "models login redirect", body: `<html><body>Login</body></html>`, redirect: true},
+		{name: "models API redirect", body: `[{"id":"test/model"}]`, redirect: true, healthy: true},
+		{name: "identity", token: "hf_token", body: `{"type":"user","name":"test-user"}`, healthy: true},
+		{name: "identity HTML fallback", token: "hf_token", body: `<html><body>Login</body></html>`},
+		{name: "identity empty body", token: "hf_token"},
+		{name: "identity null", token: "hf_token", body: `null`},
+		{name: "identity empty object", token: "hf_token", body: `{}`},
+		{name: "identity error", token: "hf_token", body: `{"error":"Invalid token"}`},
+		{name: "identity blank name", token: "hf_token", body: `{"name":" "}`},
+		{name: "identity invalid name type", token: "hf_token", body: `{"name":123}`},
+		{name: "identity array", token: "hf_token", body: `[]`},
+		{name: "identity malformed JSON", token: "hf_token", body: `{"name":"test-user"`},
+		{name: "identity trailing JSON", token: "hf_token", body: `{"name":"test-user"}{}`},
+		{name: "identity login redirect", token: "hf_invalid", body: `<html><body>Login</body></html>`, redirect: true},
+		{name: "identity API redirect", token: "hf_token", body: `{"type":"user","name":"test-user"}`, redirect: true, healthy: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			redirected := false
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.redirect && r.URL.Path != "/redirected" {
+					http.Redirect(w, r, "/redirected", http.StatusFound)
+					return
+				}
+				redirected = r.URL.Path == "/redirected"
+				// Even an HTML fallback mislabeled as JSON must be rejected.
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			registry := &model.Registry{URL: server.URL}
+			if tt.token != "" {
+				registry.Credential = &model.Credential{AccessSecret: tt.token}
+			}
+			status, err := New(registry).HealthCheck()
+			require.NoError(t, err)
+			expected := model.Unhealthy
+			if tt.healthy {
+				expected = model.Healthy
+			}
+			assert.Equal(t, expected, status)
+			assert.Equal(t, tt.redirect, redirected)
+		})
+	}
 }
 
 func TestPrepareForPush(t *testing.T) {
