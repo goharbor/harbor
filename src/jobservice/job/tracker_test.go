@@ -200,3 +200,38 @@ func (suite *TrackerTestSuite) TestPeriodicTracker() {
 	err = t2.PeriodicExecutionDone()
 	require.NoError(suite.T(), err)
 }
+
+// TestSaveWithHookAck tests that the hook ACK is persisted by Save, so that it
+// is still there when the stats are loaded again.
+func (suite *TrackerTestSuite) TestSaveWithHookAck() {
+	jobID := utils.MakeIdentifier()
+	rev := time.Now().Unix()
+	mockJobStats := &Stats{
+		Info: &StatsInfo{
+			JobID:      jobID,
+			Status:     ScheduledStatus.String(),
+			JobKind:    KindPeriodic,
+			JobName:    SampleJob,
+			CronSpec:   "0 0 * * * *",
+			NumericPID: rev,
+			Revision:   rev,
+			HookAck: &ACK{
+				Revision: rev,
+				Status:   ScheduledStatus.String(),
+			},
+		},
+	}
+
+	t := NewBasicTrackerWithStats(context.TODO(), mockJobStats, suite.namespace, suite.pool, nil, nil)
+	err := t.Save()
+	require.NoError(suite.T(), err)
+
+	// The stats, including the ACK, must be readable back.
+	t2 := NewBasicTrackerWithID(context.TODO(), jobID, suite.namespace, suite.pool, nil, nil)
+	err = t2.Load()
+	require.NoError(suite.T(), err)
+
+	require.NotNil(suite.T(), t2.Job().Info.HookAck, "hook ack should be saved")
+	assert.Equal(suite.T(), rev, t2.Job().Info.HookAck.Revision, "ack revision")
+	assert.Equal(suite.T(), ScheduledStatus.String(), t2.Job().Info.HookAck.Status, "ack status")
+}
