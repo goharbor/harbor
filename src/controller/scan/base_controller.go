@@ -484,7 +484,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		summary.TotalCount++
 
 		scan := func(ctx context.Context) error {
-			return bc.Scan(ctx, artifact, WithExecutionID(executionID))
+			return bc.Scan(ctx, artifact, WithExecutionID(executionID), WithBulk())
 		}
 
 		if err := orm.WithTransaction(scan)(orm.SetTransactionOpNameToContext(bc.makeCtx(), "tx-start-scanall")); err != nil {
@@ -977,7 +977,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 	// because there is only one task type implementation
 	// both the vulnerability scan and generate sbom use the same job type for now
 	j := &task.Job{
-		Name: job.ImageScanJobVendorType,
+		Name: jobNameFor(opts),
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},
@@ -995,6 +995,15 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 
 	_, err = bc.taskMgr.Create(ctx, param.ExecutionID, j, extraAttrs)
 	return err
+}
+
+// jobNameFor returns the queue for a scan. scan-all vulnerability scans use
+// the bulk queue, everything else uses the regular IMAGE_SCAN queue.
+func jobNameFor(opts *Options) string {
+	if opts != nil && opts.Bulk && opts.GetScanType() == v1.ScanTypeVulnerability {
+		return job.ImageScanBulkJobVendorType
+	}
+	return job.ImageScanJobVendorType
 }
 
 // listScanTasks returns the tasks of the reports

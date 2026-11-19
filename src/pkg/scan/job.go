@@ -97,6 +97,22 @@ func (cir *CheckInReport) ToJSON() (string, error) {
 // Job for running scan in the job service with async way
 type Job struct{}
 
+// bulkMaxConcurrency caps concurrent scan-all child scans (0 = unlimited).
+// package variable, since the worker reads MaxCurrency() from a zero-value BulkJob
+var bulkMaxConcurrency uint
+
+// SetBulkMaxConcurrency sets the cap and is called before the worker registers jobs
+func SetBulkMaxConcurrency(n uint) { bulkMaxConcurrency = n }
+
+// BulkJob is the scan job for the IMAGE_SCAN_BULK queue. It only exists as a
+// separate type because one job type cannot be registered under two names
+type BulkJob struct {
+	Job
+}
+
+// MaxCurrency returns the scan-all cap.
+func (j *BulkJob) MaxCurrency() uint { return bulkMaxConcurrency }
+
 // MaxFails for defining the number of retries
 func (j *Job) MaxFails() uint {
 	return 1

@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -698,4 +699,13 @@ func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs .
 	extraAttrs[artifactIDKey] = float64(artifactID)
 
 	return extraAttrs
+}
+
+func TestJobNameFor(t *testing.T) {
+	assert.Equal(t, job.ImageScanJobVendorType, jobNameFor(nil))
+	assert.Equal(t, job.ImageScanJobVendorType, jobNameFor(&Options{}))
+	assert.Equal(t, job.ImageScanBulkJobVendorType, jobNameFor(&Options{Bulk: true}))
+	assert.Equal(t, job.ImageScanBulkJobVendorType, jobNameFor(&Options{Bulk: true, ScanType: v1.ScanTypeVulnerability}))
+	assert.Equal(t, job.ImageScanJobVendorType, jobNameFor(&Options{Bulk: true, ScanType: v1.ScanTypeSbom}))
+	assert.Equal(t, job.ImageScanJobVendorType, jobNameFor(&Options{ScanType: v1.ScanTypeSbom}))
 }

@@ -37,6 +37,7 @@ const (
 	jobServiceHTTPKey                    = "JOB_SERVICE_HTTPS_KEY"
 	jobServiceWorkerPoolBackend          = "JOB_SERVICE_POOL_BACKEND"
 	jobServiceWorkers                    = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceScanAllMaxConcurrency      = "JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY"
 	jobServiceRedisURL                   = "JOB_SERVICE_POOL_REDIS_URL"
 	jobServiceRedisNamespace             = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
 	jobServiceRedisIdleConnTimeoutSecond = "JOB_SERVICE_POOL_REDIS_CONN_IDLE_TIMEOUT_SECOND"
@@ -90,6 +91,9 @@ type Configuration struct {
 
 	// MaxLogSizeReturnedMB is the max size of log returned by job log API
 	MaxLogSizeReturnedMB int `yaml:"max_retrieve_size_mb,omitempty"`
+
+	// ScanAllMaxConcurrency caps concurrent scan-all child scans
+	ScanAllMaxConcurrency uint `yaml:"scan_all_max_concurrency,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -267,6 +271,13 @@ func (c *Configuration) loadEnvs() {
 				c.PoolConfig = &PoolConfig{}
 			}
 			c.PoolConfig.WorkerCount = uint(count)
+		}
+	}
+
+	scanAllMax := utils.ReadEnv(jobServiceScanAllMaxConcurrency)
+	if !utils.IsEmptyStr(scanAllMax) {
+		if count, err := strconv.Atoi(scanAllMax); err == nil && count >= 0 {
+			c.ScanAllMaxConcurrency = uint(count)
 		}
 	}
 

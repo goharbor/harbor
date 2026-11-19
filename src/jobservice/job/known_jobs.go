@@ -24,6 +24,8 @@ const (
 
 	// ImageScanJobVendorType is name of scan job it will be used as key to register to job service.
 	ImageScanJobVendorType = "IMAGE_SCAN"
+	// ImageScanBulkJobVendorType is the queue for scan-all child scans.
+	ImageScanBulkJobVendorType = "IMAGE_SCAN_BULK"
 	// SBOMJobVendorType key to create sbom generate execution.
 	SBOMJobVendorType = "SBOM"
 	// GarbageCollectionVendorType job name
