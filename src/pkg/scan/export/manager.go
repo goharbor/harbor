@@ -114,7 +114,8 @@ func (p *Params) ToJSON() (string, error) {
 }
 
 type Manager interface {
-	Fetch(ctx context.Context, params Params) ([]Data, error)
+	// Fetch also returns the page's row count before the CVE filter, which pagination needs.
+	Fetch(ctx context.Context, params Params) ([]Data, int, error)
 }
 
 type exportManager struct {
@@ -125,24 +126,25 @@ func NewManager() Manager {
 	return &exportManager{exportDataFilter: NewVulnerabilityDataSelector()}
 }
 
-func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, error) {
+func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, int, error) {
 	exportData := make([]Data, 0)
 	rawSeter, _ := em.buildQuery(ctx, params)
 	_, err := rawSeter.QueryRows(&exportData)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+	fetched := len(exportData)
 
 	exportData, err = em.exportDataFilter.Select(exportData, CVEIDMatches, params.CVEIds)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for i := range exportData {
 		exportData[i].sanitizeForCSV()
 	}
 
-	return exportData, nil
+	return exportData, fetched, nil
 }
 
 // csvFormulaTriggers lists the leading characters a spreadsheet may interpret as
