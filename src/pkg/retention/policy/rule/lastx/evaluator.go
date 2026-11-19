@@ -41,7 +41,8 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*selector.Candidate) (retain []*selector.Candidate, err error) {
-	cutoff := time.Now().Add(time.Duration(e.x*-24) * time.Hour)
+	// AddDate is used because a time.Duration overflows beyond about 292 years.
+	cutoff := time.Now().UTC().AddDate(0, 0, -e.x)
 	for _, a := range artifacts {
 		if time.Unix(a.PushedTime, 0).UTC().After(cutoff) {
 			retain = append(retain, a)
