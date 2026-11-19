@@ -33,6 +33,8 @@ type Manager interface {
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List tags according to the query
 	List(ctx context.Context, query *q.Query) (tags []*tag.Tag, err error)
+	// ListNames returns at most limit names in byte order, strictly after last, from one repository.
+	ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error)
 	// Get the tag specified by ID
 	Get(ctx context.Context, id int64) (tag *tag.Tag, err error)
 	// Create the tag and returns the ID
@@ -62,6 +64,10 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	return m.dao.List(ctx, query)
+}
+
+func (m *manager) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	return m.dao.ListNames(ctx, repositoryID, last, limit)
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
