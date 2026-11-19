@@ -22,6 +22,7 @@ import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
+import { Router } from '@angular/router';
 
 describe('ListReplicationRuleComponent (inline template)', () => {
     let mockRules: ReplicationPolicy[] = [
@@ -177,5 +178,32 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         await fixture.whenStable();
         const cols = fixture.nativeElement.querySelectorAll('clr-dg-column');
         expect(cols.length).toEqual(comp.hiddenArray.length);
+    });
+
+    it('should send the edit of a model rule to Model Sync', () => {
+        const router = TestBed.inject(Router);
+        const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+        const edited = spyOn(comp.editOne, 'emit');
+        comp.modelSourceTypes = ['huggingface'];
+        const model: ReplicationPolicy = {
+            id: 9,
+            name: 'smollm',
+            src_registry: { id: 2, type: 'huggingface' },
+        };
+        expect(comp.isModelRule(model)).toBeTrue();
+        comp.editRule(model);
+        expect(navigate).toHaveBeenCalledWith(['harbor', 'model-sync'], {
+            queryParams: { edit: 9 },
+        });
+        expect(edited).not.toHaveBeenCalled();
+
+        const image: ReplicationPolicy = {
+            id: 10,
+            name: 'images',
+            src_registry: { id: 3, type: 'docker-hub' },
+        };
+        expect(comp.isModelRule(image)).toBeFalse();
+        comp.editRule(image);
+        expect(edited).toHaveBeenCalledWith(image);
     });
 });
