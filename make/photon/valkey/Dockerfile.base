@@ -21,12 +21,15 @@ RUN tdnf install -y gcc make coreutils gawk glibc-devel linux-api-headers \
     binutils tar gzip ca-certificates curl openssl-devel >> /dev/null \
     && tdnf clean all
 WORKDIR /tmp
+# jemalloc takes the page size of the build host unless told otherwise. arm64
+# kernels use 4k, 16k or 64k pages; build for 64k (lg-page=16), which also works
+# on the smaller ones, so valkey does not abort on 64k-page hosts.
 RUN curl -fsSL -o valkey.tar.gz \
     "https://github.com/valkey-io/valkey/archive/refs/tags/${VALKEY_VERSION}.tar.gz" \
     && echo "${VALKEY_SHA256}  valkey.tar.gz" | sha256sum -c - \
     && tar -xzf valkey.tar.gz \
     && cd "valkey-${VALKEY_VERSION}" \
-    && make -j"$(nproc)" BUILD_TLS=yes \
+    && make -j"$(nproc)" BUILD_TLS=yes JEMALLOC_CONFIGURE_OPTS=--with-lg-page=16 \
     && make PREFIX=/usr/local install
 RUN strip /usr/local/bin/valkey-* || true
 
