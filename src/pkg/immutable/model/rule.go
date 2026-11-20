@@ -15,7 +15,13 @@
 package model
 
 import (
+	"fmt"
+	"sort"
+
 	"github.com/beego/beego/v2/core/validation"
+
+	"github.com/goharbor/harbor/src/lib/pattern"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 )
 
 // Metadata of the immutable rule
@@ -62,6 +68,31 @@ func (m *Metadata) Valid(v *validation.Validation) {
 	}
 }
 
+// Validate checks that every selector of the rule can be evaluated by the
+// matcher. A selector with an unregistered kind or decoration, or with a
+// malformed pattern, makes the matcher fail for every candidate of the project,
+// so such a rule must not be stored.
+func (m *Metadata) Validate() error {
+	for _, s := range m.TagSelectors {
+		if err := s.validate(); err != nil {
+			return fmt.Errorf("invalid tag selector: %w", err)
+		}
+	}
+	scopes := make([]string, 0, len(m.ScopeSelectors))
+	for scope := range m.ScopeSelectors {
+		scopes = append(scopes, scope)
+	}
+	sort.Strings(scopes)
+	for _, scope := range scopes {
+		for _, s := range m.ScopeSelectors[scope] {
+			if err := s.validate(); err != nil {
+				return fmt.Errorf("invalid %s scope selector: %w", scope, err)
+			}
+		}
+	}
+	return nil
+}
+
 // Selector to narrow down the list
 type Selector struct {
 	// Kind of the selector
@@ -75,4 +106,19 @@ type Selector struct {
 
 	// Param for the selector
 	Pattern string `json:"pattern" valid:"Required"`
+}
+
+// validate reports whether the selector can be built and its pattern parsed.
+// A nil selector is ignored, the matcher skips it as well.
+func (s *Selector) validate() error {
+	if s == nil {
+		return nil
+	}
+	if _, err := index.Get(s.Kind, s.Decoration, s.Pattern, ""); err != nil {
+		return err
+	}
+	if err := pattern.ValidateDoublestar(s.Pattern); err != nil {
+		return fmt.Errorf("pattern %q: %w", s.Pattern, err)
+	}
+	return nil
 }
