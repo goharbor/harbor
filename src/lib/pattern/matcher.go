@@ -37,6 +37,15 @@ func ValidateRepositoryFilter(filterPattern, kind string) error {
 	return err
 }
 
+// ValidateDoublestar validates the syntax of a doublestar pattern without matching it against a value.
+// An empty pattern is valid and matches everything.
+func ValidateDoublestar(filterPattern string) error {
+	if filterPattern = strings.TrimSpace(filterPattern); filterPattern != "" && !validateDoublestarPattern(filterPattern) {
+		return doublestar.ErrBadPattern
+	}
+	return nil
+}
+
 // ValidateKind validates the repository filter kind. Empty kind is valid and
 // means the doublestar default.
 func ValidateKind(kind string) error {
