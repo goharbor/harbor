@@ -100,8 +100,11 @@ func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 		NamespaceID: projectID,
 	})
 	if err != nil {
-		log.Error(err)
-		return false
+		// Fail closed: when the immutable rules cannot be listed (for example a
+		// transient database failure), treat the candidate as immutable so that
+		// retention can never delete an artifact that may be protected.
+		log.Errorf("failed to check immutable rules, treating candidate %s/%s as immutable: %v", c.Namespace, c.Repository, err)
+		return true
 	}
 	return matched
 }
