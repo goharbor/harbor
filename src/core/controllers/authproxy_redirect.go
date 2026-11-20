@@ -19,6 +19,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth/authproxy"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -30,7 +31,11 @@ const (
 	postURIKey        = "postURI"
 )
 
-var helper = &authproxy.Auth{}
+// helper onboards the reviewed user after a successful token review. It mirrors
+// the authenticator instance registered by this package's init, carrying the
+// user manager required by PostAuthenticate, so the redirect flow behaves
+// exactly like the /c/login flow.
+var helper = authproxy.NewHelper()
 
 // AuthProxyController handles requests with token that can be reviewed by authproxy.
 type AuthProxyController struct {
@@ -73,6 +78,15 @@ func (apc *AuthProxyController) HandleRedirect() {
 	uri := apc.Ctx.Request.URL.Query().Get(postURIKey)
 	if uri == "" {
 		uri = "/"
+	}
+	// The post_uri is fully client controlled, so it must be validated to be a local
+	// path, otherwise an attacker could craft a link that makes an authenticated
+	// user's browser redirect to an arbitrary site after login. This aligns with the
+	// redirect_url validation applied by the OIDC login flow.
+	if !utils.IsLocalPath(uri) {
+		log.Errorf("invalid post_uri: %v", uri)
+		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
+		return
 	}
 	apc.Ctx.Redirect(http.StatusMovedPermanently, uri)
 }
