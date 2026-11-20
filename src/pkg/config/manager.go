@@ -39,6 +39,7 @@ type CfgManager struct {
 
 var validateRules = []validate.Rule{
 	&validate.LdapGroupValidateRule{},
+	&validate.OIDCGroupFilterValidateRule{},
 }
 
 // LoadDefault ...
