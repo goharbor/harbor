@@ -33,10 +33,10 @@ func init() {
 	var login = &loginResolver{}
 	var logout = &logoutResolver{}
 	var oidclogout = &oidcLogoutResolver{}
-	commonevent.RegisterResolver(`/c/login$`, login)
-	commonevent.RegisterResolver(`/c/oidc/callback.*`, login)
-	commonevent.RegisterResolver(`/c/log_out$`, logout)
-	commonevent.RegisterResolver(`/c/oidc/logout$`, oidclogout)
+	commonevent.RegisterResolver(`^/c/login$`, login)
+	commonevent.RegisterResolver(`^/c/oidc/callback$`, login)
+	commonevent.RegisterResolver(`^/c/log_out$`, logout)
+	commonevent.RegisterResolver(`^/c/oidc/logout$`, oidclogout)
 }
 
 const (

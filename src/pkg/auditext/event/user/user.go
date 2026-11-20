@@ -29,7 +29,7 @@ import (
 	pkgUser "github.com/goharbor/harbor/src/pkg/user"
 )
 
-const urlPattern = `^/api/v2.0/users/(\d+)(/password|/sysadmin)?$`
+const urlPattern = `^/api/v2\.0/users/(\d+)(/password|/sysadmin)?$`
 
 func init() {
 	var userResolver = &userEventResolver{
@@ -42,7 +42,7 @@ func init() {
 			ResourceIDPattern:   urlPattern,
 		},
 	}
-	commonevent.RegisterResolver(`/api/v2.0/users$`, userResolver)
+	commonevent.RegisterResolver(`^/api/v2\.0/users$`, userResolver)
 	commonevent.RegisterResolver(urlPattern, userResolver)
 }
 
