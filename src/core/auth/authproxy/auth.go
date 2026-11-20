@@ -264,3 +264,10 @@ func init() {
 		userMgr: user.New(),
 	})
 }
+
+// NewHelper returns an Auth helper with the user manager wired, for callers
+// outside this package that need the authenticator's PostAuthenticate
+// behavior (e.g. the /c/authproxy/redirect flow).
+func NewHelper() *Auth {
+	return &Auth{userMgr: user.New()}
+}
