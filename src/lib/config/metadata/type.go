@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -257,7 +258,11 @@ func parseInt64(str string) (int64, error) {
 	}
 
 	fval, err := strconv.ParseFloat(str, 64)
-	if err == nil && fval == math.Trunc(fval) {
+	// float64(math.MaxInt64) rounds up to 2^63, so the upper bound is exclusive;
+	// values just below math.MinInt64 round to it as well, so check that one exactly.
+	if err == nil && fval == math.Trunc(fval) &&
+		fval >= float64(math.MinInt64) && fval < float64(math.MaxInt64) &&
+		(fval != float64(math.MinInt64) || isMinInt64(str)) {
 		return int64(fval), nil
 	}
 
@@ -271,11 +276,23 @@ func parseInt(str string) (int, error) {
 	}
 
 	fval, err := strconv.ParseFloat(str, 32)
-	if err == nil && fval == math.Trunc(fval) {
+	if err == nil && fval == math.Trunc(fval) &&
+		fval >= float64(math.MinInt64) && fval < float64(math.MaxInt64) &&
+		(fval != float64(math.MinInt64) || isMinInt64(str)) {
 		return int(fval), nil
 	}
 
 	return 0, fmt.Errorf("invalid int string: %s", str)
+}
+
+// isMinInt64 reports whether str is exactly math.MinInt64.
+func isMinInt64(str string) bool {
+	f, _, err := big.ParseFloat(str, 10, 256, big.ToNearestEven)
+	if err != nil {
+		return false
+	}
+	v, acc := f.Int64()
+	return acc == big.Exact && v == math.MinInt64
 }
 
 func parseFloat64(str string) (float64, error) {
