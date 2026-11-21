@@ -34,6 +34,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+// maxHealthCheckBodySize caps how much of an unexpected health check response
+// body is read and included in the returned error
+const maxHealthCheckBodySize = 1 << 10
+
 // HTTPStatusCodeHealthChecker implements a Checker to check that the HTTP status code
 // returned matches the expected one
 func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
@@ -59,11 +63,15 @@ func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != statusCode {
-			data, err := io.ReadAll(resp.Body)
+			data, err := io.ReadAll(io.LimitReader(resp.Body, maxHealthCheckBodySize+1))
 			if err != nil {
 				log.Debugf("failed to read response body: %v", err)
 			}
-			return fmt.Errorf("received unexpected status code: %d %s", resp.StatusCode, string(data))
+			body := string(data)
+			if len(data) > maxHealthCheckBodySize {
+				body = string(data[:maxHealthCheckBodySize]) + "...(truncated)"
+			}
+			return fmt.Errorf("received unexpected status code: %d %s", resp.StatusCode, body)
 		}
 
 		return nil

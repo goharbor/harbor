@@ -17,6 +17,7 @@ package health
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -61,6 +62,28 @@ func TestHTTPStatusCodeHealthChecker(t *testing.T) {
 	checker = HTTPStatusCodeHealthChecker(
 		http.MethodGet, url, nil, 5*time.Second, http.StatusUnauthorized)
 	assert.NotEqual(t, nil, checker.Check())
+}
+
+func TestHTTPStatusCodeHealthCheckerLimitsBody(t *testing.T) {
+	handler := &test.RequestHandlerMapping{
+		Method:  http.MethodGet,
+		Pattern: "/health",
+		Handler: func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(strings.Repeat("x", 2<<20)))
+		},
+	}
+	server := test.NewServer(handler)
+	defer server.Close()
+
+	checker := HTTPStatusCodeHealthChecker(
+		http.MethodGet, server.URL+"/health", nil, 5*time.Second, http.StatusOK)
+	err := checker.Check()
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "received unexpected status code: 500")
+		assert.Contains(t, err.Error(), "(truncated)")
+		assert.Less(t, len(err.Error()), 2*maxHealthCheckBodySize)
+	}
 }
 
 func TestPeriodicHealthChecker(t *testing.T) {
