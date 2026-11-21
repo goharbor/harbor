@@ -85,6 +85,10 @@ const (
 
 	// TypeProxyReferrer identifies proxy referrer
 	TypeProxyReferrer = "proxy"
+
+	// TypeInTotoAttestation identifies an attestation that carries an
+	// application/vnd.in-toto+json payload.
+	TypeInTotoAttestation = "attestation.intoto"
 )
 
 // AccessoryData ...
