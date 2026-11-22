@@ -39,6 +39,7 @@ var (
 	projectsAPI    = base + "/projects"
 	reposAPIRe     = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
 	artifactsAPIRe = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
+	artifactAPIRe  = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/[^/]+$`, regexp.QuoteMeta(base)))
 	tagsAPIRe      = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
 	uctl           = user.Ctl
 )
@@ -101,7 +102,8 @@ func (o *oidcCli) valid(req *http.Request) bool {
 		path == apiVersionAPI || // api version
 		path == labelsAPI || // list labels
 		reposAPIRe.MatchString(path) || // list repos
-		artifactsAPIRe.MatchString(path)) { // list artifacts
+		artifactsAPIRe.MatchString(path) || // list artifacts
+		artifactAPIRe.MatchString(path)) { // get artifact, used to fetch accessories and index children
 		return true
 	}
 
