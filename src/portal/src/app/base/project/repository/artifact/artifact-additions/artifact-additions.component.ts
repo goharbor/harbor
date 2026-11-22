@@ -25,6 +25,7 @@ import { AdditionLink } from '../../../../../../../ng-swagger-gen/models/additio
 import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
 import { ClrLoadingState, ClrTabs } from '@clr/angular';
 import { ArtifactListPageService } from '../artifact-list-page/artifact-list-page.service';
+import { ArtifactType } from '../artifact';
 
 @Component({
     selector: 'artifact-additions',
@@ -130,6 +131,10 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
             return this.additionLinks[ADDITIONS.LICENSE];
         }
         return null;
+    }
+
+    isImageArtifact(): boolean {
+        return this.artifact?.type === ArtifactType.IMAGE;
     }
 
     actionTab(tab: string): void {
