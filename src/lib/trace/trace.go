@@ -101,7 +101,7 @@ func initProvider(exp tracesdk.SpanExporter) *tracesdk.TracerProvider {
 		tracesdk.WithBatcher(exp),
 		// Record information about this application in an Resource.
 		tracesdk.WithResource(resource.NewWithAttributes(semconv.SchemaURL, attriSlice...)),
-		tracesdk.WithSampler(tracesdk.TraceIDRatioBased(cfg.SampleRate)),
+		tracesdk.WithSampler(tracesdk.ParentBased(tracesdk.TraceIDRatioBased(cfg.SampleRate))),
 	)
 	// init trace provider
 	return tracesdk.NewTracerProvider(ops...)
