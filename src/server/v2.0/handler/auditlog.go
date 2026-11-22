@@ -134,17 +134,43 @@ func (a *auditlogAPI) ListAuditLogExts(ctx context.Context, params auditlog.List
 		return a.SendError(ctx, err)
 	}
 
-	total, err := a.auditextMgr.Count(ctx, query)
-	if err != nil {
-		return a.SendError(ctx, err)
+	pageNumber := query.PageNumber
+	if pageNumber <= 0 {
+		pageNumber = 1
 	}
-	logs, err := a.auditextMgr.List(ctx, query)
-	if err != nil {
-		return a.SendError(ctx, err)
+
+	var (
+		total   int64
+		hasNext bool
+		logs    []*model.AuditLogExt
+	)
+
+	if query.PageSize > 0 {
+		listQuery := q.MustClone(query)
+		listQuery.ExtraLimit = 1
+		logs, err = a.auditextMgr.List(ctx, listQuery)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if int64(len(logs)) > query.PageSize {
+			hasNext = true
+			logs = logs[:query.PageSize]
+			total = pageNumber*query.PageSize + 1
+		} else {
+			hasNext = false
+			total = (pageNumber-1)*query.PageSize + int64(len(logs))
+		}
+	} else {
+		logs, err = a.auditextMgr.List(ctx, query)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		total = int64(len(logs))
 	}
+
 	return auditlog.NewListAuditLogExtsOK().
 		WithXTotalCount(total).
-		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithLink(a.PaginationLinks(ctx, params.HTTPRequest.URL, pageNumber, query.PageSize, hasNext).String()).
 		WithPayload(convertToModelAuditLogExt(logs))
 }
 

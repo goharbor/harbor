@@ -31,6 +31,7 @@ func TestMustClone(t *testing.T) {
 		{"ptr", args{New(KeyWords{"public": "true"})}, New(KeyWords{"public": "true"})},
 		{"nil", args{nil}, New(KeyWords{})},
 		{"sort", args{&Query{Keywords: KeyWords{"public": "true"}, Sorts: []*Sort{NewSort("col-1", true)}}}, &Query{Keywords: KeyWords{"public": "true"}, Sorts: []*Sort{NewSort("col-1", true)}}},
+		{"pagination and extra limit", args{&Query{Keywords: KeyWords{"public": "true"}, PageNumber: 2, PageSize: 10, ExtraLimit: 1}}, &Query{Keywords: KeyWords{"public": "true"}, PageNumber: 2, PageSize: 10, ExtraLimit: 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
