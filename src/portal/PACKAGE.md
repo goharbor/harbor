@@ -53,7 +53,6 @@
     "@angular/forms": "^16.0.2",
     "@angular/localize": "^16.0.2",
     "@angular/platform-browser": "^16.0.2",
-    "@angular/platform-browser-dynamic": "^16.0.2",
     "@angular/router": "^16.0.2",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
