@@ -299,6 +299,9 @@ proxy:
 #   #   # export trace data by jaeger.thrift in compact mode
 #   #   agent_port: 6831
 #   # otel:
+#   #   # protocol of the OTLP exporter, http or grpc, default is http
+#   #   # url_path is only used by the http protocol, the default port is 4318 for http and 4317 for grpc
+#   #   protocol: http
 #   #   endpoint: hostname:4318
 #   #   url_path: /v1/traces
 #   #   compression: false

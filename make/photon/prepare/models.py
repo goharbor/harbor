@@ -166,11 +166,14 @@ class OtelExporter:
         self.compression = config.get('compression') or False
         self.insecure = config.get('insecure') or False
         self.timeout = config.get('timeout') or '10'
+        self.protocol = str(config.get('protocol') or 'http').lower()
 
     def validate(self):
         if not self.endpoint:
             raise Exception('Trace endpoint not set')
-        if not self.url_path:
+        if self.protocol not in ('http', 'grpc'):
+            raise Exception('Trace otel protocol must be http or grpc')
+        if self.protocol == 'http' and not self.url_path:
             raise Exception('Trace url path not set')
 
 

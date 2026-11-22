@@ -45,6 +45,7 @@ func InitTraceConfig(ctx context.Context) {
 			tracelib.WithOtelCompression(cfgMgr.Get(ctx, common.TraceOtelCompression).GetBool()),
 			tracelib.WithOtelInsecure(cfgMgr.Get(ctx, common.TraceOtelInsecure).GetBool()),
 			tracelib.WithOtelTimeout(cfgMgr.Get(ctx, common.TraceOtelTimeout).GetInt()),
+			tracelib.WithOtelProtocol(cfgMgr.Get(ctx, common.TraceOtelProtocol).GetString()),
 		)
 		commonhttp.AddTracingWithGlobalTransport()
 	}

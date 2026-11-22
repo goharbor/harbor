@@ -16,6 +16,8 @@ package trace // nolint:revive
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -23,6 +25,7 @@ import (
 
 	// nolint:staticcheck
 	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -33,6 +36,48 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/version"
 )
+
+const (
+	otelProtocolHTTP = "http"
+	otelProtocolGRPC = "grpc"
+)
+
+// newOtelExporter creates the OTLP exporter for the configured protocol, http is used when not set
+func newOtelExporter(ctx context.Context, cfg OtelConfig) (tracesdk.SpanExporter, error) {
+	switch strings.ToLower(cfg.Protocol) {
+	case "", otelProtocolHTTP:
+		log.Infof("init trace provider otel http on %s/%s", cfg.Endpoint, cfg.URLPath)
+		opts := []otlptracehttp.Option{
+			otlptracehttp.WithEndpoint(cfg.Endpoint),
+			otlptracehttp.WithURLPath(cfg.URLPath),
+			otlptracehttp.WithTimeout(time.Duration(cfg.Timeout) * time.Second),
+		}
+		if cfg.Compression {
+			opts = append(opts, otlptracehttp.WithCompression(otlptracehttp.GzipCompression))
+		}
+		if cfg.Insecure {
+			opts = append(opts, otlptracehttp.WithInsecure())
+		}
+		return otlptracehttp.New(ctx, opts...)
+	case otelProtocolGRPC:
+		log.Infof("init trace provider otel grpc on %s", cfg.Endpoint)
+		opts := []otlptracegrpc.Option{
+			otlptracegrpc.WithEndpoint(cfg.Endpoint),
+		}
+		if cfg.Timeout > 0 {
+			opts = append(opts, otlptracegrpc.WithTimeout(time.Duration(cfg.Timeout)*time.Second))
+		}
+		if cfg.Compression {
+			opts = append(opts, otlptracegrpc.WithCompressor("gzip"))
+		}
+		if cfg.Insecure {
+			opts = append(opts, otlptracegrpc.WithInsecure())
+		}
+		return otlptracegrpc.New(ctx, opts...)
+	default:
+		return nil, fmt.Errorf("unsupported otel protocol %q, must be %s or %s", cfg.Protocol, otelProtocolHTTP, otelProtocolGRPC)
+	}
+}
 
 func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 	var err error
@@ -55,19 +100,7 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 		))
 	} else if len(cfg.Otel.Endpoint) != 0 {
 		// Otel exporter
-		log.Infof("init trace provider otel on %s/%s", cfg.Otel.Endpoint, cfg.Otel.URLPath)
-		opts := []otlptracehttp.Option{
-			otlptracehttp.WithEndpoint(cfg.Otel.Endpoint),
-			otlptracehttp.WithURLPath(cfg.Otel.URLPath),
-			otlptracehttp.WithTimeout(time.Duration(cfg.Otel.Timeout) * time.Second),
-		}
-		if cfg.Otel.Compression {
-			opts = append(opts, otlptracehttp.WithCompression(otlptracehttp.GzipCompression))
-		}
-		if cfg.Otel.Insecure {
-			opts = append(opts, otlptracehttp.WithInsecure())
-		}
-		exp, err = otlptracehttp.New(ctx, opts...)
+		exp, err = newOtelExporter(ctx, cfg.Otel)
 	} else {
 		log.Fatalf("Trace is enabled but no tracer provider is specified")
 	}
