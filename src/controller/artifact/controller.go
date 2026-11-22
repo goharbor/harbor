@@ -662,6 +662,10 @@ func (c *controller) RemoveLabel(ctx context.Context, artifactID int64, labelID 
 }
 
 func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error {
+	if root == nil || walkFn == nil {
+		return nil
+	}
+
 	queue := list.New()
 	queue.PushBack(root)
 
@@ -675,9 +679,9 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 		walked[artifact.Digest] = true
 
 		if err := walkFn(artifact); err != nil {
-			if err == ErrBreak {
+			if errors.Is(err, ErrBreak) {
 				return nil
-			} else if err == ErrSkip {
+			} else if errors.Is(err, ErrSkip) {
 				continue
 			}
 
@@ -697,16 +701,16 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 			}
 
 			for _, child := range children {
-				if !walked[child.Digest] {
+				if child != nil && !walked[child.Digest] {
 					queue.PushBack(child)
 				}
-				if len(child.Accessories) != 0 {
+				if child != nil && len(child.Accessories) != 0 {
 					for _, acc := range child.Accessories {
 						accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
 						if err != nil {
 							return err
 						}
-						if !walked[accArt.Digest] {
+						if accArt != nil && !walked[accArt.Digest] {
 							queue.PushBack(accArt)
 						}
 					}
@@ -720,7 +724,7 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 				if err != nil {
 					return err
 				}
-				if !walked[accArt.Digest] {
+				if accArt != nil && !walked[accArt.Digest] {
 					queue.PushBack(accArt)
 				}
 			}

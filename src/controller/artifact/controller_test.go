@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -901,11 +902,12 @@ func (c *controllerTestSuite) TestWalk() {
 		root := &Artifact{}
 
 		var n int
-		c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+		err := c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
 			n++
 			return nil
 		}, nil)
 
+		c.NoError(err)
 		c.Equal(1, n)
 	}
 
@@ -917,12 +919,75 @@ func (c *controllerTestSuite) TestWalk() {
 		}
 
 		var n int
-		c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+		err := c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
 			n++
 			return nil
 		}, nil)
 
+		c.NoError(err)
 		c.Equal(3, n)
+	}
+
+	{
+		// nil root returns nil without panic
+		err := c.ctl.Walk(context.TODO(), nil, func(a *Artifact) error {
+			return nil
+		}, nil)
+		c.NoError(err)
+	}
+
+	{
+		// nil walkFn returns nil without panic
+		root := &Artifact{}
+		err := c.ctl.Walk(context.TODO(), root, nil, nil)
+		c.NoError(err)
+	}
+
+	{
+		// wrapped ErrBreak terminates early and returns nil
+		root := &Artifact{}
+		root.References = []*artifact.Reference{
+			{ParentID: 1, ChildID: 2},
+			{ParentID: 1, ChildID: 3},
+		}
+
+		var n int
+		err := c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+			n++
+			return fmt.Errorf("wrapped break: %w", ErrBreak)
+		}, nil)
+
+		c.NoError(err)
+		c.Equal(1, n)
+	}
+
+	{
+		// wrapped ErrSkip skips node expansion and continues
+		root := &Artifact{}
+		root.References = []*artifact.Reference{
+			{ParentID: 1, ChildID: 2},
+			{ParentID: 1, ChildID: 3},
+		}
+
+		var n int
+		err := c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+			n++
+			return fmt.Errorf("wrapped skip: %w", ErrSkip)
+		}, nil)
+
+		c.NoError(err)
+		c.Equal(1, n)
+	}
+
+	{
+		// other errors are propagated
+		root := &Artifact{}
+		expectedErr := errors.New("walk error")
+		err := c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+			return expectedErr
+		}, nil)
+
+		c.ErrorIs(err, expectedErr)
 	}
 }
 
