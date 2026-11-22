@@ -16,6 +16,8 @@ package readonly
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -57,4 +59,37 @@ func TestIntercept(t *testing.T) {
 	require.Nil(t, err)
 	time.Sleep(1 * time.Nanosecond) // make sure the cached key is expired
 	assert.Equal(t, Err, interceptor.Intercept(req))
+}
+
+type mockWrappedErrCache struct {
+	cache.Cache
+	fetchErr error
+}
+
+func (m *mockWrappedErrCache) Fetch(ctx context.Context, key string, value any) error {
+	return m.fetchErr
+}
+
+func (m *mockWrappedErrCache) Save(ctx context.Context, key string, value any, expiration ...time.Duration) error {
+	return nil
+}
+
+func TestIsReadOnly_WrappedCacheErrNotFound(t *testing.T) {
+	config.DefaultCfgManager = common.InMemoryCfgManager
+	_ = config.DefaultMgr().UpdateConfig(context.Background(), map[string]any{common.ReadOnly: false})
+
+	mockCache := &mockWrappedErrCache{
+		fetchErr: fmt.Errorf("wrapped redis cache miss: %w", cache.ErrNotFound),
+	}
+	itcp := &interceptor{cache: mockCache}
+
+	ro, err := itcp.isReadOnly(context.Background())
+	require.NoError(t, err)
+	assert.False(t, ro)
+
+	// verify unexpected error is propagated
+	expectedErr := errors.New("network failure")
+	mockCache.fetchErr = expectedErr
+	_, err = itcp.isReadOnly(context.Background())
+	require.ErrorIs(t, err, expectedErr)
 }
