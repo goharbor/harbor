@@ -568,6 +568,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project"))
 	}
 
+	// registry_id can only be set when creating a project, allow the current value to be sent back unchanged
+	if params.Project.RegistryID != nil && *params.Project.RegistryID != p.RegistryID {
+		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("registry_id can not be changed after the project is created"))
+	}
+
 	if params.Project.CVEAllowlist != nil {
 		if params.Project.CVEAllowlist.ProjectID == 0 {
 			// project_id in cve_allowlist not provided or provided as 0, let it to be the id of the project which will be updating

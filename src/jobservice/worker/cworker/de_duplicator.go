@@ -92,7 +92,7 @@ func (rdd *redisDeDuplicator) MustUnique(jobName string, params job.Parameters) 
 	}
 
 	res, err := redis.String(conn.Do("SET", args...))
-	if err == redis.ErrNil {
+	if errors.Is(err, redis.ErrNil) {
 		return errs.ConflictError(uniqueKey)
 	}
 

@@ -19,11 +19,18 @@ cur=$PWD
 # The temporary directory to clone Trivy adapter source code
 TEMP=$(mktemp -d ${TMPDIR-/tmp}/trivy-adapter.XXXXXX)
 git clone https://github.com/goharbor/harbor-scanner-trivy.git $TEMP
-cd $TEMP; git checkout $VERSION; cd -
+cd $TEMP; git checkout $VERSION
+# Stamp the same build info that the upstream GoReleaser release sets, so the
+# adapter does not report version "dev" in its logs and /api/v1/metadata.
+COMMIT=$(git rev-parse HEAD)
+BUILD_DATE=$(git log -1 --format=%cI)
+cd -
 
 echo "Building Trivy adapter binary ..."
 cp Dockerfile.binary $TEMP
-docker build --network=$DOCKERNETWORK --build-arg golang_image=$GOBUILDIMAGE -f $TEMP/Dockerfile.binary -t trivy-adapter-golang $TEMP
+docker build --network=$DOCKERNETWORK --build-arg golang_image=$GOBUILDIMAGE \
+  --build-arg version=${VERSION#v} --build-arg commit=$COMMIT --build-arg build_date=$BUILD_DATE \
+  -f $TEMP/Dockerfile.binary -t trivy-adapter-golang $TEMP
 
 echo "Copying Trivy adapter binary from the container to the local directory..."
 ID=$(docker create trivy-adapter-golang)

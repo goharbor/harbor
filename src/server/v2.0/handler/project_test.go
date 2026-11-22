@@ -303,6 +303,55 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 	}
 }
 
+func (suite *ProjectTestSuite) TestUpdateProjectRegistryID() {
+	suite.Security.On("IsAuthenticated").Return(true)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+	proxyProject := &models.Project{
+		ProjectID:  2,
+		Name:       "proxy",
+		RegistryID: 1,
+	}
+
+	{
+		// changing registry_id of a proxy cache project is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxyProject, nil).Once()
+
+		res, err := suite.PutJSON("/projects/2", map[string]any{"registry_id": 3})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// setting registry_id on a normal project is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"registry_id": 3})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// sending the current registry_id back unchanged is allowed
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxyProject, nil).Once()
+		mock.OnAnything(suite.projectCtl, "Update").Return(nil).Once()
+
+		res, err := suite.PutJSON("/projects/2", map[string]any{"registry_id": 1})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+
+	{
+		// registry_id 0 on a normal project is allowed
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+		mock.OnAnything(suite.projectCtl, "Update").Return(nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"registry_id": 0})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+}
+
 func TestProjectTestSuite(t *testing.T) {
 	suite.Run(t, &ProjectTestSuite{})
 }

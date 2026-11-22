@@ -41,6 +41,7 @@ func (m *managerTestSuite) SetupTest() {
 	m.repoMgr = &testRepo.Manager{}
 	m.cache = &testcache.Cache{}
 	m.iterator = &testcache.Iterator{}
+	m.iterator.On("Err").Return(nil).Maybe()
 	m.cachedManager = NewManager(m.repoMgr)
 	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
