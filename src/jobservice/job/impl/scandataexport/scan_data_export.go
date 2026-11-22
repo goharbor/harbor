@@ -117,6 +117,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 			"Export Job Id = %s. Error when moving report file %s to persistent storage: %v", params[export.JobID], fileName, err)
 		return err
 	}
+	defer csvFile.Close()
 	baseFileName := filepath.Base(fileName)
 	repositoryName := strings.TrimSuffix(baseFileName, filepath.Ext(baseFileName))
 	logger.Infof("Creating repository for CSV file with blob : %s", repositoryName)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -112,6 +113,32 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	_, err = os.Stat("/tmp/scandata_export_1000000.csv")
 	suite.Truef(os.IsNotExist(err), "Expected CSV file to be deleted")
 
+}
+
+func (suite *ScanDataExportJobTestSuite) TestRunClosesCsvFile() {
+	var pushed io.Reader
+	suite.sysArtifactMgr.ExpectedCalls = nil
+	suite.sysArtifactMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).
+		Run(func(args testifymock.Arguments) { pushed = args.Get(2).(io.Reader) }).
+		Return(int64(1), nil)
+
+	data := suite.createDataRecords(3)
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
+	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
+	mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
+	mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: map[string]any{}}, nil)
+
+	params := job.Parameters{}
+	params[export.JobModeKey] = export.JobModeExport
+	params["JobId"] = JobId
+	params["Request"] = map[string]any{"projects": []int64{1}}
+
+	suite.NoError(suite.job.Run(&mockjobservice.MockJobContext{}, params))
+	suite.Require().IsType(&os.File{}, pushed)
+	_, err := pushed.(*os.File).Read(make([]byte, 1))
+	suite.ErrorIs(err, os.ErrClosed, "Run must close the CSV file it opened")
 }
 
 func (suite *ScanDataExportJobTestSuite) TestRunWithEmptyData() {
