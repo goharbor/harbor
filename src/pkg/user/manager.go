@@ -71,11 +71,14 @@ type Manager interface {
 
 // New returns a default implementation of Manager
 func New() Manager {
-	return &manager{dao: dao.New()}
+	return &manager{dao: dao.New(), verifyCache: newVerifyCacheFromEnv()}
 }
 
 type manager struct {
 	dao dao.DAO
+	// verifyCache remembers recent successful password verifications so Basic
+	// Auth clients do not re-run PBKDF2 on every request. nil disables it.
+	verifyCache *verifyCache
 }
 
 func (m *manager) Onboard(ctx context.Context, user *commonmodels.User) error {
@@ -128,12 +131,25 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 		return nil, err
 	}
 	for _, entry := range l {
-		if utils.Encrypt(password, entry.Salt, entry.PasswordVersion) == entry.Password {
+		if m.passwordMatches(password, entry) {
 			entry.Password = ""
 			return entry, nil
 		}
 	}
 	return nil, nil
+}
+
+// passwordMatches checks the password against the stored credential, consulting
+// the verification cache before running the PBKDF2 derivation.
+func (m *manager) passwordMatches(password string, u *commonmodels.User) bool {
+	if m.verifyCache.verified(password, u.Salt, u.PasswordVersion, u.Password) {
+		return true
+	}
+	if utils.Encrypt(password, u.Salt, u.PasswordVersion) != u.Password {
+		return false
+	}
+	m.verifyCache.remember(password, u.Salt, u.PasswordVersion, u.Password)
+	return true
 }
 
 func (m *manager) Count(ctx context.Context, query *q.Query, options ...models.Option) (int64, error) {
