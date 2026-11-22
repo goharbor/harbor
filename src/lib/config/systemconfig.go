@@ -161,6 +161,25 @@ func GetGCTimeWindow() int64 {
 	return common.DefaultGCTimeWindowHours
 }
 
+func GetGCMaxWorkers() int {
+	env, exist := os.LookupEnv("GC_MAX_WORKERS")
+	if !exist {
+		return 0
+	}
+
+	maxWorkers, err := strconv.Atoi(env)
+	if err != nil {
+		log.Errorf("failed to parse GC_MAX_WORKERS=%q, no GC worker limit is enforced, error: %v", env, err)
+		return 0
+	}
+	if maxWorkers <= 0 {
+		log.Errorf("invalid GC_MAX_WORKERS=%q (must be > 0), no GC worker limit is enforced", env)
+		return 0
+	}
+	
+	return maxWorkers
+}
+
 // GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
 func GetExecutionStatusRefreshIntervalSeconds() int64 {
 	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()

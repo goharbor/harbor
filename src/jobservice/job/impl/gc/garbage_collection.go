@@ -168,8 +168,28 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 		}
 	}
 
+	if clamped, ok := clampWorkers(gc.workers, params); ok {
+		gc.logger.Warningf("GC workers %d exceeds the configured maximum %d, using %d", gc.workers, clamped, clamped)
+		gc.workers = clamped
+	}
+
 	gc.logger.Infof("Garbage Collection parameters: [delete_untagged: %t, delete_tag: %t, dry_run: %t, time_window: %d, workers: %d]",
 		gc.deleteUntagged, gc.deleteTag, gc.dryRun, gc.timeWindowHours, gc.workers)
+}
+
+func clampWorkers(workers int, params job.Parameters) (int, bool) {
+	mw, exist := params["max_workers"]
+	if !exist {
+		return workers, false
+	}
+	maxWorkers, ok := mw.(float64)
+	if !ok || int(maxWorkers) <= 0 {
+		return workers, false
+	}
+	if workers <= int(maxWorkers) {
+		return workers, false
+	}
+	return int(maxWorkers), true
 }
 
 // Run implements the interface in job/Interface

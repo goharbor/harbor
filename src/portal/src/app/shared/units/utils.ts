@@ -976,7 +976,10 @@ export function getPageSizeFromLocalStorage(
  * Set the page size to the browser's localStorage
  * @param pageSize
  */
-export function setPageSizeToLocalStorage(key: string, pageSize: number) {
+export function setPageSizeToLocalStorage(
+    key: string,
+    pageSize: number | undefined
+) {
     if (localStorage) {
         if (pageSize) {
             localStorage.setItem(PAGE_SIZE_KEY, `${pageSize}`);
