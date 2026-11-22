@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -35,6 +36,11 @@ import (
 
 // TrimmedManifestlist - key prefix for trimmed manifest
 const TrimmedManifestlist = "trimmedmanifestlist:"
+
+// Share the result of an active push across helpers. A duplicate must wait for
+// completion: treating an in-flight blob as available can publish its manifest
+// before the registry has stored all of the manifest's dependencies.
+var blobPushes, manifestPushes singleflight.Group
 
 // localInterface defines operations related to local repo under proxy mode
 type localInterface interface {
@@ -104,29 +110,22 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 	log.Debugf("Put blob to local registry, localRepo:%v, digest: %v", localRepo, desc.Digest)
 	ref := string(desc.Digest)
 	artName := localRepo + ":" + ref
-	// use inflight checker to avoid multiple requests to push blob to local in same time
-	if !inflightChecker.addRequest(artName) {
-		return nil
-	}
-	defer inflightChecker.removeRequest(artName)
-	err := l.registry.PushBlob(localRepo, ref, desc.Size, bReader)
+	_, err, _ := blobPushes.Do(artName, func() (any, error) {
+		return nil, l.registry.PushBlob(localRepo, ref, desc.Size, bReader)
+	})
 	return err
 }
 
 func (l *localHelper) PushManifest(repo string, ref string, manifest distribution.Manifest) error {
-	// Make sure there is only one go routing to push current artName to local repo
 	artName := repo + ":" + ref
-	// use inflight checker to avoid multiple requests to push manifest to local in same time
-	if !inflightChecker.addRequest(artName) {
-		return nil
-	}
-	defer inflightChecker.removeRequest(artName)
-
-	mediaType, payload, err := manifest.Payload()
-	if err != nil {
-		return err
-	}
-	_, err = l.registry.PushManifest(repo, ref, mediaType, payload)
+	_, err, _ := manifestPushes.Do(artName, func() (any, error) {
+		mediaType, payload, err := manifest.Payload()
+		if err != nil {
+			return nil, err
+		}
+		_, err = l.registry.PushManifest(repo, ref, mediaType, payload)
+		return nil, err
+	})
 	return err
 }
 
