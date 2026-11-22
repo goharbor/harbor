@@ -127,6 +127,19 @@ func (uts *UserTestSuite) TestSetUserSysAdminRequiresSysAdmin() {
 	uts.uCtl.AssertCalled(uts.T(), "SetSysAdmin", mock.Anything, 3, true)
 }
 
+func (uts *UserTestSuite) TestRevokeUserSysAdminRequiresSysAdmin() {
+	body := map[string]bool{"sysadmin_flag": false}
+
+	uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	uts.Security.On("IsSysAdmin").Return(false).Once()
+	uts.uCtl.On("SetSysAdmin", mock.Anything, 4, false).Return(nil)
+
+	res, err := uts.Suite.PutJSON("/users/4/sysadmin", body)
+	uts.NoError(err)
+	uts.Equal(403, res.StatusCode)
+	uts.uCtl.AssertNotCalled(uts.T(), "SetSysAdmin", mock.Anything, 4, false)
+}
+
 func (uts *UserTestSuite) TestGetRandomSecret() {
 	for i := 1; i < 5; i++ {
 		rSec, err := getRandomSecret()
