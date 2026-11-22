@@ -26,28 +26,29 @@ func TestManger(t *testing.T) {
 }
 
 func TestExpiration(t *testing.T) {
-	manager := createManager(1*time.Second, defaultCap, defaultGCInterval)
+	manager := createManager(50*time.Millisecond, defaultCap, defaultGCInterval)
 	rn1 := "project1/golang"
 	s := manager.Generate(rn1)
-	// Sleep till the secret expires
-	time.Sleep(2 * time.Second)
-	assert.False(t, manager.Verify(s, rn1))
+	assert.Eventually(t, func() bool {
+		return !manager.Verify(s, rn1)
+	}, 1*time.Second, 10*time.Millisecond)
 }
 
 func TestGC(t *testing.T) {
-	manager := createManager(1*time.Second, 10, 1*time.Second).(*mgr)
+	manager := createManager(50*time.Millisecond, 10, 50*time.Millisecond).(*mgr)
 	for i := range 10 {
 		rn := fmt.Sprintf("project%d/golang", i)
 		manager.Generate(rn)
 	}
-	time.Sleep(2 * time.Second)
 	assert.Equal(t, uint64(10), manager.size)
+	// Wait for the initial 10 items to expire before triggering GC with new items
+	time.Sleep(60 * time.Millisecond)
 	for i := range 1000 {
 		rn := fmt.Sprintf("project%d/redis", i)
 		manager.Generate(rn)
 	}
 	assert.Equal(t, uint64(1000), atomic.LoadUint64(&manager.size))
-	time.Sleep(4 * time.Second)
-	assert.Equal(t, uint64(0), atomic.LoadUint64(&manager.size))
-
+	assert.Eventually(t, func() bool {
+		return atomic.LoadUint64(&manager.size) == 0
+	}, 2*time.Second, 10*time.Millisecond)
 }
