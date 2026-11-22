@@ -41,7 +41,8 @@ type ControllerTestSuite struct {
 	mMgr  *scannertesting.Manager
 	mMeta *metadatatesting.Manager
 
-	sample *scanner.Registration
+	sample   *scanner.Registration
+	metadata *v1.ScannerAdapterMetadata
 }
 
 // TestController is the entry of controller test suite
@@ -75,6 +76,7 @@ func (suite *ControllerTestSuite) SetupTest() {
 			"extra": "testing",
 		},
 	}
+	suite.metadata = m
 
 	suite.sample = &scanner.Registration{
 		Name:        "forUT",
@@ -114,6 +116,35 @@ func (suite *ControllerTestSuite) TestListRegistrations() {
 	rl, err := suite.c.ListRegistrations(context.TODO(), query)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(rl))
+}
+
+// TestListRegistrationsWhenPingError tests ListRegistrations when one scanner can't be reached
+func (suite *ControllerTestSuite) TestListRegistrationsWhenPingError() {
+	query := &q.Query{
+		PageSize:   10,
+		PageNumber: 1,
+	}
+
+	down := &scanner.Registration{Name: "down", URL: "https://scanner-down.example.com"}
+	up := &scanner.Registration{Name: "up", URL: "https://scanner-up.example.com"}
+	suite.mMgr.On("List", mock.Anything, query).Return([]*scanner.Registration{down, up}, nil)
+
+	// Ping error on the first scanner only
+	downClient := &v1testing.Client{}
+	downClient.On("GetMetadata").Return(nil, fmt.Errorf("getMetadata error"))
+	upClient := &v1testing.Client{}
+	upClient.On("GetMetadata").Return(suite.metadata, nil)
+
+	mcp := &v1testing.ClientPool{}
+	mcp.On("Get", down.URL, mock.Anything, mock.Anything, mock.Anything).Return(downClient, nil)
+	mcp.On("Get", up.URL, mock.Anything, mock.Anything, mock.Anything).Return(upClient, nil)
+	suite.c.clientPool = mcp
+
+	rl, err := suite.c.ListRegistrations(context.TODO(), query)
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 2, len(rl))
+	assert.Nil(suite.T(), rl[0].Capabilities)
+	assert.Equal(suite.T(), true, rl[1].Capabilities["support_vulnerability"])
 }
 
 // TestCreateRegistration tests CreateRegistration
