@@ -92,11 +92,20 @@ func (h *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 		Registry: sr.Registry,
 		Artifact: sr.Artifact,
 	}
-	scanReq.Registry.Insecure = strings.HasPrefix(scanReq.Registry.URL, "http://")
-	// the registry URL should not contain http:// or https:// prefix
-	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "http://")
-	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "https://")
-	if len(scanReq.Registry.URL) == 0 {
+	if sr.Registry != nil {
+		reg := *sr.Registry
+		scanReq.Registry = &reg
+		scanReq.Registry.URL = strings.TrimSpace(scanReq.Registry.URL)
+		lowerURL := strings.ToLower(scanReq.Registry.URL)
+		if strings.HasPrefix(lowerURL, "http://") {
+			scanReq.Registry.Insecure = true
+			scanReq.Registry.URL = scanReq.Registry.URL[len("http://"):]
+		} else if strings.HasPrefix(lowerURL, "https://") {
+			scanReq.Registry.URL = scanReq.Registry.URL[len("https://"):]
+		}
+		scanReq.Registry.URL = strings.TrimRight(scanReq.Registry.URL, "/")
+	}
+	if scanReq.Registry == nil || len(scanReq.Registry.URL) == 0 {
 		return "", fmt.Errorf("empty registry server")
 	}
 	myLogger := ctx.GetLogger()
