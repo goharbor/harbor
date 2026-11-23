@@ -240,6 +240,8 @@
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
         "PROXY_CACHE_TOOLTIP": "Habilite esta opção para permitir que este projeto atue como cache proxy para uma instância de registro de destino específica.",
+        "PROXY_CACHE_REGISTRY": "Registro",
+        "PROXY_CACHE_ADVANCED_SETTINGS": "Configurações avançadas",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
         "PROXY_CACHE_RETENTION_DAYS": "Período de retenção (dias)",

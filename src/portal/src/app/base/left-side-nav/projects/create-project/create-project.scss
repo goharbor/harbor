@@ -1,11 +1,10 @@
-
 .mr-10 {
-    margin-right:0.5rem;
+    margin-right: 0.5rem;
 }
 
 .display-flex {
     display: flex;
-    align-items:center;
+    align-items: center;
 }
 
 .pos-inherit {
@@ -30,15 +29,6 @@
     width: 164px;
 }
 
-.endpoint {
-    display: inline-block;
-    width: 72px;
-}
-
-.display-none {
-    display: none
-}
-
 .space-between {
     display: flex;
     justify-content: space-between;
@@ -50,7 +40,7 @@
 }
 
 .alert-label {
-    color:red;
+    color: red;
     font-size: 12px;
 }
 
@@ -60,4 +50,16 @@
 
 .mt-05 {
     margin-top: 0.5rem;
+}
+
+.proxy-cache-settings-toggle {
+    margin-top: 1rem;
+    margin-left: 0;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.proxy-cache-settings-error {
+    color: var(--clr-forms-invalid-color, #c21d00);
+    margin-left: 0.5rem;
 }

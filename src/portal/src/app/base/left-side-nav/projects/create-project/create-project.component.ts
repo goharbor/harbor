@@ -102,6 +102,7 @@ export class CreateProjectComponent
     nameTooltipText = 'PROJECT.NAME_TOOLTIP';
     checkOnGoing = false;
     enableProxyCache: boolean = false;
+    showProxyCacheAdvancedSettings = false;
     retentionDays: number = DEFAULT_RETENTION_DAYS;
     readonly maxRetentionDays = 18250; // 50 years
     endpoint: string = '';
@@ -483,6 +484,7 @@ export class CreateProjectComponent
         this.hasChanged = false;
         this.createProjectOpened = true;
         this.enableProxyCache = false;
+        this.showProxyCacheAdvancedSettings = false;
         this.retentionDays = DEFAULT_RETENTION_DAYS;
         this.endpoint = '';
         if (
@@ -517,6 +519,15 @@ export class CreateProjectComponent
             !this.maxUpstreamConnError &&
             !this.repositoryFilterError &&
             (!this.enableProxyCache || this.isRetentionDaysValid)
+        );
+    }
+
+    get hasProxyCacheAdvancedErrors(): boolean {
+        return (
+            !this.isRetentionDaysValid ||
+            !!this.bandwidthError ||
+            !!this.maxUpstreamConnError ||
+            !!this.repositoryFilterError
         );
     }
 

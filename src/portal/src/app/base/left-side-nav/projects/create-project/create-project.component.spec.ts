@@ -118,14 +118,118 @@ describe('CreateProjectComponent', () => {
         expect(modelBody).toBeFalsy();
     });
 
-    it('should enable proxy cache', async () => {
+    async function openProxyProject() {
+        component.createProjectOpened = true;
+        component.isSystemAdmin = true;
         component.enableProxyCache = true;
+        component.project.name = 'proxy-project';
+        component.project.registry_id = 1;
+        component.storageLimit = -1;
+        component.registries = [
+            { id: 1, name: 'upstream', url: 'https://registry.example.com' },
+        ];
+        fixture.detectChanges();
+        await fixture.whenStable();
+    }
+
+    it('should remove proxy settings from the layout when proxy cache is disabled', async () => {
+        component.createProjectOpened = true;
         component.isSystemAdmin = true;
         fixture.detectChanges();
         await fixture.whenStable();
-        const endpoint: HTMLDivElement =
+
+        expect(
+            fixture.nativeElement.querySelector('#proxy-cache')
+        ).toBeTruthy();
+        expect(fixture.nativeElement.querySelector('#registry')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#endpoint')).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                '#proxy-cache-advanced-settings'
+            )
+        ).toBeNull();
+    });
+
+    it('should keep proxy settings unavailable to non-admin users', async () => {
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(fixture.nativeElement.querySelector('#proxy-cache')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#registry')).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector('#proxy-cache-advanced-toggle')
+        ).toBeNull();
+    });
+
+    it('should show the registry and endpoint with advanced settings collapsed', async () => {
+        await openProxyProject();
+        const registry: HTMLSelectElement =
+            fixture.nativeElement.querySelector('#registry');
+        const endpoint: HTMLInputElement =
             fixture.nativeElement.querySelector('#endpoint');
-        expect(endpoint).toBeFalsy();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-toggle'
+        );
+        const settings: HTMLDivElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-settings'
+        );
+
+        expect(registry.value).toBe('1');
+        expect(endpoint.value).toBe('https://registry.example.com');
+        expect(endpoint.readOnly).toBeTrue();
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(toggle.getAttribute('aria-controls')).toBe(settings.id);
+        expect(getComputedStyle(settings).display).toBe('none');
+    });
+
+    it('should preserve advanced settings and their form controls when collapsed', async () => {
+        await openProxyProject();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-toggle'
+        );
+        const settings: HTMLDivElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-settings'
+        );
+        toggle.click();
+        fixture.detectChanges();
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(getComputedStyle(settings).display).not.toBe('none');
+
+        const retention: HTMLInputElement =
+            settings.querySelector('#retentionDays');
+        retention.value = '30';
+        retention.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        toggle.click();
+        fixture.detectChanges();
+        expect(getComputedStyle(settings).display).toBe('none');
+        expect(settings.querySelector('#retentionDays')).toBe(retention);
+        expect(component.currentForm.controls['retentionDays'].value).toBe(30);
+
+        toggle.click();
+        fixture.detectChanges();
+        expect(retention.value).toBe('30');
+    });
+
+    it('should keep registry setup guidance visible when there are no endpoints', async () => {
+        await openProxyProject();
+        component.registries = [];
+        component.project.registry_id = null;
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const link: HTMLAnchorElement = fixture.nativeElement.querySelector(
+            'a[routerLink="/harbor/registries"]'
+        );
+        expect(link).toBeTruthy();
+        expect(link.closest('#proxy-cache-advanced-settings')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#endpoint').value).toBe('');
+        expect(
+            fixture.nativeElement.querySelector('#new-project-ok').disabled
+        ).toBeTrue();
     });
 
     it('should show the default retention period only for proxy cache creation', async () => {
@@ -265,8 +369,10 @@ describe('CreateProjectComponent', () => {
 
     it('should restore the default retention period when reopening the dialog', () => {
         component.retentionDays = 30;
+        component.showProxyCacheAdvancedSettings = true;
         component.onCancel();
         component.newProject();
         expect(component.retentionDays).toBe(7);
+        expect(component.showProxyCacheAdvancedSettings).toBeFalse();
     });
 });

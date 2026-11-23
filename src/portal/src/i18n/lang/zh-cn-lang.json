@@ -240,6 +240,8 @@
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
         "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的代理缓存。",
+        "PROXY_CACHE_REGISTRY": "镜像仓库",
+        "PROXY_CACHE_ADVANCED_SETTINGS": "高级设置",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址",
         "PROXY_CACHE_RETENTION_DAYS": "保留时长（天）",
