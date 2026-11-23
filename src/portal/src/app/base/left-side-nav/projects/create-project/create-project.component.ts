@@ -383,35 +383,36 @@ export class CreateProjectComponent
     }
 
     onSubmit() {
-        if (this.enableProxyCache && !this.isRetentionDaysValid) {
-            this.inlineAlert.showInlineError(
-                'PROJECT.PROXY_CACHE_RETENTION_DAYS_INVALID'
+        if (this.enableProxyCache) {
+            if (!this.isRetentionDaysValid) {
+                this.inlineAlert.showInlineError(
+                    'PROJECT.PROXY_CACHE_RETENTION_DAYS_INVALID'
+                );
+                return;
+            }
+
+            this.validateBandwidth();
+            if (this.bandwidthError) {
+                this.inlineAlert.showInlineError(this.bandwidthError);
+                return;
+            }
+
+            this.validateMaxUpstreamConnections();
+            if (this.maxUpstreamConnError) {
+                this.inlineAlert.showInlineError(this.maxUpstreamConnError);
+                return;
+            }
+
+            this.validateRepositoryFilter();
+            if (this.repositoryFilterError) {
+                this.inlineAlert.showInlineError(this.repositoryFilterError);
+                return;
+            }
+
+            this.project.metadata.bandwidth = this.convertSpeedValue(
+                this.speedLimit
             );
-            return;
         }
-
-        // **Invoke bandwidth validation before submission**
-        this.validateBandwidth();
-        if (this.bandwidthError) {
-            this.inlineAlert.showInlineError(this.bandwidthError);
-            return;
-        }
-
-        this.validateMaxUpstreamConnections();
-        if (this.maxUpstreamConnError) {
-            this.inlineAlert.showInlineError(this.maxUpstreamConnError);
-            return;
-        }
-
-        this.validateRepositoryFilter();
-        if (this.repositoryFilterError) {
-            this.inlineAlert.showInlineError(this.repositoryFilterError);
-            return;
-        }
-
-        this.project.metadata.bandwidth = this.convertSpeedValue(
-            this.speedLimit
-        );
         if (this.isSubmitOnGoing) {
             return;
         }
@@ -425,17 +426,21 @@ export class CreateProjectComponent
             : null;
         const metadata: Record<string, string> = {
             public: this.project.metadata.public ? 'true' : 'false',
-            proxy_speed_kb: this.project.metadata.bandwidth.toString(),
-            max_upstream_conn:
-                this.project.metadata.max_upstream_conn.toString(),
-            proxy_cache_local_on_not_found: this.project.metadata
-                .proxy_cache_local_on_not_found
-                ? 'true'
-                : 'false',
-            proxy_referrer_api: this.project.metadata.proxy_referrer_api
-                ? 'true'
-                : 'false',
         };
+        if (this.enableProxyCache) {
+            Object.assign(metadata, {
+                proxy_speed_kb: this.project.metadata.bandwidth.toString(),
+                max_upstream_conn:
+                    this.project.metadata.max_upstream_conn.toString(),
+                proxy_cache_local_on_not_found: this.project.metadata
+                    .proxy_cache_local_on_not_found
+                    ? 'true'
+                    : 'false',
+                proxy_referrer_api: this.project.metadata.proxy_referrer_api
+                    ? 'true'
+                    : 'false',
+            });
+        }
         if (
             this.enableProxyCache &&
             this.project.metadata.proxy_cache_filter_pattern
@@ -505,6 +510,8 @@ export class CreateProjectComponent
         this.project.metadata.proxy_cache_filter_pattern = '';
         this.project.metadata.proxy_cache_filter_kind =
             REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        this.bandwidthError = null;
+        this.maxUpstreamConnError = null;
         this.repositoryFilterError = null;
     }
 
@@ -515,10 +522,7 @@ export class CreateProjectComponent
             !this.isSubmitOnGoing &&
             this.isNameValid &&
             !this.checkOnGoing &&
-            !this.bandwidthError &&
-            !this.maxUpstreamConnError &&
-            !this.repositoryFilterError &&
-            (!this.enableProxyCache || this.isRetentionDaysValid)
+            (!this.enableProxyCache || !this.hasProxyCacheAdvancedErrors)
         );
     }
 
