@@ -76,6 +76,16 @@ if [ ! -s $PGDATANEW/PG_VERSION ]; then
                 echo "remove the $PGDATAOLD after upgrade success."
                 rm -rf $PGDATAOLD
         else
+                # Refuse to start with an empty database when data of an older PostgreSQL
+                # that this release can't upgrade is still there, for example pg14 left by
+                # a Harbor release older than the one before this release.
+                for olddata in $PGDATA/pg*/PG_VERSION; do
+                        if [ -s "$olddata" ]; then
+                                echo "Upgrading from PostgreSQL $(cat "$olddata") to PostgreSQL $PG_VERSION_NEW is not supported in the current Harbor release."
+                                echo "You should upgrade to previous Harbor firstly, then upgrade to current release."
+                                exit 1
+                        fi
+                done
                 echo "init DB, DB version:$PG_VERSION_NEW"
                 initPG $PGDATANEW true
         fi
