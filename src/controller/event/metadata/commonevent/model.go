@@ -30,12 +30,15 @@ type Resolver interface {
 
 var urlResolvers = map[string]Resolver{}
 
+var urlPatterns = map[string]*regexp.Regexp{}
+
 var mu = &sync.Mutex{}
 
 // RegisterResolver register a resolver for a specific URL pattern
 func RegisterResolver(urlPattern string, resolver Resolver) {
 	mu.Lock()
 	urlResolvers[urlPattern] = resolver
+	urlPatterns[urlPattern] = regexp.MustCompile(urlPattern)
 	mu.Unlock()
 }
 
@@ -74,8 +77,7 @@ type Metadata struct {
 // Resolve parse the audit information from CommonEventMetadata
 func (c *Metadata) Resolve(event *event.Event) error {
 	for url, r := range Resolvers() {
-		p := regexp.MustCompile(url)
-		if p.MatchString(c.RequestURL) {
+		if urlPatterns[url].MatchString(c.RequestURL) {
 			return r.Resolve(c, event)
 		}
 	}
@@ -85,8 +87,7 @@ func (c *Metadata) Resolve(event *event.Event) error {
 // PreCheck check if current event is matched and return the prefetched resource name when it is delete operation
 func (c *Metadata) PreCheckMetadata() (bool, string) {
 	for urlPattern, r := range Resolvers() {
-		p := regexp.MustCompile(urlPattern)
-		if p.MatchString(c.RequestURL) {
+		if urlPatterns[urlPattern].MatchString(c.RequestURL) {
 			return r.PreCheck(c.Ctx, c.RequestURL, c.RequestMethod)
 		}
 	}
