@@ -55,6 +55,15 @@ func (l *localInterfaceMock) GetManifest(ctx context.Context, art lib.ArtifactIn
 	return a, args.Error(1)
 }
 
+func (l *localInterfaceMock) GetTags(ctx context.Context, repo, dig string) ([]string, error) {
+	args := l.Called(ctx, repo, dig)
+	var tags []string
+	if args.Get(0) != nil {
+		tags = args.Get(0).([]string)
+	}
+	return tags, args.Error(1)
+}
+
 func (l *localInterfaceMock) SameArtifact(ctx context.Context, repo, tag, dig string) (bool, error) {
 	panic("implement me")
 }
@@ -224,7 +233,7 @@ func (p *proxyControllerTestSuite) cachedManifestList(tagged *artifact.Artifact)
 	p.ctr = &controller{
 		local:           p.local,
 		cache:           c,
-		handlerRegistry: map[string]ManifestCacheHandler{ct: &ManifestListCache{local: p.local, cache: c}},
+		handlerRegistry: map[string]ManifestCacheHandler{ct: &ManifestListCache{local: p.local, cache: c, locker: &testLocker{}}},
 	}
 	art := lib.ArtifactInfo{Repository: repo, Tag: "latest"}
 	withDigest := lib.ArtifactInfo{Repository: repo, Tag: "latest", Digest: dig}
@@ -243,7 +252,15 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_CachedManifestListPushed
 	art, c := p.cachedManifestList(nil)
 	p.local.On("GetManifest", mock.Anything, lib.ArtifactInfo{Repository: art.Repository, Digest: testAmdDigest}).Return(&artifact.Artifact{}, nil)
 	p.local.On("GetManifest", mock.Anything, lib.ArtifactInfo{Repository: art.Repository, Digest: testArmDigest}).Return(&artifact.Artifact{}, nil)
-	c.On("Save", mock.Anything, TrimmedManifestlist+art.Digest, art.Digest).Return(nil).Once()
+	for _, child := range []string{testAmdDigest, testArmDigest} {
+		c.On("Fetch", mock.Anything, manifestListParentsKey(art.Repository, child), mock.Anything).Return(cache.ErrNotFound).Once()
+		c.On("Save", mock.Anything, manifestListParentsKey(art.Repository, child), []string{art.Digest}, manifestListCacheInterval).Return(nil).Once()
+	}
+	c.On("Contains", mock.Anything, manifestListRetryKey(art.Repository, art)).Return(false).Once()
+	c.On("Save", mock.Anything, manifestListRetryKey(art.Repository, art), true, manifestListRetryInterval).Return(nil).Once()
+	c.On("Fetch", mock.Anything, manifestListTagsKey(art.Repository, art.Digest), mock.Anything).Return(cache.ErrNotFound)
+	c.On("Save", mock.Anything, manifestListTagsKey(art.Repository, art.Digest), []string{"latest"}, manifestListCacheInterval).Return(nil).Once()
+	c.On("Fetch", mock.Anything, trimmedDigestKey(art.Repository, art.Digest), mock.Anything).Return(cache.ErrNotFound).Once()
 	c.On("Save", mock.Anything, trimmedDigestKey(art.Repository, art.Digest), art.Digest, manifestListCacheInterval).Return(nil).Once()
 	p.local.On("UpdatePullTime", mock.Anything, mock.Anything).Return(nil)
 	pushed := make(chan string, 1)
@@ -263,6 +280,27 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_CachedManifestListPushed
 	}
 }
 
+func (p *proxyControllerTestSuite) TestPushCachedManifestListThrottled() {
+	art, c := p.cachedManifestList(nil)
+	ct, payload := p.cachedPayload()
+	locker := &testLocker{}
+	p.ctr.(*controller).handlerRegistry[ct].(*ManifestListCache).locker = locker
+	c.On("Contains", mock.Anything, manifestListRetryKey(art.Repository, art)).Return(true).Once()
+
+	p.ctr.(*controller).pushCachedManifestList(context.Background(), art, payload, ct, p.remote)
+	p.Empty(locker.keys)
+	c.AssertNotCalled(p.T(), "Save", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	p.local.AssertNotCalled(p.T(), "PushManifest", mock.Anything, mock.Anything, mock.Anything)
+}
+
+// cachedPayload returns the content type and payload of the test manifest list
+func (p *proxyControllerTestSuite) cachedPayload() (string, []byte) {
+	manList, _ := testManifestList(p.T())
+	ct, payload, err := manList.Payload()
+	p.Require().NoError(err)
+	return ct, payload
+}
+
 func (p *proxyControllerTestSuite) TestUseLocalManifest_CachedManifestListAlreadyTagged() {
 	tagged := &artifact.Artifact{}
 	art, _ := p.cachedManifestList(tagged)
@@ -273,6 +311,21 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_CachedManifestListAlread
 	p.True(useLocal)
 	p.NotNil(ml)
 	p.local.AssertNotCalled(p.T(), "PushManifest", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (p *proxyControllerTestSuite) TestEnsureTag_TrimmedDigestOfRepository() {
+	repo := "library/hello-world"
+	art := lib.ArtifactInfo{ProjectName: "library", Repository: repo, Digest: testAmdDigest}
+	c := &cachetesting.Cache{}
+	c.On("Fetch", mock.Anything, trimmedDigestKey(repo, testAmdDigest), mock.Anything).Run(func(args mock.Arguments) {
+		*args.Get(2).(*string) = testArmDigest
+	}).Return(nil).Once()
+	p.local.On("GetManifest", mock.Anything, lib.ArtifactInfo{ProjectName: "library", Repository: repo, Digest: testArmDigest}).Return(nil, nil).Once()
+	ctl := &controller{local: p.local, cache: c}
+
+	p.Error(ctl.EnsureTag(context.Background(), art, "latest"))
+	c.AssertExpectations(p.T())
+	p.local.AssertExpectations(p.T())
 }
 
 func (p *proxyControllerTestSuite) TestManifestListTagged() {

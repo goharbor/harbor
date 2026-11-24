@@ -107,6 +107,27 @@ func (lh *localHelperTestSuite) TestBlobExist_True() {
 	lh.Assert().Equal(true, exist)
 }
 
+func (lh *localHelperTestSuite) TestGetTags() {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
+	a := &artifact.Artifact{Tags: []*ctltag.Tag{{Tag: modeltag.Tag{Name: "latest"}}, {Tag: modeltag.Tag{Name: "stable"}}}}
+	lh.artCtl.On("GetByReference", ctx, repo, dig, &artifact.Option{WithTag: true}).Return(a, nil).Once()
+	tags, err := lh.local.GetTags(ctx, repo, dig)
+	lh.Require().NoError(err)
+	lh.Equal([]string{"latest", "stable"}, tags)
+}
+
+func (lh *localHelperTestSuite) TestGetTags_NotFound() {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
+	lh.artCtl.On("GetByReference", ctx, repo, dig, &artifact.Option{WithTag: true}).Return(nil, errors.NotFoundError(nil)).Once()
+	tags, err := lh.local.GetTags(ctx, repo, dig)
+	lh.Require().NoError(err)
+	lh.Empty(tags)
+}
+
 func (lh *localHelperTestSuite) TestPushManifest() {
 	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
 	lh.registryClient.On("PushManifest", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(dig, nil)

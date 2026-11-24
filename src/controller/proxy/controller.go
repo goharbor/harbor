@@ -45,6 +45,8 @@ const (
 	sleepIntervalSec    = 20
 	// keep manifest list in cache for one week
 	manifestListCacheInterval = 7 * 24 * 60 * 60 * time.Second
+	// manifestListRetryInterval is how long to wait before pushing a cached manifest list again for a missing tag
+	manifestListRetryInterval = 5 * time.Minute
 )
 
 var (
@@ -102,7 +104,7 @@ func ControllerInstance() Controller {
 func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error {
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
-	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
+	err := c.cache.Fetch(ctx, trimmedDigestKey(art.Repository, art.Digest), &trimmedDigest)
 	if errors.Is(err, cache.ErrNotFound) { // nolint:revive
 		// skip to update digest, continue
 	} else if err != nil {
@@ -222,13 +224,17 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, nil
 	}
 	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
+	// The tag is missing locally or points to another manifest list, e.g. when this one was cached by digest only,
+	// or the core stopped before pushing it. Push it in the background without waiting for its manifests:
+	// caching any of them later pushes it again.
 	if len(art.Tag) > 0 && !c.manifestListTagged(ctx, a, art) {
 		go c.pushCachedManifestList(copyContext(ctx), art, content, contentType, remote)
 	}
 	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
 }
 
-// manifestListTagged checks whether the local artifact a is the local copy of the manifest list of art
+// manifestListTagged checks whether a, the local artifact of the tag of art, is the manifest list art.Digest
+// or its copy trimmed to the manifests cached locally
 func (c *controller) manifestListTagged(ctx context.Context, a *artifact.Artifact, art lib.ArtifactInfo) bool {
 	if a == nil {
 		return false
@@ -249,12 +255,15 @@ func (c *controller) pushCachedManifestList(ctx context.Context, art lib.Artifac
 	if !ok {
 		return
 	}
-	man, _, err := distribution.UnmarshalManifest(contentType, content)
-	if err != nil {
-		log.Errorf("failed to unmarshal the cached manifest list %v:%v, error: %v", art.Repository, art.Tag, err)
+	// throttle the pushes for a tag that stays missing, e.g. while none of the manifests is cached
+	key := manifestListRetryKey(art.Repository, art)
+	if c.cache.Contains(ctx, key) {
 		return
 	}
-	if err := h.waitAndPush(ctx, GetRemoteRepo(art), art, man, remote); err != nil {
+	if err := c.cache.Save(ctx, key, true, manifestListRetryInterval); err != nil {
+		log.Warningf("failed to cache the key %v, error: %v", key, err)
+	}
+	if err := h.pushCached(ctx, GetRemoteRepo(art), art, content, contentType, remote); err != nil {
 		log.Errorf("failed to push the cached manifest list %v:%v, error: %v", art.Repository, art.Tag, err)
 	}
 }
@@ -262,6 +271,11 @@ func (c *controller) pushCachedManifestList(ctx context.Context, art lib.Artifac
 func manifestListKey(repo string, art lib.ArtifactInfo) string {
 	// actual redis key format is cache:manifestlist:<repo name>:<tag> or cache:manifestlist:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + getReference(art)
+}
+
+// manifestListRetryKey is the key that throttles pushing the cached manifest list of art again for its tag
+func manifestListRetryKey(repo string, art lib.ArtifactInfo) string {
+	return "manifestlistretry:" + repo + ":" + art.Digest + ":" + art.Tag
 }
 
 func manifestListContentTypeKey(rep string, art lib.ArtifactInfo) string {

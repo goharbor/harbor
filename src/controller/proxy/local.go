@@ -42,6 +42,8 @@ type localInterface interface {
 	BlobExist(ctx context.Context, art lib.ArtifactInfo) (bool, error)
 	// GetManifest get the manifest info
 	GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error)
+	// GetTags get the names of the tags of the manifest dig in repo
+	GetTags(ctx context.Context, repo, dig string) ([]string, error)
 	// PushBlob push blob to local repo
 	PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error
 	// PushManifest push manifest to local repo, ref can be digest or tag
@@ -64,6 +66,21 @@ func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*a
 		return nil, err
 	}
 	return a, nil
+}
+
+func (l *localHelper) GetTags(ctx context.Context, repo, dig string) ([]string, error) {
+	a, err := l.artifactCtl.GetByReference(ctx, repo, dig, &artifact.Option{WithTag: true})
+	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	tags := make([]string, 0, len(a.Tags))
+	for _, t := range a.Tags {
+		tags = append(tags, t.Name)
+	}
+	return tags, nil
 }
 
 // localHelper defines operations related to local repo under proxy mode
