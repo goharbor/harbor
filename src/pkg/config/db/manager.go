@@ -15,14 +15,17 @@
 package db
 
 import (
+	"database/sql"
+
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/cache"
 	libCfg "github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 	"github.com/goharbor/harbor/src/pkg/config/store"
 )
+
+// shared so the process holds one listener however many managers exist
+var userSettings = newSyncedSettings(&Database{cfgDAO: dao.New()})
 
 func init() {
 	libCfg.Register(common.DBCfgManager, NewDBCfgManager())
@@ -30,14 +33,7 @@ func init() {
 
 // NewDBCfgManager - create DB config manager
 func NewDBCfgManager() *config.CfgManager {
-	cfgDriver := (store.Driver)(&Database{cfgDAO: dao.New()})
-
-	if cache.Default() != nil {
-		log.Debug("create DB config manager with cache enabled")
-		cfgDriver = NewCacheDriver(cache.Default(), cfgDriver)
-	}
-
-	manager := &config.CfgManager{Store: store.NewConfigStore(cfgDriver)}
+	manager := &config.CfgManager{Store: store.NewConfigStore(userSettings)}
 	// load default value
 	manager.LoadDefault()
 	// load system config from env
@@ -45,11 +41,7 @@ func NewDBCfgManager() *config.CfgManager {
 	return manager
 }
 
-// EnableConfigCache ...
-func EnableConfigCache() {
-	if cache.Default() == nil {
-		log.Error("failed to enable config cache, cache is not ready.")
-		return
-	}
-	libCfg.Register(common.DBCfgManager, NewDBCfgManager())
+// StartSettingsSync must run after migration.
+func StartSettingsSync(db *sql.DB) (stop func()) {
+	return userSettings.StartSync(db)
 }

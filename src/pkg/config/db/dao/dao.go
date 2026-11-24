@@ -33,7 +33,11 @@ type DAO interface {
 	SaveConfigEntries(ctx context.Context, entries []models.ConfigEntry) error
 	// GetConfigItem get configure item by key
 	GetConfigItem(ctx context.Context, query *q.Query) ([]*models.ConfigEntry, error)
+	// PublishConfigurationChanged is delivered by Postgres only when the transaction commits
+	PublishConfigurationChanged(ctx context.Context) error
 }
+
+const ConfigurationChangedChannel = "harbor_configuration_changed"
 
 type dao struct {
 }
@@ -71,22 +75,22 @@ func (d *dao) SaveConfigEntries(ctx context.Context, entries []models.ConfigEntr
 		if entry.Key == common.LDAPGroupAdminDn {
 			entry.Value = utils.TrimLower(entry.Value)
 		}
-		tempEntry := models.ConfigEntry{}
-		tempEntry.Key = entry.Key
-		tempEntry.Value = entry.Value
-		created, _, err := o.ReadOrCreate(&tempEntry, "k")
-		if err != nil && !orm.IsDuplicateKeyError(err) {
-			return errors.Wrap(err, "failed to create configuration entry")
-		}
-		if !created {
-			entry.ID = tempEntry.ID
-			_, err := o.Update(&entry, "v")
-			if err != nil {
-				return err
-			}
+		// Read-then-create races on a new key, and the duplicate-key error aborts the caller's transaction.
+		if _, err := o.Raw("INSERT INTO properties (k, v) VALUES (?, ?) ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v",
+			entry.Key, entry.Value).Exec(); err != nil {
+			return errors.Wrap(err, "failed to save configuration entry")
 		}
 	}
 	return nil
+}
+
+func (d *dao) PublishConfigurationChanged(ctx context.Context) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Raw("SELECT pg_notify(?, '')", ConfigurationChangedChannel).Exec()
+	return err
 }
 
 // GetConfigItem get configure item by query
