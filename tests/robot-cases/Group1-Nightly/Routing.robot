@@ -84,7 +84,7 @@ Test Case - Open More Info Page
     [Tags]  more_info_page
     Init Chrome Driver
     Go To  ${HARBOR_URL}
-    Retry Double Keywords When Error  Click Link New Tab And Switch  ${more_info_link_xpath}  Retry Wait Until Page Contains  An open source trusted cloud native registry project that stores, signs, and scans content.
+    Retry Double Keywords When Error  Click Link New Tab And Switch  ${more_info_link_xpath}  Retry Wait Until Page Contains  Harbor is a CNCF graduated open-source container registry
     Close Browser
 
 Test Case - Open CVE Details Page
