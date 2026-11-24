@@ -16,12 +16,14 @@ package v2token
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -36,7 +38,9 @@ type tokenSecurityCtx struct {
 	logger    *log.Logger
 	name      string
 	accessMap map[string]map[types.Action]struct{}
-	ctl       project.Controller
+	// catalog is true when the token carries registry:catalog:*, which the token service grants only to principals with catalog:read
+	catalog bool
+	ctl     project.Controller
 }
 
 func (t *tokenSecurityCtx) Name() string {
@@ -68,6 +72,9 @@ func (t *tokenSecurityCtx) GetProjectRoles(_ any) []int {
 }
 
 func (t *tokenSecurityCtx) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
+	if resource == system.NewNamespace().Resource(rbac.ResourceCatalog) {
+		return t.catalog && action == rbac.ActionRead
+	}
 	if !strings.HasSuffix(resource.String(), rbac.ResourceRepository.String()) {
 		return false
 	}
@@ -98,7 +105,12 @@ func (t *tokenSecurityCtx) Can(ctx context.Context, action types.Action, resourc
 func New(ctx context.Context, name string, access []*registry_token.ResourceActions) security.Context {
 	logger := log.G(ctx)
 	m := make(map[string]map[types.Action]struct{})
+	catalog := false
 	for _, ac := range access {
+		if ac.Type == "registry" && ac.Name == "catalog" {
+			catalog = catalog || slices.Contains(ac.Actions, "*")
+			continue
+		}
 		if ac.Type != "repository" {
 			logger.Debugf("dropped unsupported type '%s' in token", ac.Type)
 			continue
@@ -132,6 +144,7 @@ func New(ctx context.Context, name string, access []*registry_token.ResourceActi
 		logger:    logger,
 		name:      name,
 		accessMap: m,
+		catalog:   catalog,
 		ctl:       project.Ctl,
 	}
 }

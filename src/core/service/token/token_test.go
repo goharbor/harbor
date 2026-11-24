@@ -33,6 +33,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -287,6 +288,24 @@ func TestFilterAccess(t *testing.T) {
 	}), a3, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
+
+	a4 := GetResourceActions(s)
+	err = filterAccess(ctx(&fakeSecurityContext{
+		rcActions: map[rbac.Resource][]rbac.Action{
+			system.NewNamespace().Resource(rbac.ResourceCatalog): {rbac.ActionRead},
+		},
+	}), a4, nil, registryFilterMap)
+	assert.Nil(t, err, "Unexpected error: %v", err)
+	assert.Equal(t, ra1, *a4[0], "catalog:read holder should get registry:catalog:*")
+
+	a5 := GetResourceActions(s)
+	err = filterAccess(ctx(&fakeSecurityContext{
+		rcActions: map[rbac.Resource][]rbac.Action{
+			system.NewNamespace().Resource(rbac.ResourceUser): {rbac.ActionRead},
+		},
+	}), a5, nil, registryFilterMap)
+	assert.Nil(t, err, "Unexpected error: %v", err)
+	assert.Equal(t, ra2, *a5[0], "only catalog:read grants registry:catalog:*")
 }
 
 func TestParseScopes(t *testing.T) {
