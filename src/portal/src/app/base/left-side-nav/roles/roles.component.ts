@@ -63,6 +63,8 @@ import { PermissionsService } from '../../../../../ng-swagger-gen/services/permi
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
 import { AddRoleComponent } from './add-role/add-role.component';
 
+const DEFAULT_ROLE_SORT = 'role_id';
+
 @Component({
     standalone: false,
     selector: 'roles',
@@ -80,6 +82,7 @@ export class RolesComponent implements OnInit, OnDestroy {
     selectedRows: FrontRole[] = [];
     // Default the grid to ascending role_id so built-in roles (1-5) sort first.
     ascSort: ClrDatagridSortOrder = ClrDatagridSortOrder.ASC;
+    private sort = DEFAULT_ROLE_SORT;
     loading: boolean = true;
     loadingData: boolean = false;
     addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
@@ -113,7 +116,7 @@ export class RolesComponent implements OnInit, OnDestroy {
                         const queryParam: RoleService.ListRoleParams = {
                             page: this.currentPage,
                             pageSize: this.pageSize,
-                            sort: 'role_id',
+                            sort: this.sort,
                         };
                         this.searchKey = roleSearchName;
                         if (this.searchKey) {
@@ -187,6 +190,9 @@ export class RolesComponent implements OnInit, OnDestroy {
     }
 
     clrLoad(state?: ClrDatagridStateInterface) {
+        if (state) {
+            this.sort = getSortingString(state) ?? DEFAULT_ROLE_SORT;
+        }
         if (state && state.page && state.page.size) {
             this.pageSize = state.page.size;
             setPageSizeToLocalStorage(
@@ -198,7 +204,7 @@ export class RolesComponent implements OnInit, OnDestroy {
         const queryParam: RoleService.ListRoleParams = {
             page: this.currentPage,
             pageSize: this.pageSize,
-            sort: getSortingString(state),
+            sort: this.sort,
         };
         if (this.searchKey) {
             queryParam.q = encodeURIComponent(`name=~${this.searchKey}`);

@@ -11,12 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+    ComponentFixture,
+    fakeAsync,
+    TestBed,
+    tick,
+} from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { RolesComponent } from './roles.component';
 import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { of, Subscription } from 'rxjs';
+import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Role } from '../../../../../ng-swagger-gen/models/role';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
@@ -104,13 +109,50 @@ describe('RolesComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(RolesComponent);
         component = fixture.componentInstance;
-        component.searchSub = new Subscription();
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('requests ascending IDs after saving a role edit', () => {
+        const listRoles = spyOn(
+            TestBed.inject(RoleService),
+            'ListRoleResponse'
+        ).and.callThrough();
+
+        component.addSuccess(null);
+
+        expect(listRoles).toHaveBeenCalledWith(
+            jasmine.objectContaining({ page: 1, sort: 'role_id' })
+        );
+    });
+
+    it('keeps descending name order when refreshing or filtering roles', fakeAsync(() => {
+        const listRoles = spyOn(
+            TestBed.inject(RoleService),
+            'ListRoleResponse'
+        ).and.callThrough();
+        component.clrLoad({ sort: { by: 'name', reverse: true } });
+
+        listRoles.calls.reset();
+        component.refresh();
+        expect(listRoles).toHaveBeenCalledWith(
+            jasmine.objectContaining({ page: 1, sort: '-name' })
+        );
+
+        listRoles.calls.reset();
+        component.filterComponent.filterTerms.next('custom');
+        tick(500);
+        expect(listRoles).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                page: 1,
+                q: encodeURIComponent('name=~custom'),
+                sort: '-name',
+            })
+        );
+    }));
 
     it('renders the permission summary of a role that has access', async () => {
         // The grid loads its own page on init; wait for that before replacing the
