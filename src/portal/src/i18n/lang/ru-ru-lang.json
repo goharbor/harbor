@@ -1574,7 +1574,9 @@
     "GROUP_NAME_REQUIRED": "Имя группы обязательно",
     "NON_EXISTENT_GROUP": "Имя группы не существует",
     "GROUP_ALREADY_ADDED": "Имя группы уже добавлено в этот проект",
-    "BUILT_IN": "Встроенная"
+    "BUILT_IN": "Встроенная",
+    "BUILT_IN_ROLES": "Встроенные роли",
+    "CUSTOM_ROLES": "Пользовательские роли"
   },
   "ROBOT_ACCOUNT": {
     "NAME": "Имя",

@@ -79,4 +79,36 @@ describe('AddMemberComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('groups mixed roles and allows selection across categories', async () => {
+        const guest = { id: 3, name: 'guest', is_builtin: true };
+        const custom = { id: 10, name: 'Audit', is_builtin: false };
+        component.builtinRoles = [guest];
+        component.customRoles = [custom];
+        component.rolesLoaded = true;
+        component.addMemberOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const groups = fixture.nativeElement.querySelectorAll(
+            '.role-radio-list fieldset'
+        );
+        expect(groups.length).toBe(2);
+        const builtinRadio = groups[0].querySelector('input');
+        const customRadio = groups[1].querySelector('input');
+        expect(builtinRadio.id).toBe('add-member-role-3');
+        expect(customRadio.id).toBe('add-member-role-10');
+        builtinRadio.click();
+        customRadio.click();
+        expect(component.roleId).toBe(custom.id);
+        expect(builtinRadio.checked).toBeFalse();
+        expect(component.hasValidRole()).toBeTrue();
+
+        component.customRoles = [];
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelectorAll('fieldset').length).toBe(
+            1
+        );
+        expect(component.hasValidRole()).toBeFalse();
+    });
 });

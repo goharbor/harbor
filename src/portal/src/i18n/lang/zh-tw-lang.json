@@ -332,7 +332,9 @@
         "GROUP_NAME_REQUIRED": "必須輸入群組名稱。",
         "NON_EXISTENT_GROUP": "群組名稱不存在。",
         "GROUP_ALREADY_ADDED": "群組已是此專案的成員。",
-        "BUILT_IN": "內建"
+        "BUILT_IN": "內建",
+        "BUILT_IN_ROLES": "內建角色",
+        "CUSTOM_ROLES": "自訂角色"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "名稱",

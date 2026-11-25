@@ -332,7 +332,9 @@
         "GROUP_NAME_REQUIRED": "组名称为必填项",
         "NON_EXISTENT_GROUP": "组名称不存在",
         "GROUP_ALREADY_ADDED": "该组已存在于当前项目",
-        "BUILT_IN": "内置"
+        "BUILT_IN": "内置",
+        "BUILT_IN_ROLES": "内置角色",
+        "CUSTOM_ROLES": "自定义角色"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "名称",

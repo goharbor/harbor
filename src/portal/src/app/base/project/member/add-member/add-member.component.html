@@ -67,32 +67,33 @@
                         *ngIf="!rolesLoaded"
                         class="spinner spinner-inline"></span>
                     <div class="role-radio-list" *ngIf="rolesLoaded">
-                        <div *ngFor="let r of roles">
+                        @for (group of [ { label: 'MEMBER.BUILT_IN_ROLES',
+                        roles: builtinRoles }, { label: 'MEMBER.CUSTOM_ROLES',
+                        roles: customRoles } ]; track group.label) { @if
+                        (group.roles.length) {
+                        <fieldset>
+                            <legend>{{ group.label | translate }}</legend>
+                            @for (role of group.roles; track role.id) {
                             <clr-radio-wrapper>
                                 <input
                                     clrRadio
                                     type="radio"
                                     name="member_role"
-                                    id="add-member-role-{{ r.id }}"
-                                    [value]="r.id"
+                                    id="add-member-role-{{ role.id }}"
+                                    [value]="role.id"
                                     [(ngModel)]="roleId" />
-                                <label for="add-member-role-{{ r.id }}">
-                                    <strong *ngIf="r.is_builtin">{{
-                                        getRoleDisplayName(r) | translate
-                                    }}</strong>
-                                    <span *ngIf="!r.is_builtin">{{
-                                        r.name
-                                    }}</span>
-                                    <span
-                                        *ngIf="r.is_builtin"
-                                        class="label label-blue role-builtin-badge"
-                                        >{{
-                                            'MEMBER.BUILT_IN' | translate
-                                        }}</span
-                                    >
+                                <label for="add-member-role-{{ role.id }}">
+                                    {{
+                                        role.is_builtin
+                                            ? (getRoleDisplayName(role)
+                                              | translate)
+                                            : role.name
+                                    }}
                                 </label>
                             </clr-radio-wrapper>
-                        </div>
+                            }
+                        </fieldset>
+                        } }
                     </div>
                 </div>
             </div>

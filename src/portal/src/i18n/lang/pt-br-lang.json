@@ -332,7 +332,9 @@
         "GROUP_NAME_REQUIRED": "Nome do grupo é obrigatório",
         "NON_EXISTENT_GROUP": "Grupo não existe",
         "GROUP_ALREADY_ADDED": "Este nome de grupo já existe no projeto",
-        "BUILT_IN": "Integrado"
+        "BUILT_IN": "Integrado",
+        "BUILT_IN_ROLES": "Funções integradas",
+        "CUSTOM_ROLES": "Funções personalizadas"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Nome",

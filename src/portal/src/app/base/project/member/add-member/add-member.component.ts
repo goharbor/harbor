@@ -52,7 +52,8 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     // The parent page loads the role list once and shares it with both the member
     // and the group dialog, so opening the page issues a single paginated role
     // fetch instead of one per dialog.
-    @Input() roles: Role[] = [];
+    @Input() builtinRoles: Role[] = [];
+    @Input() customRoles: Role[] = [];
     @Input() rolesLoaded: boolean = false;
     @Output() added = new EventEmitter<boolean>();
     isMemberNameValid: boolean = true;
@@ -225,7 +226,11 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     }
 
     hasValidRole(): boolean {
-        return this.rolesLoaded && this.roles.some(r => r.id === this.roleId);
+        return (
+            this.rolesLoaded &&
+            (this.builtinRoles.some(role => role.id === this.roleId) ||
+                this.customRoles.some(role => role.id === this.roleId))
+        );
     }
 
     getRoleDisplayName(role: Role): string {
