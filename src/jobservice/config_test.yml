@@ -46,3 +46,8 @@ reaper:
   max_dangling_hours: 168
 
 max_retrieve_size_mb: 10
+
+job_concurrency:
+  IMAGE_SCAN_BULK: 6
+  REPLICATION: 3
+  IMAGE_SCAN: 5

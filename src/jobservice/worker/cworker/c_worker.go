@@ -17,6 +17,7 @@ package cworker
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"sync"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -67,6 +69,27 @@ type basicWorker struct {
 // workerContext ...
 // We did not use this context to pass context info so far, just a placeholder.
 type workerContext struct{}
+
+// maxConcurrencyFor returns the concurrency cap for the job registered under name.
+func maxConcurrencyFor(name string, def uint) uint {
+	if c, ok := config.DefaultConfig.JobConcurrency[name]; ok && c > 0 {
+		return c
+	}
+	return def
+}
+
+// unknownJobConcurrencyKeys returns the job_concurrency keys that are not a
+// registered job name.
+func unknownJobConcurrencyKeys(known func(name string) bool) []string {
+	var unknown []string
+	for name := range config.DefaultConfig.JobConcurrency {
+		if !known(name) {
+			unknown = append(unknown, name)
+		}
+	}
+	sort.Strings(unknown)
+	return unknown
+}
 
 // log the job
 func (rpc *workerContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
@@ -183,6 +206,14 @@ func (w *basicWorker) RegisterJobs(jobs map[string]any) error {
 		if err := w.registerJob(name, j); err != nil {
 			return err
 		}
+	}
+
+	// Warn about job_concurrency entries that do not match a registered job.
+	for _, name := range unknownJobConcurrencyKeys(func(n string) bool {
+		_, ok := w.knownJobs.Load(n)
+		return ok
+	}) {
+		logger.Warningf("job_concurrency: %q is not a registered job, entry ignored", name)
 	}
 
 	return nil
@@ -432,7 +463,7 @@ func (w *basicWorker) registerJob(name string, j any) (err error) {
 		name,
 		work.JobOptions{
 			MaxFails:       theJ.MaxFails(),
-			MaxConcurrency: theJ.MaxCurrency(),
+			MaxConcurrency: maxConcurrencyFor(name, theJ.MaxCurrency()),
 			Priority:       job.Priority().For(name),
 			SkipDead:       true,
 		},

@@ -98,20 +98,15 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
 	assert.Equal(suite.T(), "core_url", GetCoreURL(), "expect core url 'core_url' but got '%s'", GetCoreURL())
 }
 
-// TestScanAllMaxConcurrencyFromEnv ...
-func (suite *ConfigurationTestSuite) TestScanAllMaxConcurrencyFromEnv() {
-	suite.T().Setenv("JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY", "6")
+// TestJobConcurrency checks the job_concurrency section of the config.
+func (suite *ConfigurationTestSuite) TestJobConcurrency() {
 	cfg := &Configuration{}
-	require.NoError(suite.T(), cfg.Load("../config_test.yml", true))
-	assert.Equal(suite.T(), uint(6), cfg.ScanAllMaxConcurrency)
-
-	// invalid and negative values should be ignored
-	for _, v := range []string{"abc", "-1"} {
-		suite.T().Setenv("JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY", v)
-		cfg = &Configuration{}
-		require.NoError(suite.T(), cfg.Load("../config_test.yml", true))
-		assert.Equal(suite.T(), uint(0), cfg.ScanAllMaxConcurrency)
-	}
+	require.NoError(suite.T(), cfg.Load("../config_test.yml", false))
+	assert.Equal(suite.T(), uint(6), cfg.JobConcurrency["IMAGE_SCAN_BULK"])
+	assert.Equal(suite.T(), uint(3), cfg.JobConcurrency["REPLICATION"])
+	assert.Equal(suite.T(), uint(5), cfg.JobConcurrency["IMAGE_SCAN"])
+	// a job without an entry has no configured value
+	assert.Equal(suite.T(), uint(0), cfg.JobConcurrency["WEBHOOK"])
 }
 
 // TestDefaultConfig ...
