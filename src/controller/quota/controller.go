@@ -44,7 +44,9 @@ import (
 func init() {
 	// register the async task for flushing quota to db when enable update quota by redis
 	if provider := config.GetQuotaUpdateProvider(); provider == updateQuotaProviderRedis.String() {
-		gtask.DefaultPool().AddTask(flushQuota, 30*time.Second)
+		gtask.DefaultPool().AddTask(func(ctx context.Context) {
+			flushQuota(ctx, quota.Mgr)
+		}, 30*time.Second)
 	}
 }
 
@@ -118,8 +120,8 @@ type controller struct {
 	g        singleflight.Group
 }
 
-// flushQuota flushes the quota info from redis to db asynchronously.
-func flushQuota(ctx context.Context) {
+// flushQuota syncs the quota records in redis with the db asynchronously.
+func flushQuota(ctx context.Context, mgr quota.Manager) {
 	iter, err := cache.Default().Scan(ctx, "quota:*")
 	if err != nil {
 		log.Errorf("failed to scan out the quota records from redis")
@@ -128,14 +130,7 @@ func flushQuota(ctx context.Context) {
 
 	for iter.Next(ctx) {
 		key := iter.Val()
-		q := &quota.Quota{}
-		err = cache.Default().Fetch(ctx, key, q)
-		if err != nil {
-			log.Errorf("failed to fetch quota: %s, error: %v", key, err)
-			continue
-		}
-
-		if err = Ctl.Update(ctx, q); err != nil {
+		if err := flushQuotaRecord(ctx, mgr, key); err != nil {
 			log.Errorf("failed to refresh quota: %s, error: %v", key, err)
 		} else {
 			log.Debugf("successfully refreshed quota: %s", key)
@@ -144,6 +139,128 @@ func flushQuota(ctx context.Context) {
 	if err := iter.Err(); err != nil {
 		log.Errorf("failed to scan out the quota records from redis: %v", err)
 	}
+}
+
+// flushQuotaRecord syncs one quota record in redis with the db.
+// Redis owns the usage and the db owns the hard limits, because the quota API
+// writes the hard limits to the db only. So the usage goes from redis to the db,
+// and the hard limits go from the db to redis.
+// It does not retry. The next flush syncs the record again.
+func flushQuotaRecord(ctx context.Context, mgr quota.Manager, key string) error {
+	cached := &quota.Quota{}
+	if err := cache.Default().Fetch(ctx, key, cached); err != nil {
+		return fmt.Errorf("failed to fetch quota from redis: %w", err)
+	}
+
+	q, err := mgr.GetByRef(ctx, cached.Reference, cached.ReferenceID)
+	if errors.IsNotFoundErr(err) {
+		// the quota was deleted, for example with its project
+		return cache.Default().Delete(ctx, key)
+	}
+	if err != nil {
+		return err
+	}
+
+	if err := flushUsage(ctx, mgr, q, cached); err != nil {
+		return err
+	}
+
+	return syncHardLimits(ctx, q, cached)
+}
+
+// flushUsage writes the usage of the cached quota to the db.
+func flushUsage(ctx context.Context, mgr quota.Manager, q, cached *quota.Quota) error {
+	used, err := q.GetUsed()
+	if err != nil {
+		return err
+	}
+
+	newUsed, err := cached.GetUsed()
+	if err != nil {
+		return err
+	}
+
+	if types.Equals(used, newUsed) {
+		return nil
+	}
+
+	q.SetUsed(newUsed)
+	err = mgr.Update(ctx, q)
+	if errors.Is(err, orm.ErrOptimisticLock) {
+		// another core instance flushed the same quota at the same time
+		log.G(ctx).Debugf("skip flushing the usage of quota %s %s: %v", q.Reference, q.ReferenceID, err)
+		return nil
+	}
+
+	return err
+}
+
+// syncHardLimits writes the hard limits of the db quota to the cached quota.
+func syncHardLimits(ctx context.Context, q, cached *quota.Quota) error {
+	hardLimits, err := q.GetHard()
+	if err != nil {
+		return err
+	}
+
+	cachedHardLimits, err := cached.GetHard()
+	if err != nil {
+		return err
+	}
+
+	if types.Equals(hardLimits, cachedHardLimits) {
+		return nil
+	}
+
+	client, err := libredis.GetHarborClient()
+	if err != nil {
+		return err
+	}
+
+	key := quotaCacheKey(q.Reference, q.ReferenceID)
+	err = client.Watch(ctx, func(tx *redis.Tx) error {
+		data, err := tx.Get(ctx, key).Bytes()
+		if errors.Is(err, redis.Nil) {
+			// the record expired, the next request reads the quota from the db
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		current := &quota.Quota{}
+		if err := cache.DefaultCodec().Decode(data, current); err != nil {
+			return err
+		}
+
+		current.SetHard(hardLimits)
+
+		val, err := cache.DefaultCodec().Encode(current)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.TxPipelined(ctx, func(p redis.Pipeliner) error {
+			p.Set(ctx, key, val, quotaExpireTimeout)
+			return nil
+		})
+
+		return err
+	}, key)
+
+	if errors.Is(err, redis.TxFailedErr) {
+		// a request changed the usage at the same time, the next flush syncs the hard limits
+		log.G(ctx).Debugf("skip syncing the hard limits of quota %s %s: %v", q.Reference, q.ReferenceID, err)
+		return nil
+	}
+
+	return err
+}
+
+// quotaCacheKey returns the redis key of the quota for the raw redis client.
+// cache.Default() adds the prefix "cache:" to its keys. The raw redis client
+// does not, so the key includes the prefix to point to the same record.
+func quotaCacheKey(reference, referenceID string) string {
+	return fmt.Sprintf("%s:quota:%s:%s", "cache", reference, referenceID)
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -270,9 +387,7 @@ func (c *controller) updateUsageByRedis(ctx context.Context, reference, referenc
 	if err != nil {
 		return retry.Abort(err)
 	}
-	// normally use cache.Save will append prefix "cache:", in order to keep consistent
-	// here adopts raw redis client should also pad the prefix manually.
-	key := fmt.Sprintf("%s:quota:%s:%s", "cache", reference, referenceID)
+	key := quotaCacheKey(reference, referenceID)
 	return client.Watch(ctx, func(tx *redis.Tx) error {
 		data, err := tx.Get(ctx, key).Result()
 		if err != nil && !errors.Is(err, redis.Nil) {
