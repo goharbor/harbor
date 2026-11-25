@@ -180,6 +180,9 @@ func TestPermitEventTypes(t *testing.T) {
 	if len(eventTypes) != 2 {
 		t.Errorf("permitEventTypes failed")
 	}
+	if tagEventTypes := permitEventTypes([]string{"create_tag", "delete_tag"}); len(tagEventTypes) != 2 {
+		t.Errorf("permitEventTypes should keep tag event types")
+	}
 	eventTypes2 := permitEventTypes([]string{})
 	if len(eventTypes2) != 0 {
 		t.Errorf("permitEventTypes failed")
