@@ -34,6 +34,21 @@ func TestOIDCGroupFilterValidateRule(t *testing.T) {
 		{name: "anchored prefix", cfgs: map[string]any{common.OIDCGroupFilter: "^harbor-"}},
 		{name: "alternation", cfgs: map[string]any{common.OIDCGroupFilter: "^(dev|ops)-team$"}},
 		{
+			name:    "filter that is a map",
+			cfgs:    map[string]any{common.OIDCGroupFilter: map[string]any{"(": 1}},
+			wantErr: "expected a string but got map[string]interface {}",
+		},
+		{
+			name:    "filter that is a number",
+			cfgs:    map[string]any{common.OIDCGroupFilter: 1},
+			wantErr: "expected a string but got int",
+		},
+		{
+			name:    "filter that is null",
+			cfgs:    map[string]any{common.OIDCGroupFilter: nil},
+			wantErr: "expected a string but got <nil>",
+		},
+		{
 			name:    "glob style pattern with a leading star",
 			cfgs:    map[string]any{common.OIDCGroupFilter: "*-admins"},
 			wantErr: "missing argument to repetition operator",

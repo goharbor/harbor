@@ -214,6 +214,18 @@ func (suite *ValidateCfgTestSuite) TestValidateCfgOIDCGroupFilterInvalidRegexp()
 	suite.Contains(err.Error(), "missing argument to repetition operator")
 }
 
+func (suite *ValidateCfgTestSuite) TestValidateCfgOIDCGroupFilterNotString() {
+	for _, filter := range []any{map[string]any{"(": 1}, 1} {
+		cfgs := map[string]any{
+			common.OIDCGroupFilter: filter,
+		}
+		err := suite.manager.ValidateCfg(suite.ctx, cfgs)
+		suite.Require().Error(err, "filter %v", filter)
+		suite.Contains(err.Error(), common.OIDCGroupFilter)
+		suite.Contains(err.Error(), "expected a string")
+	}
+}
+
 func (suite *ValidateCfgTestSuite) TestValidateCfgOIDCGroupFilterValidRegexp() {
 	for _, filter := range []string{"", "^harbor-"} {
 		cfgs := map[string]any{

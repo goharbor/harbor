@@ -30,8 +30,17 @@ type OIDCGroupFilterValidateRule struct {
 }
 
 // Validate checks the OIDC group filter in cfgs, an empty filter means no filtering.
+// A filter that is present but is not a string is rejected too, as it would be stored
+// as text that is not a valid regular expression.
 func (o OIDCGroupFilterValidateRule) Validate(_ context.Context, _ config.Manager, cfgs map[string]any) error {
-	filter, _ := cfgs[common.OIDCGroupFilter].(string)
+	val, exist := cfgs[common.OIDCGroupFilter]
+	if !exist {
+		return nil
+	}
+	filter, ok := val.(string)
+	if !ok {
+		return errors.Errorf("invalid %s: expected a string but got %T", common.OIDCGroupFilter, val)
+	}
 	if len(filter) == 0 {
 		return nil
 	}
