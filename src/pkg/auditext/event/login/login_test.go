@@ -107,3 +107,39 @@ func Test_login_PreCheck(t *testing.T) {
 		})
 	}
 }
+
+// The portal posts the login form with the principal and the password percent-encoded,
+// the audit event has to record the principal the user typed.
+func Test_login_Resolve_principal(t *testing.T) {
+	tests := []struct {
+		name      string
+		payload   string
+		wantLogin string
+	}{
+		{"plain", "principal=alice&password=123456", "alice"},
+		{"percent-encoded email", "principal=alice%40example.com&password=123456", "alice@example.com"},
+		{"space", "principal=alice+smith&password=123456", "alice smith"},
+		{"encoded ampersand", "principal=a%26b&password=123456", "a&b"},
+		{"password first", "password=123456&principal=alice%40example.com", "alice@example.com"},
+		{"no principal", "password=123456", "unknown"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := &event.Event{}
+			ce := &commonevent.Metadata{
+				Username:       "unknown",
+				RequestURL:     "/c/login",
+				RequestMethod:  "POST",
+				RequestPayload: tt.payload,
+				ResponseCode:   200,
+			}
+			if err := (&loginResolver{}).Resolve(ce, ev); err != nil {
+				t.Fatalf("resolver.Resolve() error = %v", err)
+			}
+			got := ev.Data.(*model.CommonEvent)
+			if got.Operator != tt.wantLogin || got.ResourceName != tt.wantLogin {
+				t.Errorf("resolver.Resolve() operator = %q, resource name = %q, want %q", got.Operator, got.ResourceName, tt.wantLogin)
+			}
+		})
+	}
+}
