@@ -49,6 +49,16 @@ type DAO interface {
 
 	// List list quotas
 	List(ctx context.Context, query *q.Query) ([]*models.Quota, error)
+
+	// AddUsage applies delta to the usage of the reference object in a single
+	// statement. The read, the limit check and the write happen under the row
+	// lock the UPDATE takes, so concurrent callers never lose an update and
+	// never retry, unlike the read-modify-CAS in Update. With enforce, positive
+	// deltas apply only while the new usage stays within the hard limit.
+	// applied is false when the limit would be exceeded, the resource has no
+	// hard limit, a negative delta would take the usage below zero, or the
+	// quota does not exist.
+	AddUsage(ctx context.Context, reference, referenceID string, delta types.ResourceList, enforce bool) (applied bool, err error)
 }
 
 // New returns an instance of the default DAO

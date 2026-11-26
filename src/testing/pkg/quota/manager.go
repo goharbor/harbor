@@ -18,6 +18,34 @@ type Manager struct {
 	mock.Mock
 }
 
+// AddUsage provides a mock function with given fields: ctx, reference, referenceID, delta, enforce
+func (_m *Manager) AddUsage(ctx context.Context, reference string, referenceID string, delta types.ResourceList, enforce bool) (bool, error) {
+	ret := _m.Called(ctx, reference, referenceID, delta, enforce)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddUsage")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, types.ResourceList, bool) (bool, error)); ok {
+		return rf(ctx, reference, referenceID, delta, enforce)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, types.ResourceList, bool) bool); ok {
+		r0 = rf(ctx, reference, referenceID, delta, enforce)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, types.ResourceList, bool) error); ok {
+		r1 = rf(ctx, reference, referenceID, delta, enforce)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Count provides a mock function with given fields: ctx, query
 func (_m *Manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	ret := _m.Called(ctx, query)

@@ -26,6 +26,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	pquota "github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -214,6 +216,47 @@ func (suite *RequestMiddlewareTestSuite) TestResourcesRequestDenied() {
 
 	RequestMiddleware(config)(next).ServeHTTP(rr, req)
 	suite.Equal(http.StatusForbidden, rr.Code)
+}
+
+type testEvent struct{ name string }
+
+func (testEvent) Resolve(*event.Event) error { return nil }
+
+// TestLateDenialDiscardsHandlerEvents: inside the request transaction the
+// reservation runs after the handler, so a denial there must drop the events
+// the handler queued (artifact push) and keep only the quota-exceeded one,
+// whose forced delivery would otherwise publish them too.
+func (suite *RequestMiddlewareTestSuite) TestLateDenialDiscardsHandlerEvents() {
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		notification.AddEvent(r.Context(), testEvent{"push"})
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	evc := notification.NewEventCtx()
+	notification.AddEvent(notification.NewContext(nil, evc), testEvent{"before"})
+	req := httptest.NewRequest(http.MethodPut, "/url", nil)
+	req = req.WithContext(notification.NewContext(req.Context(), evc))
+	rr := httptest.NewRecorder()
+
+	config := suite.makeRequestConfig("project", "1", types.ResourceList{types.ResourceStorage: 100})
+	config.ResourcesExceeded = func(*http.Request, string, string, string) event.Metadata { return testEvent{"exceeded"} }
+
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+	var errs pquota.Errors
+	errs = errs.Add(pquota.NewResourceOverflowError(types.ResourceStorage, 100, 50, 150))
+	mock.OnAnything(suite.quotaController, "Request").Run(func(args mock.Arguments) {
+		suite.Require().NoError(args.Get(4).(func() error)())
+	}).Return(errs)
+
+	RequestMiddleware(config)(next).ServeHTTP(rr, req)
+	suite.Equal(http.StatusForbidden, rr.Code)
+
+	var names []string
+	for e := evc.Events.Front(); e != nil; e = e.Next() {
+		names = append(names, e.Value.(testEvent).name)
+	}
+	suite.Equal([]string{"before", "exceeded"}, names)
+	suite.True(evc.MustNotify)
 }
 
 func TestRequestMiddlewareTestSuite(t *testing.T) {

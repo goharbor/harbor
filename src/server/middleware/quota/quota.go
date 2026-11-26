@@ -111,6 +111,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 			defer res.Flush()
 		}
 
+		mark := notification.Mark(r.Context())
 		err = quotaController.Request(r.Context(), reference, referenceID, resources, func() error {
 			next.ServeHTTP(res, r)
 			if !res.Success() {
@@ -158,6 +159,10 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 		}
 
 		if err != nil && err != errNonSuccess {
+			// inside the request transaction the reservation runs after the
+			// handler, which already queued its events (artifact push); the
+			// denial rolls that work back, so its events must not be sent
+			mark.Discard()
 			if config.ResourcesExceeded != nil {
 				var errs quota.Errors // NOTE: quota.Errors is slice, so we need var here not pointer
 				if errors.As(err, &errs) {

@@ -149,6 +149,36 @@ func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
 	e.Events.PushBack(m)
 }
 
+// EventMark records the events of a request up to a point, see Mark.
+type EventMark struct {
+	ec     *EventCtx
+	last   *list.Element
+	notify bool
+}
+
+// Mark returns a mark of the events added to ctx so far.
+func Mark(ctx context.Context) EventMark {
+	e, ok := ctx.Value(eventKey{}).(*EventCtx)
+	if !ok {
+		return EventMark{}
+	}
+	return EventMark{ec: e, last: e.Events.Back(), notify: e.MustNotify}
+}
+
+// Discard drops the events added since the mark, for work whose transaction
+// rolls back after it already queued them.
+func (m EventMark) Discard() {
+	if m.ec == nil {
+		return
+	}
+	for e := m.ec.Events.Back(); e != nil && e != m.last; {
+		prev := e.Prev()
+		m.ec.Events.Remove(e)
+		e = prev
+	}
+	m.ec.MustNotify = m.notify
+}
+
 func GetSupportedEventTypes() []EventType {
 	return supportedEventTypes
 }
