@@ -15,6 +15,7 @@
 package security
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -24,10 +25,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"k8s.io/api/authentication/v1beta1"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security/local"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -35,6 +39,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	pkguser "github.com/goharbor/harbor/src/pkg/user"
+	usertesting "github.com/goharbor/harbor/src/testing/pkg/user"
 )
 
 func TestAuthProxy(t *testing.T) {
@@ -70,8 +76,45 @@ func TestAuthProxy(t *testing.T) {
 	ormCtx := orm.Context()
 	req = req.WithContext(lib.WithAuthMode(ormCtx, common.HTTPAuth))
 	req.SetBasicAuth("tokenreview$administrator@vsphere.local", "reviEwt0k3n")
+
+	// The reviewed identity collides with a local record that carries sysadmin_flag=true (as the
+	// seeded local admin does). Swap in a mock user manager so the collision is deterministic and the
+	// test needs no DB.
+	previousUserMgr := pkguser.Mgr
+	userMgr := usertesting.NewManager(t)
+	// Return a fresh record per call, as the DB-backed manager does: Generate mutates the user, so a
+	// shared pointer would hand the second arm an already-cleared flag.
+	userMgr.On("GetByName", mock.Anything, "administrator@vsphere.local").
+		Return(func(context.Context, string) *commonmodels.User {
+			return &commonmodels.User{Username: "administrator@vsphere.local", SysAdminFlag: true}
+		}, nil).Twice()
+	pkguser.Mgr = userMgr
+	t.Cleanup(func() {
+		pkguser.Mgr = previousUserMgr
+	})
+
+	// With an empty admin allowlist the external identity must NOT inherit the
+	// colliding local account's sysadmin flag.
 	ctx := authProxy.Generate(req)
-	assert.NotNil(t, ctx)
+	require.NotNil(t, ctx)
+	assert.False(t, ctx.IsSysAdmin())
+
+	// Backward-compat arm: an explicitly allowlisted authproxy admin still gets sysadmin, now sourced
+	// from AdminRoleInAuth rather than the leaked local flag. The config store is process/DB backed,
+	// so reset the allowlist afterwards to leave no cross-test state.
+	t.Cleanup(func() {
+		c[common.HTTPAuthProxyAdminUsernames] = ""
+		config.Upload(c)
+	})
+	c[common.HTTPAuthProxyAdminUsernames] = "administrator@vsphere.local"
+	config.Upload(c)
+	ctx = authProxy.Generate(req)
+	require.NotNil(t, ctx)
+	assert.True(t, ctx.IsSysAdmin())
+	localCtx, ok := ctx.(*local.SecurityContext)
+	require.True(t, ok)
+	assert.False(t, localCtx.User().SysAdminFlag)
+	assert.True(t, localCtx.User().AdminRoleInAuth)
 }
 
 // NewAuthProxyTestServer mocks a https server for auth proxy.

@@ -56,6 +56,9 @@ import { MemberService } from '../../../../../ng-swagger-gen/services/member.ser
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
 import { AddGroupComponent } from './add-group/add-group.component';
+import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
+import { getAllRoles, roleDisplayName } from '../../../shared/units/role-util';
+import { Role } from '../../../../../ng-swagger-gen/models/role';
 
 @Component({
     templateUrl: 'member.component.html',
@@ -84,6 +87,10 @@ export class MemberComponent implements OnInit, OnDestroy {
     isLdapMode: boolean;
     isHttpAuthMode: boolean;
     isOidcMode: boolean;
+    roles: Role[] = [];
+    rolesLoaded: boolean = false;
+    builtinRoles: Role[] = [];
+    customRoles: Role[] = [];
     @ViewChild(AddMemberComponent)
     addMemberComponent: AddMemberComponent;
     @ViewChild(AddGroupComponent)
@@ -107,7 +114,8 @@ export class MemberComponent implements OnInit, OnDestroy {
         private operationService: OperationService,
         private appConfigService: AppConfigService,
         private userPermissionService: UserPermissionService,
-        private errorHandlerEntity: ErrorHandler
+        private errorHandlerEntity: ErrorHandler,
+        private roleService: RoleService
     ) {
         this.delSub = OperateDialogService.confirmationConfirm$.subscribe(
             message => {
@@ -137,6 +145,18 @@ export class MemberComponent implements OnInit, OnDestroy {
         this.currentUser = this.session.getCurrentUser();
         // get member permission rule
         this.getMemberPermissionRule(this.projectId);
+        getAllRoles(this.roleService).subscribe({
+            next: res => {
+                this.roles = res ?? [];
+                this.builtinRoles = this.roles.filter(r => r.is_builtin);
+                this.customRoles = this.roles.filter(r => !r.is_builtin);
+                this.rolesLoaded = true;
+            },
+            error: err => {
+                this.rolesLoaded = false;
+                this.errorHandlerEntity.error(err);
+            },
+        });
         if (this.appConfigService.isLdapMode()) {
             this.isLdapMode = true;
         }
@@ -380,6 +400,25 @@ export class MemberComponent implements OnInit, OnDestroy {
             }
         );
     }
+    getMemberRoleDisplayName(member: ProjectMemberEntity): string {
+        const role = this.roles.find(r => r.id === member.role_id);
+        if (role) {
+            // Translate the i18n key for built-in roles here; custom role names
+            // are arbitrary strings and must render verbatim (never piped through
+            // translate, or a name matching a key like "BUTTON.DELETE" would be
+            // mis-rendered as that translation).
+            if (role.is_builtin) {
+                return this.translate.instant(this.getRoleDisplayName(role));
+            }
+            return role.name;
+        }
+        return member.role_name;
+    }
+
+    getRoleDisplayName(role: Role): string {
+        return roleDisplayName(role);
+    }
+
     getMemberPermissionRule(projectId: number): void {
         let hasCreateMemberPermission =
             this.userPermissionService.getPermission(

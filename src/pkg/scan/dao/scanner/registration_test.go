@@ -163,3 +163,55 @@ func (suite *RegistrationDAOTestSuite) TestDefault() {
 	err = SetDefaultRegistration(suite.Context(), suite.registrationID)
 	require.Error(suite.T(), err)
 }
+
+// TestAccessCredNotFilterable is the regression for the scanner access_cred filter oracle:
+// access_cred stores the scanner adapter's Authorization secret and must never be usable as a
+// q= filter, or list/count become a blind boolean oracle over the credential. It drives the same
+// DAO path (ListRegistrations / GetTotalOfRegistrations) that ListScannerCandidatesOfProject uses.
+func (suite *RegistrationDAOTestSuite) TestAccessCredNotFilterable() {
+	// Seed a registration carrying a known secret.
+	credUUID := uuid.New().String()
+	_, err := AddRegistration(suite.Context(), &Registration{
+		UUID:             credUUID,
+		Name:             "forUT-cred",
+		Description:      "registration with credential",
+		URL:              "https://cred.scanner.com",
+		Auth:             "Basic",
+		AccessCredential: "Basic YWRtaW46U3VwM3JTM2NyZXQh",
+	})
+	require.NoError(suite.T(), err)
+	defer func() {
+		require.NoError(suite.T(), DeleteRegistration(suite.Context(), credUUID))
+	}()
+
+	baselineList, err := ListRegistrations(suite.Context(), nil)
+	require.NoError(suite.T(), err)
+	baselineTotal, err := GetTotalOfRegistrations(suite.Context(), nil)
+	require.NoError(suite.T(), err)
+
+	// A deliberately non-matching access_cred filter. If the column is filterable (the bug), this
+	// predicate reaches SQL, drops the seeded row, and the count difference leaks the secret. With
+	// filter:"false" the predicate is silently dropped and neither the list nor the count changes.
+	query := &q.Query{Keywords: map[string]any{
+		"access_cred": &q.FuzzyMatchValue{Value: "ZZZ-does-not-match"},
+	}}
+
+	l, err := ListRegistrations(suite.Context(), query)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), len(baselineList), len(l),
+		"access_cred must not be usable as a q filter (ORM credential oracle)")
+
+	total, err := GetTotalOfRegistrations(suite.Context(), query)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), baselineTotal, total,
+		"GetTotalOfRegistrations must ignore an access_cred filter (X-Total-Count oracle)")
+
+	// Positive control: a non-sensitive column stays filterable, so legitimate scanner filtering
+	// (name/url/description) is unaffected by the fix.
+	nameQuery := &q.Query{Keywords: map[string]any{
+		"name": &q.FuzzyMatchValue{Value: "forUT-cred"},
+	}}
+	l, err = ListRegistrations(suite.Context(), nameQuery)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(l), "name filter must still work after the fix")
+}

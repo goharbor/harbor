@@ -231,4 +231,22 @@ describe('PolicyComponent', () => {
         const nameInput = document.querySelector<HTMLInputElement>('#name');
         expect(nameInput.value).toEqual('policy1');
     });
+    it('should keep multi-value filters when editing a policy', async () => {
+        component.selectedRow = {
+            ...policy1,
+            filters:
+                '[{"type":"repository","value":"{library/a,library/b}"},{"type":"tag","value":"{v1,v2}"},{"type":"label","value":"{l1,l2}"}]',
+        };
+        component.editPolicy();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.addP2pPolicyComponent.repos).toEqual(
+            'library/a,library/b'
+        );
+        expect(component.addP2pPolicyComponent.tags).toEqual('v1,v2');
+        expect(component.addP2pPolicyComponent.labels).toEqual('l1,l2');
+        expect(component.addP2pPolicyComponent.originReposForEdit).toEqual(
+            'library/a,library/b'
+        );
+    });
 });

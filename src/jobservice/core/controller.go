@@ -200,8 +200,12 @@ func validJobReq(req *job.Request) error {
 		if utils.IsEmptyStr(req.Job.Metadata.Cron) {
 			return fmt.Errorf("'cron_spec' must be specified for the %s job", job.KindPeriodic)
 		}
-		if _, err := comUtils.CronParser().Parse(req.Job.Metadata.Cron); err != nil {
+		sched, err := comUtils.CronParser().Parse(req.Job.Metadata.Cron)
+		if err != nil {
 			return fmt.Errorf("'cron_spec' is not correctly set: %s: %s", req.Job.Metadata.Cron, err)
+		}
+		if !comUtils.IsCronReachable(sched) {
+			return fmt.Errorf("cron expression %q can never fire: no matching date exists", req.Job.Metadata.Cron)
 		}
 	}
 

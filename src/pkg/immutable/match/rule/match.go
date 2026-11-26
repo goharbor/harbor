@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
@@ -36,56 +37,110 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		return false, err
 	}
 
-	cands := []*iselector.Candidate{&c}
 	for _, r := range rm.rules {
 		if r.Disabled {
 			continue
 		}
 
-		// match repositories according to the repository selectors
-		var repositoryCandidates []*iselector.Candidate
-		repositorySelectors := r.ScopeSelectors["repository"]
+		// Every selector of a dimension is evaluated; checking only the first
+		// one let candidates covered by the others escape the rule.
+		repositorySelectors := nonNil(r.ScopeSelectors["repository"])
 		if len(repositorySelectors) < 1 {
 			continue
 		}
-		repositorySelector := repositorySelectors[0]
-		selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
-			repositorySelector.Pattern, "")
+		matched, err := dimensionSelects(repositorySelectors, "", &c)
 		if err != nil {
 			return false, err
 		}
-		repositoryCandidates, err = selector.Select(cands)
-		if err != nil {
-			return false, err
-		}
-		if len(repositoryCandidates) == 0 {
+		if !matched {
 			continue
 		}
 
-		// match tag according to the tag selectors
-		var tagCandidates []*iselector.Candidate
-		tagSelectors := r.TagSelectors
+		// match tag according to the tag selectors.
+		// for immutable policy, should not keep untagged artifacts by default.
+		tagSelectors := nonNil(r.TagSelectors)
 		if len(tagSelectors) < 1 {
 			continue
 		}
-		tagSelector := r.TagSelectors[0]
-		// for immutable policy, should not keep untagged artifacts by default.
-		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
-			tagSelector.Pattern, "{\"untagged\": false}")
+		matched, err = dimensionSelects(tagSelectors, "{\"untagged\": false}", &c)
 		if err != nil {
 			return false, err
 		}
-		tagCandidates, err = selector.Select(cands)
-		if err != nil {
-			return false, err
-		}
-		if len(tagCandidates) == 0 {
+		if !matched {
 			continue
 		}
 
 		return true, nil
 	}
 	return false, nil
+}
+
+// dimensionSelects reports whether a rule dimension (repository or tag) puts
+// the candidate in scope. The selectors must behave like the portal's single
+// `{a,b}` pattern: inclusion selectors are alternatives (any may match) and an
+// exclusion selector removes whatever it matches, so every exclusion selector
+// has to select the candidate. A dimension holding only exclusions starts from
+// everything.
+//
+// A multi-tag candidate is evaluated per tag because a doublestar selector
+// selects an artifact when any single tag passes; combining selector results on
+// the whole artifact would let tags excluded by different selectors cancel out.
+func dimensionSelects(selectors []*model.Selector, extras string, c *iselector.Candidate) (bool, error) {
+	if len(c.Tags) <= 1 {
+		return selectsOne(selectors, extras, c)
+	}
+	for _, tag := range c.Tags {
+		single := *c
+		single.Tags = []string{tag}
+		ok, err := selectsOne(selectors, extras, &single)
+		if err != nil || ok {
+			return ok, err
+		}
+	}
+	return false, nil
+}
+
+func selectsOne(selectors []*model.Selector, extras string, c *iselector.Candidate) (bool, error) {
+	hasInclusion, included := false, false
+	for _, sel := range selectors {
+		s, err := index.Get(sel.Kind, sel.Decoration, sel.Pattern, extras)
+		if err != nil {
+			return false, err
+		}
+		selected, err := s.Select([]*iselector.Candidate{c})
+		if err != nil {
+			return false, err
+		}
+		if isExclusion(sel.Decoration) {
+			if len(selected) == 0 {
+				return false, nil
+			}
+			continue
+		}
+		hasInclusion = true
+		included = included || len(selected) > 0
+	}
+	return !hasInclusion || included, nil
+}
+
+// nonNil drops null entries, which the API accepts without validation and which
+// were harmless while only the first selector was read.
+func nonNil(selectors []*model.Selector) []*model.Selector {
+	out := make([]*model.Selector, 0, len(selectors))
+	for _, s := range selectors {
+		if s != nil {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func isExclusion(decoration string) bool {
+	switch decoration {
+	case doublestar.Excludes, doublestar.RepoExcludes, doublestar.NSExcludes:
+		return true
+	}
+	return false
 }
 
 func (rm *Matcher) getImmutableRules(ctx context.Context, pid int64) error {

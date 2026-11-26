@@ -16,6 +16,7 @@ package period
 import (
 	"context"
 	"fmt"
+	"math"
 	"sync"
 	"testing"
 	"time"
@@ -144,6 +145,36 @@ func (suite *BasicSchedulerTestSuite) TestUnSchedule() {
 	// No job stats saved
 	err = suite.scheduler.UnSchedule(p.ID)
 	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
+}
+
+// TestClearDirtyJobsNegativeEpoch verifies that clearDirtyJobs removes entries
+// with negative epoch scores (e.g. jobs enqueued for time.Time{}).
+func (suite *BasicSchedulerTestSuite) TestClearDirtyJobsNegativeEpoch() {
+	j := &work.Job{
+		Name:       job.SampleJob,
+		ID:         "negative_epoch_job",
+		EnqueuedAt: time.Time{}.Unix(),
+		Args:       map[string]any{},
+	}
+
+	rawJSON, err := utils.SerializeJob(j)
+	suite.NoError(err, "serialize job model")
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.RedisKeyScheduled(suite.namespace)
+	_, err = conn.Do("ZADD", key, j.EnqueuedAt, rawJSON)
+	suite.NoError(err, "add negative-epoch scheduled job")
+
+	bs := suite.scheduler.(*basicScheduler)
+	bs.clearDirtyJobs()
+
+	remaining, err := rds.GetZsetByScore(conn, key, []int64{math.MinInt64, 0})
+	suite.NoError(err, "get negative-epoch entries")
+	suite.Empty(remaining, "clearDirtyJobs should remove negative-epoch entries")
 }
 
 // setupDirtyJobs adds dirty jobs for testing dirty jobs clear method in the Start()

@@ -168,6 +168,11 @@ func (i *ScanIterator) Val() string {
 	return val
 }
 
+// Err returns nil because the in-memory scan cannot fail after it starts.
+func (*ScanIterator) Err() error {
+	return nil
+}
+
 // New returns memory cache
 func New(opts cache.Options) (cache.Cache, error) {
 	return &Cache{opts: &opts}, nil

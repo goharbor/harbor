@@ -170,14 +170,14 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 | 2.13   | 1.23.8      |
 | 2.14   | 1.24.6      |
 | 2.15   | 1.26.4      |
-| 2.16   | 1.26.4      |
+| 2.16   | 1.27.2      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
 #### Web
 
-Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup a web UI development environment, please make sure that the [npm](https://www.npmjs.com/get-npm) tool is installed first.
+Harbor web UI is built based on [Clarity](https://clarity.design/) and [Angular](https://angular.io/) web framework. To setup a web UI development environment, please make sure that the [npm](https://www.npmjs.com/get-npm) tool is installed first.
 
 |  Harbor  |  Requires Angular  |  Requires Clarity  |
 |----------|--------------------|--------------------|

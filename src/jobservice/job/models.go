@@ -73,6 +73,7 @@ type StatsInfo struct {
 	Parameters    Parameters `json:"parameters,omitempty"`
 	Revision      int64      `json:"revision,omitempty"` // For differentiating the each retry of the same job
 	HookAck       *ACK       `json:"ack,omitempty"`
+	StatusMessage string     `json:"status_message,omitempty"`
 }
 
 // ACK is the acknowledge of hook event
@@ -99,10 +100,11 @@ type ActionRequest struct {
 
 // StatusChange is designed for reporting the status change via hook.
 type StatusChange struct {
-	JobID    string     `json:"job_id"`
-	Status   string     `json:"status"`
-	CheckIn  string     `json:"check_in,omitempty"`
-	Metadata *StatsInfo `json:"metadata,omitempty"`
+	JobID         string     `json:"job_id"`
+	Status        string     `json:"status"`
+	CheckIn       string     `json:"check_in,omitempty"`
+	Metadata      *StatsInfo `json:"metadata,omitempty"`
+	StatusMessage string     `json:"status_message,omitempty"`
 }
 
 // SimpleStatusChange only keeps job ID and the target status

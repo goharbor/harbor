@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/namespace"
@@ -31,7 +32,7 @@ import (
 type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller, ctlR role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
 			// anonymous access
@@ -41,10 +42,32 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 			}
 		}
 
-		roles, err := ctl.ListRoles(ctx, p.ProjectID, user)
+		roleIDs, err := ctl.ListRoles(ctx, p.ProjectID, user)
 		if err != nil {
 			log.Errorf("failed to list roles: %v", err)
 			return nil
+		}
+
+		var roles []*projectRBACRole
+		for _, roleID := range roleIDs {
+			// Built-in roles resolve their policies from the compile-time map
+			// (rolePoliciesMap) — no database lookup, matching pre-feature behavior.
+			if isBuiltinProjectRole(roleID) {
+				roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID})
+				continue
+			}
+			// Custom roles load their permissions from the database. If one role
+			// fails to load (a transient DB error, or a project_member.role that
+			// points at a deleted role), skip just that role rather than returning
+			// nil for the whole rbacUser — dropping the user would strip every other
+			// role they hold in this project, built-ins included, turning a single
+			// bad role into a total denial or a permanent lockout.
+			r, err := ctlR.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
+			if err != nil {
+				log.Errorf("failed to get role %d, skipping it for user %s in project %d: %v", roleID, user.Username, p.ProjectID, err)
+				continue
+			}
+			roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID, custom: r})
 		}
 
 		return &rbacUser{

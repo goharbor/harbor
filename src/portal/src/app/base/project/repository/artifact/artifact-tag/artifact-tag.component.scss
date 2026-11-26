@@ -30,8 +30,7 @@
 .pull {
     display: flex;
     flex-flow: row wrap;
-    align-content: center;
-    justify-content: space-between;
+    place-content: center space-between;
     align-items: center;
 }
 
@@ -39,8 +38,7 @@
     display: flex;
     flex-flow: row wrap;
     gap: 8px;
-    align-content: flex-end;
-    justify-content: space-between;
+    place-content: flex-end space-between;
     align-items: flex-end;
 }
 

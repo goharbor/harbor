@@ -35,6 +35,22 @@
                             shape="error-standard"
                             class="color-red"></clr-icon>
                         <span>{{ 'REPLICATION.FAILURE' | translate }}</span>
+                        <clr-tooltip>
+                            @if (execution.status_text) {
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="18"></clr-icon>
+                            }
+                            <clr-tooltip-content
+                                [clrPosition]="'bottom-right'"
+                                clrSize="lg"
+                                *clrIfOpen>
+                                <span class="status-message-tooltip">{{
+                                    execution.status_text
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
                     </div>
                     }
                 </div>
@@ -172,7 +188,25 @@
                 <clr-dg-cell>{{ t.src_resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ t.dst_resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ t.operation }}</clr-dg-cell>
-                <clr-dg-cell>{{ getStatusStr(t.status) }}</clr-dg-cell>
+                <clr-dg-cell
+                    >{{ getStatusStr(t.status)
+                    }}<clr-tooltip>
+                        @if (t.status_message) {
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="20"></clr-icon>
+                        }
+                        <clr-tooltip-content
+                            [clrPosition]="'left'"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span class="status-message-tooltip">{{
+                                t.status_message
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </clr-dg-cell>
                 <clr-dg-cell>{{
                     t.start_time | harborDatetime : 'short'
                 }}</clr-dg-cell>

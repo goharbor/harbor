@@ -17,6 +17,7 @@ package task
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -194,7 +195,7 @@ func (m *manager) Stop(ctx context.Context, id int64) error {
 	// status jobs as well
 	if err = m.jsClient.PostAction(task.JobID, string(job.StopCommand)); err != nil {
 		// job not found, update it's status to stop directly
-		if err == cjob.ErrJobNotFound {
+		if errors.Is(err, cjob.ErrJobNotFound) {
 			now := time.Now()
 			err = m.dao.Update(ctx, &dao.Task{
 				ID:         task.ID,
