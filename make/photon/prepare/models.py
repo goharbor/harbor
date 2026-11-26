@@ -200,7 +200,14 @@ class PurgeUpload:
     def __init__(self, config: dict):
         if not config:
             self.enabled = False
-        self.enabled = config.get('enabled')
+            return
+        
+        enabled_val = config.get('enabled')
+        if str(enabled_val).lower() == 'false':
+            self.enabled = False
+        else:
+            self.enabled = bool(enabled_val)
+            
         self.age = config.get('age') or '168h'
         self.interval = config.get('interval') or '24h'
         self.dryrun = config.get('dryrun') or False
