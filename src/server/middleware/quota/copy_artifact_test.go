@@ -29,6 +29,7 @@
 package quota
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -36,6 +37,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/quota"
@@ -78,6 +80,7 @@ func (suite *CopyArtifactMiddlewareTestSuite) SetupTest() {
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 
 	suite.artifact = &artifact.Artifact{}
+	suite.artifact.Digest = "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
 
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.artifactController, "Walk").Return(nil).Run(func(args mock.Arguments) {
@@ -132,7 +135,70 @@ func (suite *CopyArtifactMiddlewareTestSuite) TestResourcesWarning() {
 		CopyArtifactMiddleware()(next).ServeHTTP(rr, req)
 		suite.Equal(http.StatusOK, rr.Code)
 		suite.Equal(1, eveCtx.Events.Len())
+		meta, ok := eveCtx.Events.Front().Value.(*metadata.QuotaMetaData)
+		suite.True(ok)
+		suite.Equal("2.0.1", meta.Tag)
+		suite.Equal(suite.artifact.Digest, meta.Digest)
 	}
+
+	{
+		q := &quota.Quota{}
+		q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+		q.SetUsed(types.ResourceList{types.ResourceStorage: 85})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
+
+		req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0?from=library/photon@"+suite.artifact.Digest, nil)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		CopyArtifactMiddleware()(next).ServeHTTP(rr, req)
+		suite.Equal(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
+		meta, ok := eveCtx.Events.Front().Value.(*metadata.QuotaMetaData)
+		suite.True(ok)
+		suite.Equal("", meta.Tag)
+		suite.Equal(suite.artifact.Digest, meta.Digest)
+	}
+}
+
+func (suite *CopyArtifactMiddlewareTestSuite) TestResourcesWarningGetArtifactError() {
+	mock.OnAnything(suite.blobController, "List").Return(nil, nil)
+	mock.OnAnything(suite.blobController, "FindMissingAssociationsForProject").Return(nil, nil)
+	mock.OnAnything(suite.quotaController, "Request").Return(nil).Run(func(args mock.Arguments) {
+		f := args.Get(4).(func() error)
+		f()
+	})
+	mock.OnAnything(suite.artifactController, "Count").Return(int64(0), nil)
+
+	// Reset GetByReference: succeed during quota resource calculation, then fail during event construction.
+	suite.artifactController.ExpectedCalls = nil
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil).Once()
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(nil, errors.New("artifact not found")).Once()
+	mock.OnAnything(suite.artifactController, "Walk").Return(nil).Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(suite.artifact)
+	})
+
+	q := &quota.Quota{}
+	q.SetHard(types.ResourceList{types.ResourceStorage: 100})
+	q.SetUsed(types.ResourceList{types.ResourceStorage: 85})
+	mock.OnAnything(suite.quotaController, "GetByRef").Return(q, nil).Once()
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0?from=library/photon:2.0.1", nil)
+	eveCtx := notification.NewEventCtx()
+	req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+	rr := httptest.NewRecorder()
+
+	suite.NotPanics(func() {
+		CopyArtifactMiddleware()(next).ServeHTTP(rr, req)
+	})
+	suite.Equal(http.StatusOK, rr.Code)
+	suite.Equal(0, eveCtx.Events.Len())
 }
 
 func TestCopyArtifactMiddlewareTestSuite(t *testing.T) {
