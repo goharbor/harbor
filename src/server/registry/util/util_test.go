@@ -15,6 +15,7 @@
 package util
 
 import (
+	"math"
 	"reflect"
 	"testing"
 
@@ -32,19 +33,7 @@ func TestCreateLinkEntry(t *testing.T) {
 
 }
 
-func TestIndexString(t *testing.T) {
-	a := []string{"B", "A", "C", "E"}
-
-	assert.True(t, IndexString(a, "E") == 3)
-	assert.True(t, IndexString(a, "B") == 1)
-	assert.True(t, IndexString(a, "A") == 0)
-	assert.True(t, IndexString(a, "C") == 2)
-
-	assert.True(t, IndexString(a, "Z") == -1)
-	assert.True(t, IndexString(a, "") == -1)
-}
-
-func Test_pickItems(t *testing.T) {
+func TestPickItems(t *testing.T) {
 	p := func(n int) *int {
 		return &n
 	}
@@ -180,15 +169,21 @@ func Test_pickItems(t *testing.T) {
 			[]string{"a", "b", "c"},
 			"",
 		},
+		{
+			"n=MaxInt and last=a",
+			args{[]string{"a", "b", "c"}, p(math.MaxInt), "a"},
+			[]string{"b", "c"},
+			"",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := pickItems(tt.args.items, tt.args.n, tt.args.last)
+			got, got1 := PickItems(tt.args.items, tt.args.n, tt.args.last)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("pickItems() got = %v, want %v", got, tt.want)
+				t.Errorf("PickItems() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("pickItems() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("PickItems() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

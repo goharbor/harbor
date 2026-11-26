@@ -45,19 +45,6 @@ func SetLinkHeader(origURL string, n int, last string) (string, error) {
 	return urlStr, nil
 }
 
-// IndexString returns the index of X in a sorts string array
-// If the array is not sorted, sort it.
-func IndexString(strs []string, x string) int {
-	if !sort.StringsAreSorted(strs) {
-		sort.Strings(strs)
-	}
-	i := sort.Search(len(strs), func(i int) bool { return x <= strs[i] })
-	if i < len(strs) && strs[i] == x {
-		return i
-	}
-	return -1
-}
-
 // ParseNAndLastParameters parse the n and last parameters from the query of the http request
 func ParseNAndLastParameters(r *http.Request) (*int, string, error) {
 	q := r.URL.Query()
@@ -84,7 +71,7 @@ func SendListTagsResponse(w http.ResponseWriter, r *http.Request, tags []string)
 		return
 	}
 
-	items, nextLast := pickItems(sortedAndUniqueItems(tags), n, last)
+	items, nextLast := PickItems(sortedAndUniqueItems(tags), n, last)
 
 	if nextLast != "" && n != nil { // NOTE: when the nextLast is not empty the n must not be nil
 		link, err := SetLinkHeader(r.URL.String(), *n, nextLast)
@@ -129,9 +116,9 @@ func sortedAndUniqueItems(items []string) []string {
 	return items[0:j]
 }
 
-// pickItems returns the first n elements which is bigger than the last from items, if the n is 0, return the empty slice
-// NOTE: the items must be ordered and value of n is equal or great than 0 when n isn't nil
-func pickItems(items []string, n *int, last string) ([]string, string) {
+// PickItems returns the first n elements which is bigger than the last from items, if the n is 0, return the empty slice
+// NOTE: the items must be sorted and unique, and the value of n is equal or great than 0 when n isn't nil
+func PickItems(items []string, n *int, last string) ([]string, string) {
 	if len(items) == 0 || (n != nil && *n == 0) {
 		// no items found or request n is 0
 		return []string{}, ""
@@ -147,7 +134,7 @@ func pickItems(items []string, n *int, last string) ([]string, string) {
 		i = sort.Search(len(items), func(ix int) bool { return strings.Compare(items[ix], last) > 0 })
 	}
 
-	j := min(i+*n, len(items))
+	j := i + min(*n, len(items)-i)
 	result := items[i:j]
 
 	nextLast := ""
