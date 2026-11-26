@@ -18,9 +18,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"sort"
-	"strconv"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -38,19 +36,10 @@ type repositoryHandler struct {
 }
 
 func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	var maxEntries int
-	var err error
-
-	reqQ := req.URL.Query()
-	lastEntry := reqQ.Get("last")
-	withN := reqQ.Get("n") != ""
-	if withN {
-		maxEntries, err = strconv.Atoi(reqQ.Get("n"))
-		if err != nil || maxEntries < 0 {
-			err := errors.New(err).WithCode(errors.BadRequestCode).WithMessage("the N must be a positive int type")
-			lib_http.SendError(w, err)
-			return
-		}
+	n, lastEntry, err := util.ParseNAndLastParameters(req)
+	if err != nil {
+		lib_http.SendError(w, err)
+		return
 	}
 
 	repoNames := make([]string, 0)
@@ -68,44 +57,10 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		repoNames = append(repoNames, repo.Name)
 	}
 	sort.Strings(repoNames)
-	if !withN {
-		r.sendResponse(w, req, repoNames)
-		return
-	}
 
-	// handle the pagination
-	var resRepos []string
-	repoNamesLen := len(repoNames)
-	// with "last", get items form lastEntryIndex+1 to lastEntryIndex+maxEntries
-	// without "last", get items from 0 to maxEntries'
-	if lastEntry != "" {
-		lastEntryIndex := util.IndexString(repoNames, lastEntry)
-		if lastEntryIndex == -1 {
-			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the last: %s should be a valid repository name.", lastEntry)
-			lib_http.SendError(w, err)
-			return
-		}
-		if lastEntryIndex+1+maxEntries > repoNamesLen {
-			resRepos = repoNames[lastEntryIndex+1 : repoNamesLen]
-		} else {
-			resRepos = repoNames[lastEntryIndex+1 : lastEntryIndex+1+maxEntries]
-		}
-	} else {
-		if maxEntries > repoNamesLen {
-			maxEntries = repoNamesLen
-		}
-		resRepos = repoNames[0:maxEntries]
-	}
-
-	if len(resRepos) == 0 {
-		r.sendResponse(w, req, resRepos)
-		return
-	}
-
-	// compare the last item to define whether return the link header.
-	// if equals, means that there is no more items in DB. Do not need to give the link header.
-	if repoNames[len(repoNames)-1] != resRepos[len(resRepos)-1] {
-		urlStr, err := util.SetLinkHeader(req.URL.String(), maxEntries, resRepos[len(resRepos)-1])
+	resRepos, nextLast := util.PickItems(repoNames, n, lastEntry)
+	if nextLast != "" && n != nil {
+		urlStr, err := util.SetLinkHeader(req.URL.String(), *n, nextLast)
 		if err != nil {
 			lib_http.SendError(w, err)
 			return

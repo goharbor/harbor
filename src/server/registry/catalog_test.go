@@ -16,8 +16,10 @@ package registry
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -154,6 +156,53 @@ func (c *catalogTestSuite) TestCatalogPaginationN3() {
 	c.Nil(err)
 	c.Equal(1, len(ctlg.Repositories))
 	c.Equal("hello-world", ctlg.Repositories[0])
+}
+
+func (c *catalogTestSuite) TestCatalogPaginationLast() {
+	cases := []struct {
+		name  string
+		query string
+		repos []string
+		link  string
+	}{
+		{"last no longer listed", "last=b&n=1", []string{"c"}, "</v2/_catalog?last=c&n=1>; rel=\"next\""},
+		{"last no longer listed, final page", "last=b&n=2", []string{"c", "d"}, ""},
+		{"last without n", "last=a", []string{"c", "d"}, ""},
+		{"last before all repositories", "last=0&n=5", []string{"a", "c", "d"}, ""},
+		{"last after all repositories", "last=z&n=1", []string{}, ""},
+		{"last is the final repository", "last=d&n=1", []string{}, ""},
+		{"n=0 with last", "last=a&n=0", []string{}, ""},
+		{"huge n with last", "last=a&n=" + strconv.Itoa(math.MaxInt), []string{"c", "d"}, ""},
+	}
+	for _, tc := range cases {
+		c.Run(tc.name, func() {
+			c.SetupTest()
+			mock.OnAnything(c.repoMgr, "NonEmptyRepos").Return([]*model.RepoRecord{
+				{RepositoryID: 1, Name: "d"},
+				{RepositoryID: 2, Name: "a"},
+				{RepositoryID: 3, Name: "c"},
+			}, nil)
+			req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?"+tc.query, nil)
+			w := httptest.NewRecorder()
+			newRepositoryHandler().ServeHTTP(w, req)
+			c.Require().Equal(http.StatusOK, w.Code, w.Body.String())
+			var ctlg struct {
+				Repositories []string `json:"repositories"`
+			}
+			c.Require().NoError(json.NewDecoder(w.Body).Decode(&ctlg))
+			c.Equal(tc.repos, ctlg.Repositories)
+			c.Equal(tc.link, w.Header().Get("Link"))
+		})
+	}
+}
+
+func (c *catalogTestSuite) TestCatalogInvalidN() {
+	for _, n := range []string{"-1", "abc"} {
+		req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?last=a&n="+n, nil)
+		w := httptest.NewRecorder()
+		newRepositoryHandler().ServeHTTP(w, req)
+		c.Equal(http.StatusBadRequest, w.Code, n)
+	}
 }
 
 func (c *catalogTestSuite) TestCatalogEmptyRepo() {
