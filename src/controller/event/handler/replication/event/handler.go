@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication"
@@ -57,8 +58,20 @@ func Handle(ctx context.Context, event *Event) error {
 		ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
 	}
 
+	resource := event.Resource
+	if event.Type == EventTypeArtifactPush {
+		accessories, err := findAccessories(ctx, resource, getArtifactNode)
+		if err != nil {
+			return err
+		}
+		expanded := *resource
+		metadata := *resource.Metadata
+		metadata.Artifacts = append(slices.Clone(metadata.Artifacts), accessories...)
+		expanded.Metadata = &metadata
+		resource = &expanded
+	}
 	for _, policy := range policies {
-		id, err := replication.Ctl.Start(ctx, policy, event.Resource, task.ExecutionTriggerEvent)
+		id, err := replication.Ctl.Start(ctx, policy, resource, task.ExecutionTriggerEvent)
 		if err != nil {
 			return err
 		}
