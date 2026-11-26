@@ -28,9 +28,12 @@ type Resolver interface {
 	PreCheck(ctx context.Context, url string, method string) (bool, string)
 }
 
-var urlResolvers = map[string]Resolver{}
+type registration struct {
+	pattern  *regexp.Regexp
+	resolver Resolver
+}
 
-var urlPatterns = map[string]*regexp.Regexp{}
+var registrations = map[string]registration{}
 
 var mu = &sync.Mutex{}
 
@@ -39,13 +42,18 @@ func RegisterResolver(urlPattern string, resolver Resolver) {
 	p := regexp.MustCompile(urlPattern)
 	mu.Lock()
 	defer mu.Unlock()
-	urlResolvers[urlPattern] = resolver
-	urlPatterns[urlPattern] = p
+	registrations[urlPattern] = registration{pattern: p, resolver: resolver}
 }
 
-// Resolvers get map of resolvers
+// Resolvers returns a copy of the registered resolvers keyed by URL pattern
 func Resolvers() map[string]Resolver {
-	return urlResolvers
+	mu.Lock()
+	defer mu.Unlock()
+	resolvers := make(map[string]Resolver, len(registrations))
+	for urlPattern, reg := range registrations {
+		resolvers[urlPattern] = reg.resolver
+	}
+	return resolvers
 }
 
 // Metadata the raw data of event
@@ -77,9 +85,9 @@ type Metadata struct {
 
 // Resolve parse the audit information from CommonEventMetadata
 func (c *Metadata) Resolve(event *event.Event) error {
-	for url, r := range Resolvers() {
-		if urlPatterns[url].MatchString(c.RequestURL) {
-			return r.Resolve(c, event)
+	for _, reg := range registrations {
+		if reg.pattern.MatchString(c.RequestURL) {
+			return reg.resolver.Resolve(c, event)
 		}
 	}
 	return nil
@@ -87,9 +95,9 @@ func (c *Metadata) Resolve(event *event.Event) error {
 
 // PreCheck check if current event is matched and return the prefetched resource name when it is delete operation
 func (c *Metadata) PreCheckMetadata() (bool, string) {
-	for urlPattern, r := range Resolvers() {
-		if urlPatterns[urlPattern].MatchString(c.RequestURL) {
-			return r.PreCheck(c.Ctx, c.RequestURL, c.RequestMethod)
+	for _, reg := range registrations {
+		if reg.pattern.MatchString(c.RequestURL) {
+			return reg.resolver.PreCheck(c.Ctx, c.RequestURL, c.RequestMethod)
 		}
 	}
 	return false, ""

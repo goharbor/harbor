@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 )
@@ -35,19 +36,31 @@ func TestRegisterResolverInvalidPatternLeavesRegistryUnchanged(t *testing.T) {
 	const invalid = `^/api/v2.0/(`
 	const valid = `^/api/v2.0/commonevent-test$`
 	t.Cleanup(func() {
-		mu.Lock()
-		defer mu.Unlock()
-		delete(urlResolvers, valid)
-		delete(urlPatterns, valid)
+		delete(registrations, invalid)
+		delete(registrations, valid)
 	})
 
 	assert.Panics(t, func() { RegisterResolver(invalid, fakeResolver{}) })
-	assert.NotContains(t, urlResolvers, invalid)
-	assert.NotContains(t, urlPatterns, invalid)
+	require.True(t, mu.TryLock(), "registry lock still held after panic")
+	mu.Unlock()
+	assert.NotContains(t, registrations, invalid)
 
 	RegisterResolver(valid, fakeResolver{})
 	m := &Metadata{Ctx: context.Background(), RequestURL: "/api/v2.0/commonevent-test"}
 	matched, name := m.PreCheckMetadata()
 	assert.True(t, matched)
 	assert.Equal(t, "fake", name)
+}
+
+func TestResolversReturnsCopy(t *testing.T) {
+	const probe = `^/api/v2.0/commonevent-copy$`
+	t.Cleanup(func() {
+		delete(registrations, probe)
+	})
+
+	Resolvers()[probe] = fakeResolver{}
+	assert.NotContains(t, registrations, probe)
+
+	m := &Metadata{Ctx: context.Background(), RequestURL: "/v2/library/nginx/blobs/sha256:abc"}
+	assert.NotPanics(t, func() { m.PreCheckMetadata() })
 }
