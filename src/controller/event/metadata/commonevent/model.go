@@ -36,10 +36,11 @@ var mu = &sync.Mutex{}
 
 // RegisterResolver register a resolver for a specific URL pattern
 func RegisterResolver(urlPattern string, resolver Resolver) {
+	p := regexp.MustCompile(urlPattern)
 	mu.Lock()
+	defer mu.Unlock()
 	urlResolvers[urlPattern] = resolver
-	urlPatterns[urlPattern] = regexp.MustCompile(urlPattern)
-	mu.Unlock()
+	urlPatterns[urlPattern] = p
 }
 
 // Resolvers get map of resolvers
