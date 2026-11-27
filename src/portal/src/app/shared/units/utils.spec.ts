@@ -14,6 +14,7 @@
 import {
     DEFAULT_PAGE_SIZE,
     delUrlParam,
+    doFiltering,
     durationStr,
     equalEndpoint,
     getHiddenArrayFromLocalStorage,
@@ -24,6 +25,7 @@ import {
     getSortingString,
     isSameArrayValue,
     isSameObject,
+    regexpFilter,
     setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
 } from './utils';
@@ -73,6 +75,28 @@ describe('functions in utils.ts should work', () => {
         expect(delUrlParam('http://test.com?param2', 'param2')).toEqual(
             'http://test.com'
         );
+    });
+
+    it('function regexpFilter() should work', () => {
+        expect(regexpFilter('ngi', 'library/nginx')).toBeTrue();
+        expect(regexpFilter('NGINX', 'library/nginx')).toBeTrue();
+        expect(regexpFilter('v1\\.2', 'v1.2.3')).toBeTrue();
+        expect(regexpFilter('v1\\.2', 'v132')).toBeFalse();
+        expect(regexpFilter('redis', 'library/nginx')).toBeFalse();
+    });
+
+    it('function regexpFilter() should not throw on terms that are not a valid regular expression', () => {
+        expect(() => regexpFilter('*nginx', 'library/nginx')).not.toThrow();
+        expect(regexpFilter('*nginx', 'library/*nginx')).toBeTrue();
+        expect(regexpFilter('*nginx', 'library/nginx')).toBeFalse();
+        expect(regexpFilter('c++', 'tools/C++-builder')).toBeTrue();
+        expect(regexpFilter('nginx(', 'library/nginx')).toBeFalse();
+    });
+
+    it('function doFiltering() should keep working with an invalid regular expression filter', () => {
+        const items = [{ name: 'library/nginx' }, { name: 'tools/c++' }];
+        const state: any = { filters: [{ property: 'name', value: 'c++' }] };
+        expect(doFiltering(items, state)).toEqual([{ name: 'tools/c++' }]);
     });
 
     it('function getSortingString() should work', () => {

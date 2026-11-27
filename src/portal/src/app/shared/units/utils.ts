@@ -398,7 +398,16 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(
  * returns {boolean}
  */
 export function regexpFilter(terms: string, testedValue: any): boolean {
-    let reg = new RegExp('.*' + terms + '.*', 'i');
+    let reg: RegExp;
+    try {
+        reg = new RegExp('.*' + terms + '.*', 'i');
+    } catch {
+        // The terms are not a valid regular expression (e.g. "*nginx" or "c++"),
+        // so match them as plain text instead of throwing.
+        return `${testedValue}`
+            .toLowerCase()
+            .includes(`${terms}`.toLowerCase());
+    }
     return reg.test(testedValue);
 }
 
