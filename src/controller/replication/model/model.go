@@ -17,6 +17,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -27,6 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 )
+
+// destRepositoryRe is one path component of a repository name, see reference.NameRegexp.
+var destRepositoryRe = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|[-]+)[a-z0-9]+)*$`)
 
 // Policy defines the structure of a replication policy
 type Policy struct {
@@ -48,6 +52,12 @@ type Policy struct {
 	Speed                     int32           `json:"speed"`
 	CopyByChunk               bool            `json:"copy_by_chunk"`
 	SingleActiveReplication   bool            `json:"single_active_replication"`
+	// RevisionTag makes every copy also tag the artifact with the immutable tag of its source
+	// revision (model.RevisionTag), on sources that declare SupportedRevisionTag.
+	RevisionTag bool `json:"revision_tag"`
+	// DestRepository, when set, replaces the last path component of the source repository, the
+	// one the namespace rewrite keeps, so a single repository can be copied under another name.
+	DestRepository string `json:"dest_repository"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -59,6 +69,15 @@ func (p *Policy) IsScheduledTrigger() bool {
 		return false
 	}
 	return p.Trigger.Type == model.TriggerTypeScheduled
+}
+
+// SourceOptions returns the settings of the policy that the source adapter must honor.
+func (p *Policy) SourceOptions() (*model.SourceOptions, error) {
+	fileFilter, err := model.FileFilterOf(p.Filters)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SourceOptions{FileFilter: fileFilter, RevisionTag: p.RevisionTag}, nil
 }
 
 // Validate the policy
@@ -82,10 +101,17 @@ func (p *Policy) Validate() error {
 	}
 
 	// valid the filters
+	fileFilters := 0
 	for _, f := range p.Filters {
 		if err := f.Validate(); err != nil {
 			return err
 		}
+		if f.Type == model.FilterTypeFile {
+			fileFilters++
+		}
+	}
+	if fileFilters > 1 {
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("at most one file filter is allowed")
 	}
 
 	// valid the destination namespace
@@ -94,6 +120,11 @@ func (p *Policy) Validate() error {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessagef("invalid destination namespace: %s", p.DestNamespace)
 		}
+	}
+
+	if len(p.DestRepository) > 0 && !destRepositoryRe.MatchString(p.DestRepository) {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("invalid destination repository %q: it must be a single path component", p.DestRepository)
 	}
 
 	// valid trigger
@@ -148,6 +179,8 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.Speed = policy.Speed
 	p.CopyByChunk = policy.CopyByChunk
 	p.SingleActiveReplication = policy.SingleActiveReplication
+	p.RevisionTag = policy.RevisionTag
+	p.DestRepository = policy.DestRepository
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -194,6 +227,8 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		Speed:                     p.Speed,
 		CopyByChunk:               p.CopyByChunk,
 		SingleActiveReplication:   p.SingleActiveReplication,
+		RevisionTag:               p.RevisionTag,
+		DestRepository:            p.DestRepository,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -53,6 +54,13 @@ func (c *copyFlow) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	srcOptions, err := c.policy.SourceOptions()
+	if err != nil {
+		return err
+	}
+	if err := adp.ConfigureSource(srcAdapter, srcOptions); err != nil {
+		return err
+	}
 	srcResources := c.resources
 	if len(srcResources) == 0 {
 		srcResources, err = fetchResources(srcAdapter, c.policy)
@@ -81,6 +89,11 @@ func (c *copyFlow) Run(ctx context.Context) error {
 	}
 
 	srcResources = assembleSourceResources(srcResources, c.policy)
+	if !srcOptions.IsEmpty() {
+		for _, r := range srcResources {
+			r.SourceOptions = srcOptions
+		}
+	}
 	info, err := dstAdapter.Info()
 	if err != nil {
 		return err
