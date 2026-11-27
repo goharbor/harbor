@@ -89,25 +89,28 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]any)
 	if err != nil {
 		return err
 	}
+	// Validate and initialize the audit endpoint before saving configuration so
+	// a slow or unreachable endpoint cannot hold properties row locks.
+	if err := c.updateLogEndpoint(ctx, conf); err != nil {
+		return err
+	}
 	if err := mgr.UpdateConfig(ctx, conf); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		return fmt.Errorf("failed to validate configuration")
 	}
-	// update the audit logger to point to the new endpoint
-	return c.updateLogEndpoint(ctx, conf)
+	return nil
 }
 
 func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]any) error {
 	// check if the audit log forward endpoint updated
 	if _, ok := cfgs[common.AuditLogForwardEndpoint]; ok {
-		auditEP := config.AuditLogForwardEndpoint(ctx)
-		if len(auditEP) == 0 {
-			return nil
+		auditEP, ok := cfgs[common.AuditLogForwardEndpoint].(string)
+		if !ok {
+			return errors.BadRequestError(fmt.Errorf("invalid audit log endpoint: %v", cfgs[common.AuditLogForwardEndpoint]))
 		}
-		if !audit.CheckEndpointActive(auditEP) {
+		if err := audit.LogMgr.Init(ctx, auditEP); err != nil {
 			return errors.BadRequestError(fmt.Errorf("could not connect to the audit endpoint: %v", auditEP))
 		}
-		audit.LogMgr.Init(ctx, auditEP)
 	}
 	return nil
 }
