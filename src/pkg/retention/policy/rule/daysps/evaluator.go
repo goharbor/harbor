@@ -42,7 +42,8 @@ type evaluator struct {
 }
 
 func (e *evaluator) Process(artifacts []*selector.Candidate) (result []*selector.Candidate, err error) {
-	minPushTime := time.Now().UTC().Add(time.Duration(-1*24*e.n) * time.Hour).Unix()
+	// AddDate is used because a time.Duration overflows beyond about 292 years.
+	minPushTime := time.Now().UTC().AddDate(0, 0, -e.n).Unix()
 	for _, a := range artifacts {
 		if a.PushedTime >= minPushTime {
 			result = append(result, a)

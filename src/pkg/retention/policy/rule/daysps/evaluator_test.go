@@ -97,6 +97,28 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 }
 
+// A large N must retain every recent artifact instead of overflowing
+// time.Duration and moving the cutoff into the future.
+func (e *EvaluatorTestSuite) TestProcessLargeN() {
+	now := time.Now().UTC()
+	data := []*selector.Candidate{
+		{PushedTime: daysAgo(now, 1, time.Hour)},
+		{PushedTime: daysAgo(now, 30, time.Hour)},
+		{PushedTime: daysAgo(now, 3650, time.Hour)},
+	}
+
+	for _, n := range []float64{106751, 106752, 200000, 999999, 20190904, 2099999999} {
+		e.T().Run(fmt.Sprintf("%v", n), func(t *testing.T) {
+			sut := New(map[string]rule.Parameter{ParameterN: n})
+
+			result, err := sut.Process(data)
+
+			require.NoError(t, err)
+			require.Len(t, result, len(data))
+		})
+	}
+}
+
 func (e *EvaluatorTestSuite) TestValid() {
 	tests := []struct {
 		Name      string
