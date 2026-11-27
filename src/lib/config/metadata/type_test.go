@@ -15,6 +15,7 @@
 package metadata
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,58 @@ func TestInt64Type_get(t *testing.T) {
 	test := &Int64Type{}
 	result, _ := test.get("32")
 	assert.Equal(t, result, int64(32))
+}
+
+func TestParseInt64Bounds(t *testing.T) {
+	// The scientific-notation fallback must reject what strconv.ParseInt
+	// already rejects a few lines above it.
+	for _, str := range []string{
+		"9223372036854775808",
+		"9.223372036854775808e18",
+		"-9223372036854775809",
+		"-9.223372036854775809e18",
+		"1e30",
+		"Inf",
+		"+Inf",
+		"Infinity",
+		"-Infinity",
+		"NaN",
+	} {
+		_, err := parseInt64(str)
+		assert.Error(t, err, str)
+	}
+
+	// math.MinInt64 itself is still accepted in both spellings.
+	for str, want := range map[string]int64{
+		"9223372036854775807":      math.MaxInt64,
+		"-9223372036854775808":     math.MinInt64,
+		"-9.223372036854775808e18": math.MinInt64,
+		"6e1":                      60,
+	} {
+		got, err := parseInt64(str)
+		assert.NoError(t, err, str)
+		assert.Equal(t, want, got, str)
+	}
+}
+
+func TestParseIntBounds(t *testing.T) {
+	for _, str := range []string{"1e30", "Inf", "-Inf", "NaN", "-9223372036854775809"} {
+		_, err := parseInt(str)
+		assert.Error(t, err, str)
+	}
+
+	// Values that already worked must keep working; verifyValueLengthCfg
+	// allows ten digits, which is beyond int32.
+	for str, want := range map[string]int{
+		"60":                   60,
+		"2147483647":           2147483647,
+		"1e10":                 10000000000,
+		"-9223372036854775808": math.MinInt64,
+	} {
+		got, err := parseInt(str)
+		assert.NoError(t, err, str)
+		assert.Equal(t, want, got, str)
+	}
 }
 
 func TestBoolType_validate(t *testing.T) {
