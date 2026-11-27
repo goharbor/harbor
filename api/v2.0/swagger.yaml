@@ -329,8 +329,8 @@ paths:
         '500':
           $ref: '#/responses/500'
     head:
-      summary: Check if the project name user provided already exists.
-      description: This endpoint is used to check if the project name provided already exist.
+      summary: Check if a project exists by name.
+      description: Checks whether the named project exists after enforcing project read access.
       tags:
         - project
       operationId: headProject
@@ -346,6 +346,10 @@ paths:
           $ref: '#/responses/200'
         '400':
           $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
         '500':

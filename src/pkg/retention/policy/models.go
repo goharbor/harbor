@@ -39,7 +39,27 @@ const (
 
 	// ScopeLevelProject project
 	ScopeLevelProject = "project"
+
+	// ExecutionPrincipalTypeLocal identifies a Harbor user principal.
+	ExecutionPrincipalTypeLocal = "local"
+
+	// ExecutionPrincipalTypeRobot identifies a Harbor robot principal.
+	ExecutionPrincipalTypeRobot = "robot"
+
+	// ExecutionPrincipalTypeSystem marks a policy Harbor created itself, such as the proxy cache default.
+	ExecutionPrincipalTypeSystem = "system"
 )
+
+// ExecutionPrincipal identifies the account authorized to run a scheduled retention policy.
+// Group membership and admin authority granted by an external identity provider are only known
+// at login, so they are recorded when the schedule is saved and reapplied when it fires.
+type ExecutionPrincipal struct {
+	Type            string `json:"type"`
+	ID              int64  `json:"id,omitempty"`
+	SysAdmin        bool   `json:"sysadmin,omitempty"`
+	AdminRoleInAuth bool   `json:"admin_role_in_auth,omitempty"`
+	GroupIDs        []int  `json:"group_ids,omitempty"`
+}
 
 // Metadata of policy
 type Metadata struct {
@@ -58,6 +78,18 @@ type Metadata struct {
 
 	// Which scope the policy will be applied to
 	Scope *Scope `json:"scope" valid:"Required"`
+
+	// ExecutionPrincipal is the account whose current permissions authorize scheduled execution.
+	ExecutionPrincipal *ExecutionPrincipal `json:"execution_principal,omitempty"`
+}
+
+// HasActiveSchedule reports whether the policy runs on a cron schedule.
+func (m *Metadata) HasActiveSchedule() bool {
+	if m == nil || m.Trigger == nil || m.Trigger.Kind != TriggerKindSchedule {
+		return false
+	}
+	cron, ok := m.Trigger.Settings[TriggerSettingsCron].(string)
+	return ok && cron != ""
 }
 
 // ValidateRetentionPolicy validate the retention policy
@@ -179,5 +211,6 @@ func WithNDaysSinceLastPull(projID int64, n int) *Metadata {
 			Level:     "project",
 			Reference: projID,
 		},
+		ExecutionPrincipal: &ExecutionPrincipal{Type: ExecutionPrincipalTypeSystem},
 	}
 }
