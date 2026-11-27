@@ -168,6 +168,36 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*modeltag.Tag, e
 	return r0, r1
 }
 
+// ListNames provides a mock function with given fields: ctx, repositoryID, last, limit
+func (_m *Manager) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	ret := _m.Called(ctx, repositoryID, last, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListNames")
+	}
+
+	var r0 []string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, int) ([]string, error)); ok {
+		return rf(ctx, repositoryID, last, limit)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, int) []string); ok {
+		r0 = rf(ctx, repositoryID, last, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string, int) error); ok {
+		r1 = rf(ctx, repositoryID, last, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, _a1, props
 func (_m *Manager) Update(ctx context.Context, _a1 *modeltag.Tag, props ...string) error {
 	_va := make([]interface{}, len(props))

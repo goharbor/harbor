@@ -38,6 +38,10 @@ func (f *fakeDao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) 
 	args := f.Called()
 	return args.Get(0).([]*tag.Tag), args.Error(1)
 }
+func (f *fakeDao) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	args := f.Called(ctx, repositoryID, last, limit)
+	return args.Get(0).([]string), args.Error(1)
+}
 func (f *fakeDao) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	args := f.Called()
 	return args.Get(0).(*tag.Tag), args.Error(1)
