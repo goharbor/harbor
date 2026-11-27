@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -88,6 +89,11 @@ func (m *managerTestSuite) TestUpdate() {
 	err := m.mgr.Update(nil, &model.Registry{})
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestCreateAdapterUnknownType() {
+	_, err := m.mgr.CreateAdapter(nil, &model.Registry{Type: "unknown"})
+	m.True(errors.IsErr(err, errors.BadRequestCode))
 }
 
 func TestManager(t *testing.T) {
