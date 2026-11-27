@@ -249,6 +249,13 @@ func (r *retentionAPI) checkRuleConflict(p *policy.Metadata) error {
 
 func (r *retentionAPI) DeleteRetention(ctx context.Context, params operation.DeleteRetentionParams) middleware.Responder {
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
+	if errors.IsNotFoundErr(err) {
+		// deleting a policy that is already gone is not an error
+		if err := r.RequireAuthenticated(ctx); err != nil {
+			return r.SendError(ctx, err)
+		}
+		return operation.NewDeleteRetentionOK()
+	}
 	if err != nil {
 		return r.SendError(ctx, errors.BadRequestError(err))
 	}
@@ -258,6 +265,12 @@ func (r *retentionAPI) DeleteRetention(ctx context.Context, params operation.Del
 	}
 
 	if err = r.retentionCtl.DeleteRetention(ctx, params.ID); err != nil {
+		// a concurrent delete removed the policy and owns the metadata cleanup
+		if errors.IsNotFoundErr(err) {
+			if _, getErr := r.retentionCtl.GetRetention(ctx, params.ID); errors.IsNotFoundErr(getErr) {
+				return operation.NewDeleteRetentionOK()
+			}
+		}
 		return r.SendError(ctx, err)
 	}
 	// delete retention data in project_metadata
