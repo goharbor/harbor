@@ -322,7 +322,7 @@ func (a *abstractorTestSuite) SetupTest() {
 		"", "application/json", schema1.MediaTypeSignedManifest))
 	a.Require().NoError(manifest.Register(manifest.NewV2(),
 		v1.MediaTypeImageManifest, schema2.MediaTypeManifest))
-	a.Require().NoError(manifest.Register(manifest.NewIndex(a.argMgr),
+	a.Require().NoError(manifest.Register(manifest.NewIndex(a.argMgr, a.regCli),
 		v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList))
 }
 
