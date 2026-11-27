@@ -15,12 +15,18 @@
 package handler
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/replication"
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -28,6 +34,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 	taskdao "github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/replication"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 )
 
 func TestConvertReplicationPolicy(t *testing.T) {
@@ -345,4 +353,35 @@ func TestConvertTask(t *testing.T) {
 	assert.Equal(t, "image", result.ResourceType)
 	assert.Equal(t, "source/repo:tag", result.SrcResource)
 	assert.Equal(t, "dest/repo:tag", result.DstResource)
+}
+
+func TestSingleActiveReplicationWithEventTrigger(t *testing.T) {
+	secCtx := &securitytesting.Context{}
+	secCtx.On("IsAuthenticated").Return(true)
+	secCtx.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+	secCtx.On("GetUsername").Return("admin")
+	ctx := security.NewContext(context.Background(), secCtx)
+	single := true
+	policy := &models.ReplicationPolicy{
+		Name:                    "policy",
+		DestRegistry:            &models.Registry{ID: 1},
+		Trigger:                 &models.ReplicationTrigger{Type: model.TriggerTypeEventBased},
+		SingleActiveReplication: &single,
+	}
+	api := &replicationAPI{}
+
+	rr := httptest.NewRecorder()
+	api.CreateReplicationPolicy(ctx, operation.CreateReplicationPolicyParams{
+		HTTPRequest: httptest.NewRequest(http.MethodPost, "/api/v2.0/replication/policies", nil),
+		Policy:      policy,
+	}).WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+
+	rr = httptest.NewRecorder()
+	api.UpdateReplicationPolicy(ctx, operation.UpdateReplicationPolicyParams{
+		HTTPRequest: httptest.NewRequest(http.MethodPut, "/api/v2.0/replication/policies/1", nil),
+		ID:          1,
+		Policy:      policy,
+	}).WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
