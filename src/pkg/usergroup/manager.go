@@ -16,11 +16,13 @@ package usergroup
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
@@ -116,12 +118,16 @@ func (m *manager) Onboard(ctx context.Context, g *model.UserGroup) error {
 // onBoardLdapUserGroup -- Check if the ldap group name duplicated and onboard the ldap group
 func (m *manager) onBoardLdapUserGroup(ctx context.Context, g *model.UserGroup) error {
 	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
-	// check if any duplicate ldap group name exist
-	ug, err := m.dao.Query(ctx, q.New(q.KeyWords{"GroupName": g.GroupName, "GroupType": g.GroupType}))
+	// user_group is unique on group_name alone, so the name is checked across all group types
+	ug, err := m.dao.Query(ctx, q.New(q.KeyWords{"GroupName": g.GroupName}))
 	if err != nil {
 		return err
 	}
 	if len(ug) > 0 {
+		if ug[0].GroupType != g.GroupType {
+			return errors.ConflictError(nil).WithMessagef("cannot onboard LDAP group %q (%s): the name is already used by %s user group %d",
+				g.GroupName, g.LdapGroupDN, groupTypeName(ug[0].GroupType), ug[0].ID)
+		}
 		if g.LdapGroupDN == ug[0].LdapGroupDN {
 			g.ID = ug[0].ID
 			return nil
@@ -140,6 +146,11 @@ func (m *manager) onBoardLdapUserGroup(ctx context.Context, g *model.UserGroup) 
 func (m *manager) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
 	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
 	created, ID, err := m.dao.ReadOrCreate(ctx, g, keyAttribute, combinedKeyAttributes...)
+	// ReadOrCreate re-reads by key after a duplicate key, so "no rows" here means
+	// the insert collided on a different unique column, in practice group_name
+	if errors.Is(err, orm.ErrNoRows) {
+		return errors.ConflictError(nil).WithMessagef("cannot onboard user group %q: it conflicts with an existing user group of the same name", g.GroupName)
+	}
 	if err != nil {
 		return err
 	}
@@ -156,6 +167,19 @@ func (m *manager) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup
 		g.LdapGroupDN = prevGroup.LdapGroupDN
 	}
 	return nil
+}
+
+func groupTypeName(groupType int) string {
+	switch groupType {
+	case common.LDAPGroupType:
+		return "LDAP"
+	case common.HTTPGroupType:
+		return "HTTP"
+	case common.OIDCGroupType:
+		return "OIDC"
+	default:
+		return fmt.Sprintf("type %d", groupType)
+	}
 }
 
 func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
