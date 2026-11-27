@@ -100,7 +100,9 @@ export class SessionService {
                 this.currentUser = this.sessionViewmodel.getCurrentUser(
                     response
                 ) as SessionUser;
-                this.jobServiceDashboardHealthCheckService.checkHealth();
+                if (this.currentUser?.has_admin_role) {
+                    this.jobServiceDashboardHealthCheckService.checkHealth();
+                }
             }),
             catchError(error => this.handleError(error))
         );
