@@ -47,6 +47,41 @@ func (_m *mockAdapter) BlobExist(repository string, digest string) (bool, error)
 	return r0, r1
 }
 
+// BlobStat provides a mock function with given fields: repository, digest
+func (_m *mockAdapter) BlobStat(repository string, digest string) (bool, int64, error) {
+	ret := _m.Called(repository, digest)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BlobStat")
+	}
+
+	var r0 bool
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(string, string) (bool, int64, error)); ok {
+		return rf(repository, digest)
+	}
+	if rf, ok := ret.Get(0).(func(string, string) bool); ok {
+		r0 = rf(repository, digest)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string) int64); ok {
+		r1 = rf(repository, digest)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(string, string) error); ok {
+		r2 = rf(repository, digest)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // CanBeMount provides a mock function with given fields: digest
 func (_m *mockAdapter) CanBeMount(digest string) (bool, string, error) {
 	ret := _m.Called(digest)

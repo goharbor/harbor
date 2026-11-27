@@ -43,6 +43,7 @@ import (
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	proxySecret "github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	pkgRobot "github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
@@ -975,4 +976,195 @@ func TestTagsListMiddlewareDefaultLibrary(t *testing.T) {
 	if location := rec.Header().Get("Location"); location != expectedLocation {
 		t.Errorf("expected Location header %q, got %q", expectedLocation, location)
 	}
+}
+
+// --- BlobHeadMiddleware suite ---
+
+type BlobHeadMiddlewareSuite struct {
+	suite.Suite
+
+	origProjectCtl  project.Controller
+	projectCtl      *projecttesting.Controller
+	origRegistryCtl registryCtl.Controller
+	registryCtl     *registrytesting.Controller
+
+	next       http.Handler
+	nextCalled bool
+	artInfo    lib.ArtifactInfo
+}
+
+func (s *BlobHeadMiddlewareSuite) SetupTest() {
+	s.origProjectCtl = project.Ctl
+	s.projectCtl = &projecttesting.Controller{}
+	project.Ctl = s.projectCtl
+	s.origRegistryCtl = registryCtl.Ctl
+	s.registryCtl = &registrytesting.Controller{}
+	registryCtl.Ctl = s.registryCtl
+
+	s.nextCalled = false
+	s.next = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		s.nextCalled = true
+		w.WriteHeader(http.StatusNotFound)
+	})
+
+	s.artInfo = lib.ArtifactInfo{
+		ProjectName: "proxy-cache",
+		Repository:  "proxy-cache/library/redis",
+		Digest:      "sha256:aaaa",
+	}
+}
+
+func (s *BlobHeadMiddlewareSuite) TearDownTest() {
+	project.Ctl = s.origProjectCtl
+	registryCtl.Ctl = s.origRegistryCtl
+}
+
+func (s *BlobHeadMiddlewareSuite) makeRequest(ctx context.Context) *http.Request {
+	req := httptest.NewRequest(http.MethodHead, "/v2/proxy-cache/library/redis/blobs/sha256:aaaa", nil)
+	return req.WithContext(lib.WithArtifactInfo(ctx, s.artInfo))
+}
+
+func (s *BlobHeadMiddlewareSuite) TestNonProxyProject() {
+	s.artInfo = lib.ArtifactInfo{ProjectName: "library", Repository: "library/redis", Digest: "sha256:aaaa"}
+	proj := &proModels.Project{ProjectID: 1, Name: "library", RegistryID: 0}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(context.Background()))
+
+	s.True(s.nextCalled, "next handler should be called for non-proxy project")
+	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func (s *BlobHeadMiddlewareSuite) TestProxySessionOnlySeesLocal() {
+	proj := &proModels.Project{ProjectID: 1, Name: "proxy-cache", RegistryID: 1}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	ctx := security.NewContext(context.Background(), proxycachesecret.NewSecurityContext("proxy-cache/library/redis"))
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(ctx))
+
+	s.True(s.nextCalled, "the proxy cache's own head blob request must be served by the local registry")
+	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func (s *BlobHeadMiddlewareSuite) TestProjectNotFound() {
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(nil, liberrors.NotFoundError(nil))
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(context.Background()))
+
+	s.False(s.nextCalled)
+	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func (s *BlobHeadMiddlewareSuite) TestRequestWithProxySecretOnlySeesLocal() {
+	proj := &proModels.Project{ProjectID: 1, Name: "proxy-cache", RegistryID: 1}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	req := s.makeRequest(context.Background())
+	s.Require().NoError(proxySecret.NewAuthorizer().Modify(req))
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, req)
+
+	s.True(s.nextCalled, "a request carrying a proxy secret must be served by the local registry")
+}
+
+func (s *BlobHeadMiddlewareSuite) TestDockerHubDefaultLibraryRedirect() {
+	s.artInfo = lib.ArtifactInfo{ProjectName: "proxy-cache", Repository: "proxy-cache/redis", Digest: "sha256:aaaa"}
+	proj := &proModels.Project{ProjectID: 1, Name: "proxy-cache", RegistryID: 1}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	testingmock.OnAnything(s.registryCtl, "Get").Return(&model.Registry{ID: 1, Type: model.RegistryTypeDockerHub, Status: model.Healthy}, nil)
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(context.Background()))
+
+	s.False(s.nextCalled)
+	s.Equal(http.StatusMovedPermanently, w.Code)
+	s.Equal("/v2/proxy-cache/library/redis/blobs/sha256:aaaa", w.Header().Get("Location"))
+}
+
+func (s *BlobHeadMiddlewareSuite) TestRepositoryFilterBlocks() {
+	proj := &proModels.Project{ProjectID: 1, Name: "proxy-cache", RegistryID: 1,
+		Metadata: map[string]string{proModels.ProMetaProxyCacheFilterPattern: "other/**"}}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	testingmock.OnAnything(s.registryCtl, "Get").Return(&model.Registry{ID: 1, Type: model.RegistryTypeHarbor, Status: model.Healthy}, nil)
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(context.Background()))
+
+	s.False(s.nextCalled, "a filtered repository must not reach the local registry or the upstream")
+	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func (s *BlobHeadMiddlewareSuite) TestUnhealthyRegistryUsesLocal() {
+	proj := &proModels.Project{ProjectID: 1, Name: "proxy-cache", RegistryID: 1}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	testingmock.OnAnything(s.registryCtl, "Get").Return(&model.Registry{ID: 1, Type: model.RegistryTypeHarbor, Status: model.Unhealthy}, nil)
+
+	w := httptest.NewRecorder()
+	BlobHeadMiddleware()(s.next).ServeHTTP(w, s.makeRequest(context.Background()))
+
+	s.True(s.nextCalled, "an unhealthy upstream must leave the request to the local registry")
+	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func TestBlobHeadMiddlewareSuite(t *testing.T) {
+	suite.Run(t, new(BlobHeadMiddlewareSuite))
+}
+
+func TestHeadBlobFromRemote(t *testing.T) {
+	art := lib.ArtifactInfo{
+		ProjectName: "proxy-cache",
+		Repository:  "proxy-cache/library/redis",
+		Digest:      "sha256:aaaa",
+	}
+
+	t.Run("exists upstream", func(t *testing.T) {
+		remote := &proxytesting.RemoteInterface{}
+		remote.On("BlobStat", "library/redis", "sha256:aaaa").Return(true, int64(28228449), nil)
+		w := httptest.NewRecorder()
+
+		served, err := headBlobFromRemote(w, art, remote)
+		require.NoError(t, err)
+		require.True(t, served)
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, "28228449", w.Header().Get(contentLength))
+		require.Equal(t, "sha256:aaaa", w.Header().Get(dockerContentDigest))
+		require.Equal(t, "sha256:aaaa", w.Header().Get(etag))
+		require.Empty(t, w.Body.Bytes())
+		remote.AssertExpectations(t)
+	})
+
+	t.Run("not found upstream", func(t *testing.T) {
+		remote := &proxytesting.RemoteInterface{}
+		remote.On("BlobStat", "library/redis", "sha256:aaaa").Return(false, int64(0), nil)
+		w := httptest.NewRecorder()
+
+		served, err := headBlobFromRemote(w, art, remote)
+		require.NoError(t, err)
+		require.False(t, served)
+		require.Empty(t, w.Header().Get(contentLength))
+	})
+
+	t.Run("upstream error falls back to local", func(t *testing.T) {
+		remote := &proxytesting.RemoteInterface{}
+		remote.On("BlobStat", "library/redis", "sha256:aaaa").Return(false, int64(0), errors.New("timeout"))
+		w := httptest.NewRecorder()
+
+		served, err := headBlobFromRemote(w, art, remote)
+		require.NoError(t, err)
+		require.False(t, served)
+		require.Empty(t, w.Header().Get(contentLength))
+	})
+
+	t.Run("upstream rate limit is returned", func(t *testing.T) {
+		remote := &proxytesting.RemoteInterface{}
+		remote.On("BlobStat", "library/redis", "sha256:aaaa").Return(false, int64(0), liberrors.New(nil).WithCode(liberrors.RateLimitCode))
+		w := httptest.NewRecorder()
+
+		served, err := headBlobFromRemote(w, art, remote)
+		require.True(t, liberrors.IsRateLimitError(err))
+		require.False(t, served)
+	})
 }
