@@ -56,6 +56,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/robot"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -161,13 +162,6 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
-	// validate metadata.public value, should only be "true" or "false"
-	if p := req.Metadata.Public; p != "" {
-		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true' or 'false', but got: '%s'", p))
-		}
-	}
-
 	// ignore metadata.proxy_speed_kb, metadata.max_upstream_conn, proxy_cache_filter_pattern and proxy_cache_filter_kind for non-proxy-cache project
 	if req.RegistryID == nil {
 		req.Metadata.ProxySpeedKb = nil
@@ -180,6 +174,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
 		req.Metadata.EnableContentTrust = nil
+	}
+
+	if err := validateProjectMetadataValues(req.Metadata); err != nil {
+		return a.SendError(ctx, err)
 	}
 
 	// validate the retention settings, RegistryID and StorageLimit in the body of the request
@@ -603,6 +601,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 			return a.SendError(ctx, err)
 		}
 	}
+	if params.Project.Metadata != nil {
+		if err := validateProjectMetadataValues(params.Project.Metadata); err != nil {
+			return a.SendError(ctx, err)
+		}
+	}
 	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
 		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
 	}
@@ -824,6 +827,64 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, option
 	return p, nil
 }
 
+// validateProjectMetadataValues checks the metadata values that have a fixed
+// format, on both create and update
+func validateProjectMetadataValues(md *models.ProjectMetadata) error {
+	// validate metadata.public value, should only be "true" or "false"
+	if p := md.Public; p != "" {
+		if p != "true" && p != "false" {
+			return errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true' or 'false', but got: '%s'", p)
+		}
+	}
+
+	// validate the boolean values, the same way the project metadata API does
+	for key, value := range map[string]*string{
+		pkgModels.ProMetaEnableContentTrust:        md.EnableContentTrust,
+		pkgModels.ProMetaEnableContentTrustCosign:  md.EnableContentTrustCosign,
+		pkgModels.ProMetaAutoScan:                  md.AutoScan,
+		pkgModels.ProMetaAutoSBOMGen:               md.AutoSbomGeneration,
+		pkgModels.ProMetaPreventVul:                md.PreventVul,
+		pkgModels.ProMetaReuseSysCVEAllowlist:      md.ReuseSysCVEAllowlist,
+		pkgModels.ProMetaProxyCacheLocalOnNotFound: md.ProxyCacheLocalOnNotFound,
+		pkgModels.ProMetaProxyReferrerAPI:          md.ProxyReferrerAPI,
+	} {
+		if value == nil || *value == "" {
+			continue
+		}
+		v, err := strconv.ParseBool(*value)
+		if err != nil {
+			return errors.BadRequestError(nil).WithMessagef("metadata.%s should only be 'true' or 'false', but got: '%s'", key, *value)
+		}
+		*value = strconv.FormatBool(v)
+	}
+
+	if sev := md.Severity; sev != nil && *sev != "" {
+		severity := vuln.ParseSeverityVersion3(strings.ToLower(*sev))
+		if severity == vuln.Unknown {
+			return errors.BadRequestError(nil).WithMessagef("metadata.severity is invalid: '%s'", *sev)
+		}
+		*sev = strings.ToLower(severity.String())
+	}
+
+	// validate metadata.proxy_speed_kb. It should be an int32
+	if ps := md.ProxySpeedKb; ps != nil {
+		if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
+			return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
+		}
+	}
+
+	if cnt := md.MaxUpstreamConn; cnt != nil {
+		v, err := strconv.ParseInt(*cnt, 10, 32)
+		if err != nil {
+			return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
+		}
+		if v <= 0 && v != -1 {
+			return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be a positive int or -1, but got '%s'", *cnt)
+		}
+	}
+	return nil
+}
+
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
 	if req.RetentionDays != nil {
 		if req.RegistryID == nil {
@@ -855,19 +916,6 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
-		}
-
-		// validate metadata.proxy_speed_kb. It should be an int32
-		if ps := req.Metadata.ProxySpeedKb; ps != nil {
-			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
-				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
-			}
-		}
-
-		if cnt := req.Metadata.MaxUpstreamConn; cnt != nil {
-			if _, err := strconv.ParseInt(*cnt, 10, 32); err != nil {
-				return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
-			}
 		}
 
 		if err := validateProxyCacheRepositoryFilter(req.Metadata); err != nil {
