@@ -307,7 +307,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 	// Get full model of policy schema
 	err = schema.Decode()
 	if err != nil {
-		return 0, err
+		return 0, errors.BadRequestError(err)
 	}
 
 	// valid policy schema
@@ -379,7 +379,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 	// Get full model of updating policy
 	err = schema.Decode()
 	if err != nil {
-		return err
+		return errors.BadRequestError(err)
 	}
 
 	// valid policy schema

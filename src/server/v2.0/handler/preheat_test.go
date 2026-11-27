@@ -22,6 +22,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
@@ -259,6 +260,18 @@ func Test_convertParamInstanceToModelInstance(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "empty name",
+			input:   &models.Instance{Name: "", Vendor: "dragonfly"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "unknown vendor",
+			input:   &models.Instance{Name: "abc", Vendor: "bogus"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name: "want ok",
 			input: &models.Instance{
 				ID:             1,
@@ -414,4 +427,21 @@ func Test_convertTaskToPayload(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConvertParamToModelBadRequest(t *testing.T) {
+	_, err := convertParamPolicyToModelPolicy(&models.PreheatPolicy{Name: ""})
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+
+	_, err = convertParamPolicyToModelPolicy(nil)
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+
+	_, err = convertParamInstanceToModelInstance(nil)
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+
+	_, err = convertParamInstanceToModelInstance(&models.Instance{Name: "", Vendor: "dragonfly"})
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+
+	_, err = convertParamInstanceToModelInstance(&models.Instance{Name: "abc", Vendor: "bogus"})
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
 }

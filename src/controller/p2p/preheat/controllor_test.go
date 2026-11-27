@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/config"
+	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -258,6 +259,28 @@ func (s *preheatSuite) TestCreatePolicy() {
 	s.Equal(int64(1), id)
 	s.False(policy.CreatedAt.IsZero())
 	s.False(policy.UpdatedTime.IsZero())
+}
+
+func (s *preheatSuite) TestCreatePolicyInvalidJSON() {
+	for _, p := range []*policy.Schema{
+		{Name: "test", FiltersStr: "not json", TriggerStr: `{"type":"manual"}`},
+		{Name: "test", FiltersStr: "[]", TriggerStr: "not json"},
+	} {
+		_, err := s.controller.CreatePolicy(s.ctx, p)
+		s.True(liberrors.IsErr(err, liberrors.BadRequestCode), "got %v", err)
+	}
+}
+
+func (s *preheatSuite) TestUpdatePolicyInvalidJSON() {
+	stored := &policy.Schema{ID: 2, Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeManual}}
+	s.fakePolicyMgr.On("Get", s.ctx, int64(2)).Return(stored, nil)
+	for _, p := range []*policy.Schema{
+		{ID: 2, Name: "test", FiltersStr: "not json", TriggerStr: `{"type":"manual"}`},
+		{ID: 2, Name: "test", FiltersStr: "[]", TriggerStr: "not json"},
+	} {
+		err := s.controller.UpdatePolicy(s.ctx, p, "")
+		s.True(liberrors.IsErr(err, liberrors.BadRequestCode), "got %v", err)
+	}
 }
 
 func (s *preheatSuite) TestGetPolicy() {
