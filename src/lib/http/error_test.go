@@ -16,6 +16,7 @@ package http
 
 import (
 	std_errors "errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -74,6 +75,24 @@ func TestAPIError(t *testing.T) {
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)
+	assert.Contains(t, stacktrace, `http.TestAPIError`)
+
+	// wrapped legacy error
+	wrappedLegacy := fmt.Errorf("wrapped context: %w", &commonhttp.Error{
+		Code:    http.StatusNotFound,
+		Message: "not found",
+	})
+	statusCode, payload, stacktrace = apiError(wrappedLegacy)
+	assert.Equal(t, http.StatusNotFound, statusCode)
+	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"not found"}]}`, payload)
+	assert.Contains(t, stacktrace, `http.apiError`)
+
+	// wrapped errors.Error preserves status code and stacktrace
+	harborErr := errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
+	wrappedHarbor := fmt.Errorf("wrapped context: %w", harborErr)
+	statusCode, payload, stacktrace = apiError(wrappedHarbor)
+	assert.Equal(t, http.StatusNotFound, statusCode)
+	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"wrapped context: resource not found"}]}`, payload)
 	assert.Contains(t, stacktrace, `http.TestAPIError`)
 
 	// common error, common error has no stacktrace
