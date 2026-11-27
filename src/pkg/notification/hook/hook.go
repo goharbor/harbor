@@ -76,6 +76,10 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		Parameters: map[string]any(data.Parameters),
 	})
 	if err != nil {
+		// without a task nothing moves the execution out of Running
+		if e := hm.execMgr.MarkError(ctx, execID, err.Error()); e != nil {
+			log.Errorf("failed to mark webhook execution %d as error: %v", execID, e)
+		}
 		return errors.Errorf("failed to create task for webhook based on policy %d: %v", event.PolicyID, err)
 	}
 
