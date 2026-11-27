@@ -165,7 +165,7 @@ func (bc *basicController) RegistrationExists(ctx context.Context, registrationU
 // UpdateRegistration ...
 func (bc *basicController) UpdateRegistration(ctx context.Context, registration *scanner.Registration) error {
 	if registration.IsDefault && registration.Disabled {
-		return errors.Errorf("default registration %s can not be marked to deactivated", registration.UUID)
+		return errors.BadRequestError(nil).WithMessagef("default registration %s can not be marked to deactivated", registration.UUID)
 	}
 
 	if isReservedName(registration.Name) {
