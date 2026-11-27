@@ -207,6 +207,24 @@ func (suite *ControllerTestSuite) TestDeleteCustomRoleForeignKeyRace() {
 	suite.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
+
+// ON DELETE RESTRICT can surface SQLSTATE 23001 (restrict_violation) instead of
+// 23503; that must also map to a client error, not a 500.
+func (suite *ControllerTestSuite) TestDeleteCustomRoleRestrictViolationRace() {
+	suite.roleMgr.On("Get", mock.Anything, int64(10)).Return(&model.Role{
+		ID:        10,
+		Name:      "racy-restrict",
+		IsBuiltin: false,
+	}, nil)
+	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 10).Return(0, nil)
+	suite.roleMgr.On("Delete", mock.Anything, int64(10)).
+		Return(&pgconn.PgError{Code: "23001"}) // restrict_violation
+
+	err := suite.c.Delete(suite.ctx, int64(10))
+	suite.Require().NotNil(err)
+	suite.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
+}
+
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &ControllerTestSuite{})
 }
