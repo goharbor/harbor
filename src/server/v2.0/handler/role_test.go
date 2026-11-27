@@ -26,6 +26,7 @@ import (
 	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	roleModel "github.com/goharbor/harbor/src/pkg/role/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/role"
 	securityMock "github.com/goharbor/harbor/src/testing/common/security"
@@ -287,3 +288,96 @@ func TestIsValidRolePermissionScope_WildcardNamespaceMatches(t *testing.T) {
 
 // compile-time check: securityMock import used
 var _ = testifymock.Anything
+
+// ---------------------------------------------------------------------------
+// Role name and description validation
+// ---------------------------------------------------------------------------
+
+// A NUL byte in the description cannot be stored by Postgres, so create must
+// reject it with a 400 before it reaches the database.
+func TestCreateRole_NulDescriptionRejected(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(true)
+
+	params := operation.CreateRoleParams{
+		Role: &models.RoleCreate{
+			Name:        "nuldesc",
+			Description: "a\x00b",
+			Permissions: []*models.RolePermission{
+				{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create"}}},
+			},
+		},
+	}
+
+	resp := (&roleAPI{}).CreateRole(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
+func TestUpdateRole_InvalidInputRejected(t *testing.T) {
+	cases := []struct {
+		name        string
+		roleName    string
+		description string
+	}{
+		{"empty name", "", ""},
+		{"NUL in description", "putme", "a\x00b"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			sc := &securityMock.Context{}
+			sc.On("IsAuthenticated").Return(true)
+			sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(true)
+
+			rc := &stubRoleCtl{}
+			rc.On("Get", testifymock.Anything, int64(5), testifymock.Anything).
+				Return(&roleCtl.Role{Editable: true, Role: roleModel.Role{Name: "putme"}}, nil)
+
+			params := operation.UpdateRoleParams{
+				RoleID: 5,
+				Role: &models.Role{
+					Name:        c.roleName,
+					Description: c.description,
+					Permissions: []*models.RolePermission{
+						{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create"}}},
+					},
+				},
+			}
+			resp := (&roleAPI{roleCtl: rc}).UpdateRole(newCtxWithSecurity(sc), params)
+
+			rr := httptest.NewRecorder()
+			resp.WriteResponse(rr, runtime.JSONProducer())
+			assert.Equal(t, http.StatusBadRequest, rr.Code)
+		})
+	}
+}
+
+// Keeping the current name (or sending it unchanged) is still accepted.
+func TestUpdateRole_UnchangedNameAccepted(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(true)
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(5), testifymock.Anything).
+		Return(&roleCtl.Role{Editable: true, Role: roleModel.Role{Name: "putme"}}, nil)
+
+	params := operation.UpdateRoleParams{
+		RoleID: 5,
+		Role: &models.Role{
+			Name:        "putme",
+			Description: "plain",
+			Permissions: []*models.RolePermission{
+				{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create"}}},
+			},
+		},
+	}
+	resp := (&roleAPI{roleCtl: rc}).UpdateRole(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
