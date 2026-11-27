@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,6 +85,10 @@ type DAO interface {
 
 	// GetBlobsByArtDigest get the blobs that are referenced by artifact
 	GetBlobsByArtDigest(ctx context.Context, digest string) ([]*models.Blob, error)
+
+	// GetBlobsUselessAfterDeletion returns the blobs that GetBlobsNotRefedByProjectBlob would return once the artifacts were deleted
+	// and every project dropped the blobs that none of its remaining artifacts reference
+	GetBlobsUselessAfterDeletion(ctx context.Context, timeWindowHours int64, artifactIDs []int64) ([]*models.Blob, error)
 }
 
 // New returns an instance of the default DAO
@@ -430,6 +435,38 @@ func (d *dao) GetBlobsByArtDigest(ctx context.Context, digest string) ([]*models
 	_, err = ormer.Raw(sql, digest).QueryRows(&blobs)
 	if err != nil {
 		return blobs, err
+	}
+
+	return blobs, nil
+}
+
+func (d *dao) GetBlobsUselessAfterDeletion(ctx context.Context, timeWindowHours int64, artifactIDs []int64) ([]*models.Blob, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]string, len(artifactIDs))
+	for i, id := range artifactIDs {
+		ids[i] = strconv.FormatInt(id, 10)
+	}
+
+	// The artifact IDs go in as one array literal, as an IN list can exceed the bind parameter limit of PostgreSQL,
+	// and are matched with NOT EXISTS over unnest, which the planner hashes, unlike <> ALL that compares every element.
+	sql := fmt.Sprintf(`SELECT b.id, b.digest, b.content_type, b.status, b.version, b.size FROM blob AS b
+WHERE b.update_time <= now() - interval '%d hours'
+AND NOT EXISTS (
+  SELECT 1 FROM artifact_blob AS ab
+  JOIN artifact AS a ON a.digest = ab.digest_af
+  JOIN blob AS kb ON kb.digest = ab.digest_blob
+  JOIN project_blob AS pb ON pb.project_id = a.project_id AND pb.blob_id = kb.id
+  WHERE kb.id = b.id
+  AND NOT EXISTS (SELECT 1 FROM unnest(CAST(CAST(? AS text) AS bigint[])) AS deleted(id) WHERE deleted.id = a.id)
+)`, timeWindowHours)
+
+	var blobs []*models.Blob
+	if _, err := ormer.Raw(sql, "{"+strings.Join(ids, ",")+"}").QueryRows(&blobs); err != nil {
+		return nil, err
 	}
 
 	return blobs, nil

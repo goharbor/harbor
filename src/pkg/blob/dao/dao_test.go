@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -493,6 +494,101 @@ func (suite *DaoTestSuite) TestGetBlobsNotRefedByProjectBlob() {
 	blobs, err = suite.dao.GetBlobsNotRefedByProjectBlob(ctx, 2)
 	suite.Require().Nil(err)
 	suite.Require().Equal(0, len(blobs))
+}
+
+func (suite *DaoTestSuite) TestGetBlobsUselessAfterDeletion() {
+	ctx := suite.Context()
+	o, err := orm.FromContext(ctx)
+	suite.Require().NoError(err)
+
+	suite.WithProject(func(project1 int64, _ string) {
+		suite.WithProject(func(project2 int64, _ string) {
+			defer suite.ExecSQL(`DELETE FROM artifact WHERE project_id IN (?, ?)`, project1, project2)
+			// the blobs are older than the time window, other tests count such blobs
+			var created []string
+			defer func() {
+				for _, digest := range created {
+					suite.ExecSQL(`DELETE FROM project_blob WHERE blob_id = (SELECT id FROM blob WHERE digest = ?)`, digest)
+					suite.ExecSQL(`DELETE FROM artifact_blob WHERE digest_blob = ?`, digest)
+					suite.ExecSQL(`DELETE FROM blob WHERE digest = ?`, digest)
+				}
+			}()
+			addArtifact := func(projectID, repositoryID int64, digest string) int64 {
+				var id int64
+				suite.Require().NoError(o.Raw(`INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type)
+VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type') RETURNING id`, digest, projectID, repositoryID).QueryRow(&id))
+				return id
+			}
+			addBlob := func(old bool, projectIDs ...int64) string {
+				digest := suite.DigestString()
+				id, err := suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+				suite.Require().NoError(err)
+				created = append(created, digest)
+				for _, projectID := range projectIDs {
+					_, err := suite.dao.CreateProjectBlob(ctx, projectID, id)
+					suite.Require().NoError(err)
+				}
+				if old {
+					suite.ExecSQL(`UPDATE blob SET update_time = now() - interval '3 hours' WHERE id = ?`, id)
+				}
+				return digest
+			}
+			refer := func(artifactDigest string, blobDigests ...string) {
+				for _, blobDigest := range blobDigests {
+					_, err := suite.dao.CreateArtifactAndBlob(ctx, artifactDigest, blobDigest)
+					suite.Require().NoError(err)
+				}
+			}
+
+			deleted, kept, copied := suite.DigestString(), suite.DigestString(), suite.DigestString()
+			deletedID := addArtifact(project1, 10, deleted)
+			addArtifact(project1, 11, kept)
+			copiedID := addArtifact(project1, 12, copied)
+			addArtifact(project2, 20, copied)
+			keptInProject2 := suite.DigestString()
+			addArtifact(project2, 21, keptInProject2)
+
+			onlyDeleted := addBlob(true, project1)
+			sharedInProject := addBlob(true, project1)
+			recent := addBlob(false, project1)
+			refer(deleted, onlyDeleted, sharedInProject, recent)
+			refer(kept, sharedInProject)
+
+			copiedLayer := addBlob(true, project1, project2)
+			refer(copied, copiedLayer)
+
+			orphan := addBlob(true, project1)
+			orphanUsedInProject2 := addBlob(true, project1, project2)
+			refer(keptInProject2, orphanUsedInProject2)
+			withoutProject := addBlob(true)
+			// only an artifact of the project holding the blob keeps it, as a real run drops the blob from every other project
+			heldByOtherProject := addBlob(true, project2)
+			refer(kept, heldByOtherProject)
+
+			useless := func(artifactIDs []int64) []string {
+				blobs, err := suite.dao.GetBlobsUselessAfterDeletion(ctx, 2, artifactIDs)
+				suite.Require().NoError(err)
+				own := map[string]bool{onlyDeleted: true, sharedInProject: true, recent: true, copiedLayer: true, orphan: true, orphanUsedInProject2: true, withoutProject: true, heldByOtherProject: true}
+				var digests []string
+				for _, blob := range blobs {
+					if own[blob.Digest] {
+						digests = append(digests, blob.Digest)
+					}
+				}
+				return digests
+			}
+
+			suite.ElementsMatch([]string{orphan, withoutProject, heldByOtherProject}, useless(nil))
+			suite.ElementsMatch([]string{onlyDeleted, orphan, withoutProject, heldByOtherProject}, useless([]int64{deletedID, copiedID}))
+
+			// far more IDs than PostgreSQL accepts as bind parameters in one statement
+			many := make([]int64, 0, 70001)
+			for i := int64(1); i <= 70000; i++ {
+				many = append(many, -i)
+			}
+			suite.ElementsMatch([]string{onlyDeleted, orphan, withoutProject, heldByOtherProject}, useless(append(many, deletedID)))
+		})
+	})
 }
 
 func (suite *DaoTestSuite) GetBlobsByArtDigest() {
