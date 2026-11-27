@@ -332,7 +332,9 @@
         "GROUP_NAME_REQUIRED": "그룹 이름은 필수항목입니다",
         "NON_EXISTENT_GROUP": "그룹 이름이 존재하지 않습니다",
         "GROUP_ALREADY_ADDED": "이미 프로젝트에 추가된 그룹 이름입니다",
-        "BUILT_IN": "기본 제공"
+        "BUILT_IN": "기본 제공",
+        "BUILT_IN_ROLES": "기본 제공 역할",
+        "CUSTOM_ROLES": "사용자 지정 역할"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "이름",
