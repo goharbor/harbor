@@ -124,4 +124,27 @@ describe('SubAccessoriesComponent', () => {
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
         expect(rows.length).toEqual(1);
     });
+
+    async function deleteButton(): Promise<HTMLButtonElement> {
+        await fixture.whenStable();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '.datagrid-action-toggle'
+        );
+        toggle.click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        return document.querySelector<HTMLButtonElement>('.my-action-item');
+    }
+
+    it('should disable delete without the delete permission', async () => {
+        component.hasDeletePermission = false;
+        const button = await deleteButton();
+        expect(button.disabled).toBeTrue();
+    });
+
+    it('should enable delete with the delete permission', async () => {
+        component.hasDeletePermission = true;
+        const button = await deleteButton();
+        expect(button.disabled).toBeFalse();
+    });
 });

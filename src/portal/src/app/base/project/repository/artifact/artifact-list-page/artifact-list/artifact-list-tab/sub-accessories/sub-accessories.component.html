@@ -10,7 +10,10 @@
     @for (a of displayedAccessories; track a; let i = $index) {
     <clr-dg-row [clrDgItem]="a">
         <clr-dg-action-overflow>
-            <button class="my-action-item" (click)="delete(a)">
+            <button
+                class="my-action-item"
+                [disabled]="!hasDeletePermission"
+                (click)="delete(a)">
                 {{ 'REPOSITORY.DELETE' | translate }}
             </button>
             <button class="my-action-item" (click)="copyDigest(a)">
@@ -70,6 +73,7 @@
                 [artifactDigest]="a?.digest"
                 [total]="a?.accessoryNumber"
                 [accessories]="a?.accessories"
+                [hasDeletePermission]="hasDeletePermission"
                 *clrIfExpanded></sub-accessories>
             }
         </ng-container>
