@@ -357,7 +357,19 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// all scanning of the artifacts failed
 	if len(errs) == len(launchScanJobParams) {
-		return fmt.Errorf("scan artifact %s@%s failed", artifact.RepositoryName, artifact.Digest)
+		err := fmt.Errorf("scan artifact %s@%s failed", artifact.RepositoryName, artifact.Digest)
+		if opts.FromEvent {
+			// nobody receives the error of an event triggered scan, returning it rolls back the
+			// execution and the report placeholders and the artifact is shown as "Not Scanned".
+			// Keep them and mark the execution as error so the scan is shown as failed and can be retried.
+			if e := bc.execMgr.MarkError(ctx, opts.ExecutionID, fmt.Sprintf("%v: %v", err, errs)); e != nil {
+				log.G(ctx).Errorf("failed to mark the scan execution %d as error: %v", opts.ExecutionID, e)
+				return err
+			}
+			log.G(ctx).Warningf("%v, the scan is marked as error", err)
+			return nil
+		}
+		return err
 	}
 
 	return nil
