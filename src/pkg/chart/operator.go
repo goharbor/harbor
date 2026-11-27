@@ -121,6 +121,9 @@ func (cho *operator) GetData(content []byte) (*helm_chart.Chart, error) {
 	}
 
 	reader := bytes.NewReader(content)
+	// loader.LoadArchive bounds decompression while reading the archive: the total
+	// size is capped by loader.MaxDecompressedChartSize and each file by
+	// loader.MaxDecompressedFileSize, so no additional check is needed here.
 	chartData, err := loader.LoadArchive(reader)
 	if err != nil {
 		return nil, err
