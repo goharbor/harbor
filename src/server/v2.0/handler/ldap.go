@@ -22,6 +22,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/ldap"
+	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	ldapModel "github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -42,15 +43,24 @@ func (l *ldapAPI) PingLdap(ctx context.Context, params operation.PingLdapParams)
 	if err := l.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceConfiguration); err != nil {
 		return l.SendError(ctx, err)
 	}
-	basicCfg := cfgModels.LdapConf{
-		URL:            params.Ldapconf.LdapURL,
-		BaseDn:         params.Ldapconf.LdapBaseDn,
-		SearchDn:       params.Ldapconf.LdapSearchDn,
-		Filter:         params.Ldapconf.LdapFilter,
-		SearchPassword: params.Ldapconf.LdapSearchPassword,
-		UID:            params.Ldapconf.LdapUID,
-		Scope:          int(params.Ldapconf.LdapScope),
-		VerifyCert:     params.Ldapconf.LdapVerifyCert,
+	var basicCfg cfgModels.LdapConf
+	if params.Ldapconf != nil {
+		basicCfg = cfgModels.LdapConf{
+			URL:            params.Ldapconf.LdapURL,
+			BaseDn:         params.Ldapconf.LdapBaseDn,
+			SearchDn:       params.Ldapconf.LdapSearchDn,
+			Filter:         params.Ldapconf.LdapFilter,
+			SearchPassword: params.Ldapconf.LdapSearchPassword,
+			UID:            params.Ldapconf.LdapUID,
+			Scope:          int(params.Ldapconf.LdapScope),
+			VerifyCert:     params.Ldapconf.LdapVerifyCert,
+		}
+	} else {
+		cfg, err := config.LDAPConf(ctx)
+		if err != nil {
+			return l.SendError(ctx, err)
+		}
+		basicCfg = *cfg
 	}
 	payload := &models.LdapPingResult{}
 	suc, err := l.ctl.Ping(ctx, basicCfg)
