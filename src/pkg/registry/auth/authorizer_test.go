@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,4 +133,53 @@ func TestIsTarget_WithPathPrefix(t *testing.T) {
 
 func parseURL(raw string) (*url.URL, error) {
 	return url.Parse(raw)
+}
+
+func TestModify_ConcurrentInitialization(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v2/" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Www-Authenticate", `Basic realm="test-registry"`)
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer server.Close()
+
+	a := &authorizer{
+		username: "user",
+		password: "pass",
+		client:   server.Client(),
+	}
+
+	const goroutines = 16
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	errs := make(chan error, goroutines)
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			req, err := http.NewRequest(http.MethodGet, server.URL+"/v2/library/nginx/manifests/latest", nil)
+			if err != nil {
+				errs <- err
+				return
+			}
+			if err := a.Modify(req); err != nil {
+				errs <- err
+				return
+			}
+			if req.Header.Get("Authorization") == "" {
+				errs <- fmt.Errorf("expected Authorization header to be set")
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		require.NoError(t, err)
+	}
 }

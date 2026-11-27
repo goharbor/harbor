@@ -59,7 +59,7 @@ func NewAuthorizer(username, password string, insecure bool, caCert ...string) l
 // It determines the auth scheme of registry automatically and calls
 // different underlying authorizers to do the auth work
 type authorizer struct {
-	sync.Mutex
+	sync.RWMutex
 	username   string
 	password   string
 	client     *http.Client
@@ -68,23 +68,31 @@ type authorizer struct {
 }
 
 func (a *authorizer) Modify(req *http.Request) error {
+	a.RLock()
+	auth := a.authorizer
+	targetURL := a.url
+	a.RUnlock()
+
 	// Nil underlying authorizer means this is the first time the authorizer is called
 	// Try to connect to the registry and determine the auth scheme
-	if a.authorizer == nil {
+	if auth == nil {
 		// to avoid concurrent issue
 		a.Lock()
-		defer a.Unlock()
 		if err := a.initialize(req.URL); err != nil {
+			a.Unlock()
 			return err
 		}
+		auth = a.authorizer
+		targetURL = a.url
+		a.Unlock()
 	}
 
 	// check whether the request targets the registry
-	if !a.isTarget(req) {
+	if !isTarget(req, targetURL) {
 		return nil
 	}
 
-	return a.authorizer.Modify(req)
+	return auth.Modify(req)
 }
 
 func (a *authorizer) initialize(u *url.URL) error {
@@ -141,12 +149,16 @@ func (a *authorizer) initialize(u *url.URL) error {
 // If doesn't, the request shouldn't be handled by the authorizer.
 // e.g. the requests sent to backend storage(s3, etc.)
 func (a *authorizer) isTarget(req *http.Request) bool {
+	return isTarget(req, a.url)
+}
+
+func isTarget(req *http.Request, target *url.URL) bool {
 	index := strings.Index(req.URL.Path, "/v2/")
 	if index == -1 {
 		return false
 	}
-	if !strings.EqualFold(req.URL.Host, a.url.Host) || req.URL.Scheme != a.url.Scheme ||
-		req.URL.Path[:index+4] != a.url.Path {
+	if !strings.EqualFold(req.URL.Host, target.Host) || req.URL.Scheme != target.Scheme ||
+		req.URL.Path[:index+4] != target.Path {
 		return false
 	}
 	return true
