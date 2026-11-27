@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/allowlist/dao"
@@ -62,6 +63,17 @@ func (mt *mgrTestSuite) TestSetSys() {
 	})
 	mt.Nil(err)
 	mt.dao.AssertExpectations(mt.T())
+}
+
+func (mt *mgrTestSuite) TestSetInvalid() {
+	for _, items := range [][]models.CVEAllowlistItem{
+		{{CVEID: ""}},
+		{{CVEID: "CVE-2024-1"}, {CVEID: "CVE-2024-1"}},
+	} {
+		err := mt.mgr.Set(context.Background(), 9, models.CVEAllowlist{Items: items})
+		mt.True(errors.IsErr(err, errors.BadRequestCode), "got %v", err)
+	}
+	mt.dao.AssertNotCalled(mt.T(), "Set", mock.Anything, mock.Anything)
 }
 
 func (mt *mgrTestSuite) TestGet() {
