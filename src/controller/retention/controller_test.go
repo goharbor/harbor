@@ -188,6 +188,14 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().Nil(err)
 	s.Require().EqualValues("test", p1.Scope.Level)
 
+	// a schedule trigger without a cron setting removes the schedule
+	scheduled, unscheduled := retentionScheduler.scheduled, retentionScheduler.unscheduled
+	p1.Trigger.Settings = map[string]any{}
+	s.Require().NotPanics(func() { err = c.UpdateRetention(ctx, p1) })
+	s.Require().Nil(err)
+	s.Equal(unscheduled+1, retentionScheduler.unscheduled)
+	s.Equal(scheduled, retentionScheduler.scheduled)
+
 	err = c.DeleteRetention(ctx, id)
 	s.Require().Nil(err)
 
@@ -382,6 +390,8 @@ func (s *ControllerTestSuite) TestExecution() {
 }
 
 type fakeRetentionScheduler struct {
+	scheduled   int
+	unscheduled int
 }
 
 func (f *fakeRetentionScheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, error) {
@@ -389,6 +399,7 @@ func (f *fakeRetentionScheduler) CountSchedules(ctx context.Context, query *q.Qu
 }
 
 func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params any, extras map[string]any) (int64, error) {
+	f.scheduled++
 	return 111, nil
 }
 
@@ -396,6 +407,7 @@ func (f *fakeRetentionScheduler) UnScheduleByID(ctx context.Context, id int64) e
 	return nil
 }
 func (f *fakeRetentionScheduler) UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error {
+	f.unscheduled++
 	return nil
 }
 
