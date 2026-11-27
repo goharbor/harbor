@@ -18,6 +18,7 @@ import (
 	"context"
 
 	repmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -88,6 +89,45 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 	r.repMgr.AssertExpectations(r.T())
 	r.regMgr.AssertExpectations(r.T())
 	r.scheduler.AssertExpectations(r.T())
+}
+
+func (r *replicationTestSuite) TestCreatePolicyCronFieldSpacing() {
+	mock.OnAnything(r.repMgr, "Create").Return(int64(1), nil)
+	mock.OnAnything(r.regMgr, "Get").Return(&model.Registry{
+		ID: 1,
+	}, nil)
+	mock.OnAnything(r.scheduler, "Schedule").Return(int64(1), nil)
+
+	newPolicy := func(cron string) *repmodel.Policy {
+		return &repmodel.Policy{
+			Name: "rule",
+			SrcRegistry: &model.Registry{
+				ID: 1,
+			},
+			Trigger: &model.Trigger{
+				Type: model.TriggerTypeScheduled,
+				Settings: &model.TriggerSettings{
+					Cron: cron,
+				},
+			},
+			Enabled: true,
+		}
+	}
+
+	// the cron parser splits on any run of whitespace, so a policy that replicates
+	// every minute stays rejected however its fields are separated
+	for _, cron := range []string{"0 * * * * *", "0  * * * * *", "0\t* * * * *"} {
+		_, err := r.ctl.CreatePolicy(context.TODO(), newPolicy(cron))
+		r.Require().Error(err, "cron %q should be rejected", cron)
+		r.True(errors.IsErr(err, errors.BadRequestCode), "cron %q", cron)
+	}
+	r.repMgr.AssertNumberOfCalls(r.T(), "Create", 0)
+
+	// an hourly schedule is accepted even with a leading space
+	id, err := r.ctl.CreatePolicy(context.TODO(), newPolicy(" 0 0 * * * *"))
+	r.Require().Nil(err)
+	r.Equal(int64(1), id)
+	r.repMgr.AssertNumberOfCalls(r.T(), "Create", 1)
 }
 
 func (r *replicationTestSuite) TestUpdatePolicy() {

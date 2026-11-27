@@ -359,7 +359,10 @@ func ValidateCronString(cron string) error {
 	if !IsCronReachable(schedule) {
 		return fmt.Errorf("cron expression %q can never fire: no matching date exists", cron)
 	}
-	cronParts := strings.Split(cron, " ")
+	// Split on any run of whitespace, the way CronParser does. Splitting on a single
+	// space puts the fields in the wrong positions when the string is separated by
+	// tabs or repeated spaces, and the check below is then skipped.
+	cronParts := strings.Fields(cron)
 	if len(cronParts) == 6 && cronParts[0] != "0" {
 		return fmt.Errorf("the 1st field (indicating Seconds of time) of the cron setting must be 0")
 	}
