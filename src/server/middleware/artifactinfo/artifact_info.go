@@ -38,15 +38,19 @@ const (
 	tag             = "tag"
 )
 
-var (
-	urlPatterns = map[string]*regexp.Regexp{
-		"manifest":    lib.V2ManifestURLRe,
-		"tag_list":    lib.V2TagListURLRe,
-		"blob_upload": lib.V2BlobUploadURLRe,
-		"blob":        lib.V2BlobURLRe,
-		"referrers":   lib.V2ReferrersURLRe,
-	}
-)
+// urlPatterns are tried in this order and the first match wins, so the result must not depend on
+// map iteration order. The blob upload pattern allows "/" after "uploads" and also matches e.g.
+// /v2/a/blobs/uploads/manifests/latest, the manifest of the repository "a/blobs/uploads", so it goes last.
+var urlPatterns = []struct {
+	key string
+	re  *regexp.Regexp
+}{
+	{"manifest", lib.V2ManifestURLRe},
+	{"tag_list", lib.V2TagListURLRe},
+	{"referrers", lib.V2ReferrersURLRe},
+	{"blob", lib.V2BlobURLRe},
+	{"blob_upload", lib.V2BlobUploadURLRe},
+}
 
 // Middleware gets the information of artifact via url of the request and inject it into the context
 func Middleware() func(http.Handler) http.Handler {
@@ -112,14 +116,14 @@ func parse(url *url.URL) (map[string]string, bool, error) {
 	query := url.Query()
 	m := make(map[string]string)
 	match := false
-	for key, re := range urlPatterns {
-		l := re.FindStringSubmatch(path)
+	for _, p := range urlPatterns {
+		l := p.re.FindStringSubmatch(path)
 		if len(l) > 0 {
 			match = true
 			for i := 1; i < len(l); i++ {
-				m[re.SubexpNames()[i]] = l[i]
+				m[p.re.SubexpNames()[i]] = l[i]
 			}
-			if key == "blob_upload" && len(query.Get(blobFromQuery)) > 0 {
+			if p.key == "blob_upload" && len(query.Get(blobFromQuery)) > 0 {
 				m[blobMountDigest] = query.Get(blobMountQuery)
 				m[blobMountRepo] = query.Get(blobFromQuery)
 			}
