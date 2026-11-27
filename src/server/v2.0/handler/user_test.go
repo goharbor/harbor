@@ -132,6 +132,7 @@ func (uts *UserTestSuite) TestGetRandomSecret() {
 		rSec, err := getRandomSecret()
 		uts.NoError(err)
 		uts.NoError(requireValidSecret(rSec))
+		uts.Len(rSec, cliSecretLength)
 	}
 }
 

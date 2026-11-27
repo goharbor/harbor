@@ -89,6 +89,7 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]any)
 	if err != nil {
 		return err
 	}
+	warnOIDCScope(ctx, mgr, conf)
 	if err := mgr.UpdateConfig(ctx, conf); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		return fmt.Errorf("failed to validate configuration")
