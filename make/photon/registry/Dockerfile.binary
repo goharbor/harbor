@@ -1,9 +1,12 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 ARG golang_image
 FROM ${golang_image}
 
-ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
-ENV BUILDTAGS include_oss include_gcs
-ENV GO111MODULE auto
+ENV DISTRIBUTION_DIR=/go/src/github.com/docker/distribution
+ENV BUILDTAGS="include_oss include_gcs"
+ENV GO111MODULE=auto
 
 WORKDIR $DISTRIBUTION_DIR
 COPY . $DISTRIBUTION_DIR

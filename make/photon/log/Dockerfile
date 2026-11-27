@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
 ARG harbor_base_image_version
 ARG harbor_base_namespace
 FROM ${harbor_base_namespace}/harbor-log-base:${harbor_base_image_version}
@@ -17,8 +20,9 @@ COPY ./make/photon/log/start.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start.sh /etc/rsyslog.d/ && \
     chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run /var/lib/logrotate/
 
-HEALTHCHECK CMD netstat -ltun|grep 10514
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD netstat -ltun|grep 10514
 
 VOLUME /var/log/docker/ /run/ /etc/logrotate.d/
 
-CMD /usr/local/bin/start.sh
+CMD ["/usr/local/bin/start.sh"]
