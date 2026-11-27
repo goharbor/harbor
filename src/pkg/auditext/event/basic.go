@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"sync"
 	"time"
 
 	"slices"
@@ -61,13 +62,23 @@ func (e *Resolver) PreCheck(ctx context.Context, url string, method string) (cap
 	// for delete operation on a resource has name, need to resolve the resource id to resource name before delete
 	resName := ""
 	if capture && method == http.MethodDelete && e.ShouldResolveName {
-		re := regexp.MustCompile(e.ResourceIDPattern)
+		re := resourceIDRegexp(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(url)
 		if len(m) >= 2 && e.IDToNameFunc != nil {
 			resName = e.IDToNameFunc(m[1])
 		}
 	}
 	return true, resName
+}
+
+var resourceIDPatterns sync.Map
+
+func resourceIDRegexp(pattern string) *regexp.Regexp {
+	if re, ok := resourceIDPatterns.Load(pattern); ok {
+		return re.(*regexp.Regexp)
+	}
+	re, _ := resourceIDPatterns.LoadOrStore(pattern, regexp.MustCompile(pattern))
+	return re.(*regexp.Regexp)
 }
 
 // Resolve ...
@@ -92,7 +103,7 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 	case createOp:
 		if len(ce.ResponseLocation) > 0 {
 			// extract resource id from response location
-			re := regexp.MustCompile(e.ResourceIDPattern)
+			re := resourceIDRegexp(e.ResourceIDPattern)
 			m := re.FindStringSubmatch(ce.ResponseLocation)
 			if len(m) < 2 {
 				return nil
@@ -107,7 +118,7 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 		}
 
 	case deleteOp:
-		re := regexp.MustCompile(e.ResourceIDPattern)
+		re := resourceIDRegexp(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(ce.RequestURL)
 		if len(m) < 2 {
 			return nil
@@ -118,7 +129,7 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 		}
 
 	case updateOp:
-		re := regexp.MustCompile(e.ResourceIDPattern)
+		re := resourceIDRegexp(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(ce.RequestURL)
 		if len(m) < 2 {
 			return nil

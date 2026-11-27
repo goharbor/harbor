@@ -46,6 +46,8 @@ const (
 	payloadPattern = `principal=(.*?)&password`
 )
 
+var payloadRe = regexp.MustCompile(payloadPattern)
+
 type loginResolver struct {
 }
 
@@ -61,9 +63,8 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 	}
 
 	// Extract the username from payload
-	re := regexp.MustCompile(payloadPattern)
 	if len(ce.RequestPayload) > 0 {
-		match := re.FindStringSubmatch(ce.RequestPayload)
+		match := payloadRe.FindStringSubmatch(ce.RequestPayload)
 		if len(match) > 1 {
 			e.ResourceName = match[1]
 			e.Operator = match[1]
