@@ -23,6 +23,9 @@
                             class="dropdown"
                             [ngClass]="{ open: ruleIndex === i }">
                             <button
+                                [disabled]="
+                                    !hasUpdatePermission && !hasDeletePermission
+                                "
                                 (click)="openEditor(i)"
                                 id="{{ 'action' + i }}"
                                 class="dropdown-toggle btn btn-sm btn-link">
@@ -37,6 +40,7 @@
                                     type="button"
                                     id="{{ 'disable-btn' + i }}"
                                     class="dropdown-item"
+                                    [disabled]="!hasUpdatePermission"
                                     (click)="toggleDisable(rule, true)">
                                     {{ 'IMMUTABLE_TAG.DISABLE' | translate }}
                                 </button>
@@ -44,6 +48,7 @@
                                 <button
                                     type="button"
                                     class="dropdown-item"
+                                    [disabled]="!hasUpdatePermission"
                                     (click)="toggleDisable(rule, false)">
                                     {{ 'IMMUTABLE_TAG.ENABLE' | translate }}
                                 </button>
@@ -52,6 +57,7 @@
                                     type="button"
                                     id="{{ 'edit-btn' + i }}"
                                     class="dropdown-item"
+                                    [disabled]="!hasUpdatePermission"
                                     (click)="editRuleByIndex(i)">
                                     {{ 'IMMUTABLE_TAG.EDIT' | translate }}
                                 </button>
@@ -59,6 +65,7 @@
                                     type="button"
                                     class="dropdown-item"
                                     id="{{ 'delete-btn' + i }}"
+                                    [disabled]="!hasDeletePermission"
                                     (click)="deleteRule(rule.id)">
                                     {{ 'IMMUTABLE_TAG.DELETE' | translate }}
                                 </button>
@@ -130,7 +137,7 @@
             <div class="clr-col-2 flex-150"></div>
             <div class="add-rule-btn">
                 <button
-                    [disabled]="rules?.length >= 15"
+                    [disabled]="rules?.length >= 15 || !hasCreatePermission"
                     id="add-rule"
                     class="btn btn-primary"
                     (click)="openAddRule()">
