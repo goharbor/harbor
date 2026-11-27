@@ -77,6 +77,84 @@ func (suite *SBOMProcessorTestSuite) TestAbstractAdditionNormal() {
 	suite.Equal(sbomContent, string(addition.Content))
 }
 
+func (suite *SBOMProcessorTestSuite) TestAbstractAdditionTooLargeByLayerSize() {
+	manContent := `{
+    "schemaVersion": 2,
+    "config": {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b",
+        "size": 498
+    },
+	 "layers": [
+    {
+      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+      "size": 5242880,
+      "digest": "sha256:abc"
+    }]
+}`
+	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manContent))
+	suite.Require().NoError(err)
+	suite.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(mani, "sha256:123", nil).Once()
+	_, err = suite.processor.AbstractAddition(context.Background(), &artifact.Artifact{RepositoryName: "repo", Digest: "digest"}, "sbom")
+	suite.NotNil(err)
+	suite.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
+}
+
+func (suite *SBOMProcessorTestSuite) TestAbstractAdditionTooLargeByContent() {
+	manContent := `{
+    "schemaVersion": 2,
+    "config": {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b",
+        "size": 498
+    },
+	 "layers": [
+    {
+      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+      "size": 32654,
+      "digest": "sha256:abc"
+    }]
+}`
+	// Create content that is exactly maxSBOMBytes + 1
+	sbomContent := strings.Repeat("a", maxSBOMBytes+1)
+	reader := strings.NewReader(sbomContent)
+	blobReader := io.NopCloser(reader)
+	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manContent))
+	suite.Require().NoError(err)
+	suite.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(mani, "sha256:123", nil).Once()
+	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(123), blobReader, nil).Once()
+	_, err = suite.processor.AbstractAddition(context.Background(), &artifact.Artifact{RepositoryName: "repo", Digest: "digest"}, "sbom")
+	suite.NotNil(err)
+	suite.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
+}
+
+func (suite *SBOMProcessorTestSuite) TestAbstractAdditionExactlyAtLimit() {
+	manContent := fmt.Sprintf(`{
+    "schemaVersion": 2,
+    "config": {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b",
+        "size": 498
+    },
+	 "layers": [
+    {
+      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+      "size": %d,
+      "digest": "sha256:abc"
+    }]
+}`, maxSBOMBytes)
+	// Content of exactly maxSBOMBytes must be accepted, not truncated or rejected
+	sbomContent := strings.Repeat("a", maxSBOMBytes)
+	blobReader := io.NopCloser(strings.NewReader(sbomContent))
+	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manContent))
+	suite.Require().NoError(err)
+	suite.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(mani, "sha256:123", nil).Once()
+	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(maxSBOMBytes), blobReader, nil).Once()
+	addition, err := suite.processor.AbstractAddition(context.Background(), &artifact.Artifact{RepositoryName: "repo", Digest: "digest"}, "sbom")
+	suite.Require().NoError(err)
+	suite.Len(addition.Content, maxSBOMBytes)
+}
+
 func (suite *SBOMProcessorTestSuite) TestAbstractAdditionMultiLayer() {
 	manContent := `{
     "schemaVersion": 2,
