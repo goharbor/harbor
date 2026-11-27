@@ -240,6 +240,8 @@
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen.",
+        "PROXY_CACHE_REGISTRY": "Registry",
+        "PROXY_CACHE_ADVANCED_SETTINGS": "Erweiterte Einstellungen",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
         "PROXY_CACHE_RETENTION_DAYS": "Aufbewahrungsdauer (Tage)",

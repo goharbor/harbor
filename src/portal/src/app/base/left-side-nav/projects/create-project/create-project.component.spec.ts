@@ -118,14 +118,255 @@ describe('CreateProjectComponent', () => {
         expect(modelBody).toBeFalsy();
     });
 
-    it('should enable proxy cache', async () => {
+    async function openProxyProject() {
+        component.createProjectOpened = true;
+        component.isSystemAdmin = true;
         component.enableProxyCache = true;
+        component.project.name = 'proxy-project';
+        component.project.registry_id = 1;
+        component.storageLimit = -1;
+        component.registries = [
+            { id: 1, name: 'upstream', url: 'https://registry.example.com' },
+        ];
+        fixture.detectChanges();
+        await fixture.whenStable();
+    }
+
+    it('should remove proxy settings from the layout when proxy cache is disabled', async () => {
+        component.createProjectOpened = true;
         component.isSystemAdmin = true;
         fixture.detectChanges();
         await fixture.whenStable();
-        const endpoint: HTMLDivElement =
+
+        expect(
+            fixture.nativeElement.querySelector('#proxy-cache')
+        ).toBeTruthy();
+        expect(fixture.nativeElement.querySelector('#registry')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#endpoint')).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                '#proxy-cache-advanced-settings'
+            )
+        ).toBeNull();
+    });
+
+    it('should keep proxy settings unavailable to non-admin users', async () => {
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(fixture.nativeElement.querySelector('#proxy-cache')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#registry')).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector('#proxy-cache-advanced-toggle')
+        ).toBeNull();
+    });
+
+    it('should show the registry and endpoint with advanced settings collapsed', async () => {
+        await openProxyProject();
+        const registry: HTMLSelectElement =
+            fixture.nativeElement.querySelector('#registry');
+        const endpoint: HTMLInputElement =
             fixture.nativeElement.querySelector('#endpoint');
-        expect(endpoint).toBeFalsy();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-toggle'
+        );
+        const settings: HTMLDivElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-settings'
+        );
+
+        expect(registry.value).toBe('1');
+        expect(endpoint.value).toBe('https://registry.example.com');
+        expect(endpoint.readOnly).toBeTrue();
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(toggle.getAttribute('aria-controls')).toBe(settings.id);
+        expect(getComputedStyle(settings).display).toBe('none');
+    });
+
+    it('should preserve advanced settings and their form controls when collapsed', async () => {
+        await openProxyProject();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-toggle'
+        );
+        const settings: HTMLDivElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-settings'
+        );
+        toggle.click();
+        fixture.detectChanges();
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(getComputedStyle(settings).display).not.toBe('none');
+
+        const retention: HTMLInputElement =
+            settings.querySelector('#retentionDays');
+        retention.value = '30';
+        retention.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        toggle.click();
+        fixture.detectChanges();
+        expect(getComputedStyle(settings).display).toBe('none');
+        expect(settings.querySelector('#retentionDays')).toBe(retention);
+        expect(component.currentForm.controls['retentionDays'].value).toBe(30);
+
+        toggle.click();
+        fixture.detectChanges();
+        expect(retention.value).toBe('30');
+    });
+
+    it('should keep registry setup guidance visible when there are no endpoints', async () => {
+        await openProxyProject();
+        component.registries = [];
+        component.project.registry_id = null;
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const link: HTMLAnchorElement = fixture.nativeElement.querySelector(
+            'a[routerLink="/harbor/registries"]'
+        );
+        expect(link).toBeTruthy();
+        expect(link.closest('#proxy-cache-advanced-settings')).toBeNull();
+        expect(fixture.nativeElement.querySelector('#endpoint').value).toBe('');
+        expect(
+            fixture.nativeElement.querySelector('#new-project-ok').disabled
+        ).toBeTrue();
+    });
+
+    it('should submit the default proxy settings without expanding them', async () => {
+        const createProject = spyOn(
+            mockProjectService,
+            'createProject'
+        ).and.callThrough();
+        await openProxyProject();
+
+        fixture.nativeElement.querySelector('#new-project-ok').click();
+        expect(createProject).toHaveBeenCalledWith({
+            project: jasmine.objectContaining({
+                registry_id: 1,
+                retention_days: 7,
+                metadata: {
+                    public: 'false',
+                    proxy_speed_kb: '-1',
+                    max_upstream_conn: '-1',
+                    proxy_cache_local_on_not_found: 'false',
+                    proxy_referrer_api: 'false',
+                },
+            }),
+        });
+    });
+
+    it('should submit all edited advanced settings after collapsing them', async () => {
+        const createProject = spyOn(
+            mockProjectService,
+            'createProject'
+        ).and.callThrough();
+        await openProxyProject();
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#proxy-cache-advanced-toggle'
+        );
+        toggle.click();
+        fixture.detectChanges();
+
+        for (const [selector, value] of [
+            ['#retentionDays', '30'],
+            ['#bandwidth', '5'],
+            ['#maxUpStreamConn', '2'],
+            ['#repositoryFilter', '^library/.*'],
+        ]) {
+            const input: HTMLInputElement =
+                fixture.nativeElement.querySelector(selector);
+            input.value = value;
+            input.dispatchEvent(new Event('input'));
+        }
+        for (const [selector, value] of [
+            ['#bandwidth_unit', 'Mbps'],
+            ['#repositoryFilterKind', 'regex'],
+        ]) {
+            const select: HTMLSelectElement =
+                fixture.nativeElement.querySelector(selector);
+            select.value = value;
+            select.dispatchEvent(new Event('change'));
+        }
+        fixture.nativeElement
+            .querySelector('#proxy_cache_local_on_not_found')
+            .click();
+        fixture.nativeElement.querySelector('#proxy-referrer-api').click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        toggle.click();
+        fixture.detectChanges();
+
+        const ok: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#new-project-ok');
+        expect(ok.disabled).toBeFalse();
+        ok.click();
+        expect(createProject).toHaveBeenCalledWith({
+            project: jasmine.objectContaining({
+                registry_id: 1,
+                retention_days: 30,
+                metadata: {
+                    public: 'false',
+                    proxy_speed_kb: '5120',
+                    max_upstream_conn: '2',
+                    proxy_cache_local_on_not_found: 'true',
+                    proxy_referrer_api: 'true',
+                    proxy_cache_filter_pattern: '^library/.*',
+                    proxy_cache_filter_kind: 'regex',
+                },
+            }),
+        });
+    });
+
+    [
+        ['#retentionDays', '1.5'],
+        ['#bandwidth', '0'],
+        ['#maxUpStreamConn', ''],
+        ['#repositoryFilter', '['],
+    ].forEach(([selector, value]) => {
+        it(`should keep ${selector} validation active while collapsed and ignore it when proxy cache is disabled`, async () => {
+            const createProject = spyOn(
+                mockProjectService,
+                'createProject'
+            ).and.callThrough();
+            await openProxyProject();
+            const toggle: HTMLButtonElement =
+                fixture.nativeElement.querySelector(
+                    '#proxy-cache-advanced-toggle'
+                );
+            toggle.click();
+            fixture.detectChanges();
+            const input: HTMLInputElement =
+                fixture.nativeElement.querySelector(selector);
+            input.value = value;
+            input.dispatchEvent(new Event('input'));
+            fixture.detectChanges();
+            await fixture.whenStable();
+            toggle.click();
+            fixture.detectChanges();
+
+            const ok: HTMLButtonElement =
+                fixture.nativeElement.querySelector('#new-project-ok');
+            expect(toggle.getAttribute('aria-expanded')).toBe('false');
+            expect(
+                toggle.querySelector('.proxy-cache-settings-error')
+            ).toBeTruthy();
+            expect(ok.disabled).toBeTrue();
+            component.onSubmit();
+            expect(createProject).not.toHaveBeenCalled();
+
+            fixture.nativeElement.querySelector('#proxy-cache').click();
+            fixture.detectChanges();
+            await fixture.whenStable();
+            fixture.detectChanges();
+            expect(ok.disabled).toBeFalse();
+            ok.click();
+            expect(createProject).toHaveBeenCalledWith({
+                project: jasmine.objectContaining({
+                    registry_id: null,
+                    metadata: { public: 'false' },
+                }),
+            });
+        });
     });
 
     it('should show the default retention period only for proxy cache creation', async () => {
@@ -265,8 +506,28 @@ describe('CreateProjectComponent', () => {
 
     it('should restore the default retention period when reopening the dialog', () => {
         component.retentionDays = 30;
+        component.showProxyCacheAdvancedSettings = true;
         component.onCancel();
         component.newProject();
         expect(component.retentionDays).toBe(7);
+        expect(component.showProxyCacheAdvancedSettings).toBeFalse();
+    });
+
+    it('should clear advanced validation errors when reopening the dialog', () => {
+        component.speedLimit = 0;
+        component.project.metadata.max_upstream_conn = 0;
+        component.project.metadata.proxy_cache_filter_pattern = '[';
+        component.validateBandwidth();
+        component.validateMaxUpstreamConnections();
+        component.validateRepositoryFilter();
+        expect(component.hasProxyCacheAdvancedErrors).toBeTrue();
+
+        component.onCancel();
+        component.newProject();
+
+        expect(component.hasProxyCacheAdvancedErrors).toBeFalse();
+        expect(component.speedLimit).toBe(-1);
+        expect(component.project.metadata.max_upstream_conn).toBe(-1);
+        expect(component.project.metadata.proxy_cache_filter_pattern).toBe('');
     });
 });

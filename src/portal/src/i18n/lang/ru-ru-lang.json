@@ -1482,6 +1482,8 @@
     "TYPE": "Тип",
     "PROXY_CACHE": "Прокси-Кэш",
     "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для Docker Hub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
+    "PROXY_CACHE_REGISTRY": "Реестр",
+    "PROXY_CACHE_ADVANCED_SETTINGS": "Расширенные настройки",
     "ENDPOINT": "Адрес",
     "PROXY_CACHE_ENDPOINT": "Адрес Прокси-Кэша",
     "PROXY_CACHE_RETENTION_DAYS": "Срок хранения (дни)",

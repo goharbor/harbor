@@ -241,6 +241,8 @@
         "TYPE": "Type",
         "PROXY_CACHE": "Cache proxy",
         "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache proxy pour une instance de registre cible particulière.",
+        "PROXY_CACHE_REGISTRY": "Registre",
+        "PROXY_CACHE_ADVANCED_SETTINGS": "Paramètres avancés",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
         "PROXY_CACHE_RETENTION_DAYS": "Durée de rétention (jours)",
