@@ -91,49 +91,58 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 	if err != nil {
 		return 0, err
 	}
-	// the tag already exists under the repository
-	if len(tags) > 0 {
-		tag := tags[0]
-		// the tag already exists under the repository and is attached to the artifact, return directly
-		if tag.ArtifactID == artifactID {
-			return tag.ID, nil
-		}
-		// existing tag must check the immutable status and signature
-		if tag.Immutable {
-			return 0, errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessagef("the tag %s configured as immutable, cannot be updated", tag.Name)
-		}
-		// the tag exists under the repository, but it is attached to other artifact
-		// update it to point to the provided artifact
-		tag.ArtifactID = artifactID
-		tag.PushTime = time.Now()
-		if err := c.Update(ctx, tag, "ArtifactID", "PushTime"); err != nil {
-			return 0, err
-		}
-		c.touchRepo(ctx, repositoryID)
-		return tag.ID, nil
-	}
-
-	// the tag doesn't exist under the repository, create it
-	// use orm.WithTransaction here to avoid the issue:
-	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
-	tagID := int64(0)
-	if err = orm.WithTransaction(func(ctx context.Context) error {
-		tag := &Tag{}
-		tag.RepositoryID = repositoryID
-		tag.ArtifactID = artifactID
-		tag.Name = name
-		tag.PushTime = time.Now()
-		tagID, err = c.Create(ctx, tag)
-		return err
-	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil {
-		if errors.IsConflictErr(err) {
+	if len(tags) == 0 {
+		// Use a transaction so a failed insert does not leave the caller's
+		// transaction in an aborted state.
+		tagID := int64(0)
+		err = orm.WithTransaction(func(ctx context.Context) error {
+			tag := &Tag{}
+			tag.RepositoryID = repositoryID
+			tag.ArtifactID = artifactID
+			tag.Name = name
+			tag.PushTime = time.Now()
+			tagID, err = c.Create(ctx, tag)
+			return err
+		})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure"))
+		if err == nil {
 			return tagID, nil
 		}
-		return 0, err
+		if !errors.IsConflictErr(err) {
+			return 0, err
+		}
+
+		// Another request created the tag. Read it after the rollback and
+		// apply the same checks as for a tag that existed on the first lookup.
+		createErr := err
+		tags, err = c.List(ctx, query, &Option{WithImmutableStatus: true})
+		if err != nil {
+			return 0, err
+		}
+		if len(tags) == 0 {
+			// The tag may have been removed again. Do not retry indefinitely.
+			return 0, createErr
+		}
 	}
 
-	return tagID, nil
+	tag := tags[0]
+	// the tag already exists under the repository and is attached to the artifact, return directly
+	if tag.ArtifactID == artifactID {
+		return tag.ID, nil
+	}
+	// existing tag must check the immutable status and signature
+	if tag.Immutable {
+		return 0, errors.New(nil).WithCode(errors.PreconditionCode).
+			WithMessagef("the tag %s configured as immutable, cannot be updated", tag.Name)
+	}
+	// the tag exists under the repository, but it is attached to other artifact
+	// update it to point to the provided artifact
+	tag.ArtifactID = artifactID
+	tag.PushTime = time.Now()
+	if err := c.Update(ctx, tag, "ArtifactID", "PushTime"); err != nil {
+		return 0, err
+	}
+	c.touchRepo(ctx, repositoryID)
+	return tag.ID, nil
 }
 
 // touchRepo bumps update_time on the parent repository so the "last modified"
