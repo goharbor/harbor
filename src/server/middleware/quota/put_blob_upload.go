@@ -20,8 +20,8 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 
 // PutBlobUploadMiddleware middleware to request storage resource for the project
@@ -37,12 +37,9 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 func putBlobUploadResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
 	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
-	size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
-	if err != nil || size == 0 {
-		size, err = blobController.GetAcceptedBlobSize(r.Context(), distribution.ParseSessionID(r.URL.Path))
-	}
+	size, err := util.PutBlobUploadSize(r, blobController.GetAcceptedBlobSize)
 	if err != nil {
-		logger.Errorf("get blob size failed, error: %v", err)
+		logger.Errorf("get blob upload size failed, error: %v", err)
 		return nil, err
 	}
 
