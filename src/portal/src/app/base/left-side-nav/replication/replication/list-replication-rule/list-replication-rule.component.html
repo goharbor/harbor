@@ -48,7 +48,10 @@
                         [disabled]="!selectedRow">
                         <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
                         <span id="edit_replication_rule_id">{{
-                            'BUTTON.EDIT' | translate
+                            (isModelRule(selectedRow)
+                                ? 'MODEL_SYNC.EDIT_IN_MODEL_SYNC'
+                                : 'BUTTON.EDIT'
+                            ) | translate
                         }}</span>
                     </button>
                     @if (selectedRow && !selectedRow.enabled) {
@@ -144,7 +147,18 @@
         }}</clr-dg-placeholder>
         @for (p of rules; track p; let i = $index) {
         <clr-dg-row [clrDgItem]="p">
-            <clr-dg-cell>{{ p.name }}</clr-dg-cell>
+            <clr-dg-cell
+                >{{ p.name }}
+                @if (isModelRule(p)) {
+                <a
+                    class="label label-info clickable"
+                    [routerLink]="['/harbor', 'model-sync']"
+                    [queryParams]="{ edit: p.id }"
+                    [title]="'MODEL_SYNC.MANAGED_HINT' | translate"
+                    >{{ 'MODEL_SYNC.MANAGED_LABEL' | translate }}</a
+                >
+                }
+            </clr-dg-cell>
             <clr-dg-cell class="status-width">
                 <div>
                     @if (!p?.enabled) {

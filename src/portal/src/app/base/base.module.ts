@@ -92,6 +92,14 @@ const routes: Routes = [
                     ).then(m => m.ReplicationModule),
             },
             {
+                path: 'model-sync',
+                canActivate: [SystemAdminGuard],
+                loadChildren: () =>
+                    import('./left-side-nav/model-sync/model-sync.module').then(
+                        m => m.ModelSyncModule
+                    ),
+            },
+            {
                 path: 'distribution',
                 canActivate: [SystemAdminGuard],
                 loadChildren: () =>

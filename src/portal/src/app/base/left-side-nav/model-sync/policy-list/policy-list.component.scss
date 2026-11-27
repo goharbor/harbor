@@ -1,0 +1,88 @@
+.refresh-btn {
+    cursor: pointer;
+}
+
+.refresh-btn:hover {
+    color: #007cbb;
+}
+
+.option-right {
+    padding-right: 16px;
+}
+
+/* stylelint-disable */
+.rightPos {
+    position: absolute;
+    right: 35px;
+    margin-top: 20px;
+    z-index: 100;
+    height: 32px;
+}
+
+.model-sync-row {
+    position: relative;
+}
+
+.jobList {
+    padding-left: 0;
+
+    .executions-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 24px;
+        padding-right: 16px;
+
+        .executions-title {
+            margin: 0;
+        }
+
+        .executions-tools {
+            display: flex;
+            align-items: center;
+
+            .filter-tag .clr-form-control {
+                margin-top: 0;
+            }
+
+            .refresh-btn {
+                margin-left: 8px;
+            }
+        }
+    }
+}
+
+clr-datagrid {
+    ::ng-deep .datagrid-table {
+        position: static;
+    }
+}
+
+.flex-items-xs-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-policy {
+    padding-bottom: 15px;
+}
+
+.text-alignment {
+    vertical-align: text-bottom;
+}
+
+.min-width {
+    min-width: 236px;
+}
+
+.col-width {
+    min-width: 140px;
+}
+
+.status-width {
+    min-width: 130px;
+}
+
+.trigger {
+    width: 180px;
+}
