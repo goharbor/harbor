@@ -62,6 +62,11 @@ type Auth struct {
 	userMgr             user.Manager
 }
 
+// New creates an HTTP auth proxy authenticator with a user manager.
+func New() *Auth {
+	return &Auth{userMgr: user.New()}
+}
+
 type session struct {
 	SessionID string `json:"session_id,omitempty"`
 }
@@ -143,16 +148,22 @@ func (a *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
 
 // PostAuthenticate generates the user model and on board the user.
 func (a *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
-	_, err := a.userMgr.GetByName(ctx, u.Username)
+	existing, err := a.userMgr.GetByName(ctx, u.Username)
 	if harborErrors.IsNotFoundErr(err) {
 		if err2 := a.fillInModel(u); err2 != nil {
 			return err2
 		}
-		return a.OnBoardUser(ctx, u)
+		if err2 := a.OnBoardUser(ctx, u); err2 != nil {
+			return err2
+		}
 	} else if err != nil {
 		return err
+	} else {
+		// Preserve the privileges returned by the proxy while attaching the
+		// persistent Harbor user ID used by session refresh.
+		u.UserID = existing.UserID
 	}
-	// do nothing if user exists in DB
+	u.SessionAuthMode = common.HTTPAuth
 	return nil
 }
 
@@ -260,7 +271,5 @@ func getTLSConfig(setting *cfgModels.HTTPAuthProxy) (*tls.Config, error) {
 }
 
 func init() {
-	auth.Register(common.HTTPAuth, &Auth{
-		userMgr: user.New(),
-	})
+	auth.Register(common.HTTPAuth, New())
 }

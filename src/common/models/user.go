@@ -32,7 +32,10 @@ type User struct {
 	Role            int    `json:"role_id"`
 	SysAdminFlag    bool   `json:"sysadmin_flag"`
 	// AdminRoleInAuth to store the admin privilege granted by external authentication provider
-	AdminRoleInAuth bool      `json:"admin_role_in_auth"`
+	AdminRoleInAuth bool `json:"admin_role_in_auth"`
+	// SessionAuthMode records the authenticator that established a session.
+	// It is not part of the user API or persisted in the user table.
+	SessionAuthMode string    `json:"-"`
 	ResetUUID       string    `json:"reset_uuid"`
 	Salt            string    `json:"-"`
 	CreationTime    time.Time `json:"creation_time"`

@@ -186,11 +186,23 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 		},
 	}
 	for _, c := range suite {
-		a.PostAuthenticate(orm.Context(), c.input)
+		assert.NoError(t, a.PostAuthenticate(orm.Context(), c.input))
 		assert.Equal(t, c.expect.Username, c.input.Username)
 		assert.Equal(t, c.expect.Email, c.input.Email)
 		assert.Equal(t, c.expect.Realname, c.input.Realname)
 		assert.Equal(t, c.expect.Comment, c.input.Comment)
+		assert.Positive(t, c.input.UserID)
+		assert.Equal(t, common.HTTPAuth, c.input.SessionAuthMode)
+
+		// A subsequent proxy login starts with a fresh user without a database
+		// ID. It must keep the ID from onboarding without replacing the proxy's
+		// current authorization attributes with values from the database.
+		returning := &models.User{Username: c.input.Username, AdminRoleInAuth: true, GroupIDs: []int{17, 23}}
+		assert.NoError(t, a.PostAuthenticate(orm.Context(), returning))
+		assert.Equal(t, c.input.UserID, returning.UserID)
+		assert.Equal(t, common.HTTPAuth, returning.SessionAuthMode)
+		assert.True(t, returning.AdminRoleInAuth)
+		assert.Equal(t, []int{17, 23}, returning.GroupIDs)
 	}
 
 }
