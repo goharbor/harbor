@@ -111,7 +111,10 @@
                                 'IMMUTABLE_TAG.AND' | translate
                             }}</span>
                             <span>{{
-                                'IMMUTABLE_TAG.LOWER_LABELS' | translate
+                                (rule?.tag_selectors[1]?.kind === 'doublestar'
+                                    ? 'IMMUTABLE_TAG.LOWER_TAGS'
+                                    : 'IMMUTABLE_TAG.LOWER_LABELS'
+                                ) | translate
                             }}</span>
                             <span>{{
                                 getI18nKey(rule?.tag_selectors[1]?.decoration)

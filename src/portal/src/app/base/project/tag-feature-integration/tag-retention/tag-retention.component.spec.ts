@@ -150,4 +150,58 @@ describe('TagRetentionComponent', () => {
             expect(component.executionList[0].status).toEqual('Success');
         });
     }));
+
+    describe('rule summary of the second tag selector', () => {
+        function renderSummary(kind: string, decoration: string): string {
+            const retention = new Retention();
+            retention.rules = [
+                {
+                    action: 'retain',
+                    template: 'always',
+                    params: {},
+                    disabled: false,
+                    priority: 0,
+                    scope_selectors: {
+                        repository: [
+                            {
+                                kind: 'doublestar',
+                                decoration: 'repoMatches',
+                                pattern: '**',
+                            },
+                        ],
+                    },
+                    tag_selectors: [
+                        {
+                            kind: 'doublestar',
+                            decoration: 'matches',
+                            pattern: '[0-9]*.[0-9]*.[0-9]*',
+                            extras: '{"untagged":false}',
+                        },
+                        { kind, decoration, pattern: '*-rc*' },
+                    ],
+                } as any,
+            ];
+            spyOn(component, 'getI18nKey').and.callFake((key: string) => key);
+            component.retention = retention;
+            fixture.detectChanges();
+            return fixture.nativeElement.querySelector('.rule-name')
+                .textContent;
+        }
+
+        it('should call a doublestar selector a tag condition', () => {
+            const summary = renderSummary('doublestar', 'excludes');
+            expect(summary).not.toContain('TAG_RETENTION.LOWER_LABELS');
+            expect(summary.split('TAG_RETENTION.LOWER_TAGS').length - 1).toBe(
+                2
+            );
+        });
+
+        it('should call a label selector a label condition', () => {
+            const summary = renderSummary('label', 'withLabels');
+            expect(summary).toContain('TAG_RETENTION.LOWER_LABELS');
+            expect(summary.split('TAG_RETENTION.LOWER_TAGS').length - 1).toBe(
+                1
+            );
+        });
+    });
 });
