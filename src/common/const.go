@@ -187,6 +187,7 @@ const (
 	TraceOtelCompression = "trace_otel_compression"
 	TraceOtelInsecure    = "trace_otel_insecure"
 	TraceOtelTimeout     = "trace_otel_timeout"
+	TraceOtelProtocol    = "trace_otel_protocol"
 
 	GDPRDeleteUser = "gdpr_delete_user"
 	GDPRAuditLogs  = "gdpr_audit_logs"

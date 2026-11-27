@@ -36,11 +36,12 @@ type OtelConfig struct {
 	Compression bool   `mapstructure:"otel_trace_compression"`
 	Insecure    bool   `mapstructure:"otel_trace_insecure"`
 	Timeout     int    `mapstructure:"otel_trace_timeout"`
+	Protocol    string `mapstructure:"otel_trace_protocol"`
 }
 
 func (c OtelConfig) String() string {
-	return fmt.Sprintf("endpoint: %s, url_path: %s, compression: %t, insecure: %t, timeout: %d",
-		c.Endpoint, c.URLPath, c.Compression, c.Insecure, c.Timeout)
+	return fmt.Sprintf("endpoint: %s, url_path: %s, compression: %t, insecure: %t, timeout: %d, protocol: %s",
+		c.Endpoint, c.URLPath, c.Compression, c.Insecure, c.Timeout, c.Protocol)
 }
 
 // JaegerConfig is the configuration for Jaeger
@@ -164,6 +165,12 @@ func WithOtelInsecure(insecure bool) Option {
 func WithOtelTimeout(timeout int) Option {
 	return func(c *Config) {
 		c.Otel.Timeout = timeout
+	}
+}
+
+func WithOtelProtocol(protocol string) Option {
+	return func(c *Config) {
+		c.Otel.Protocol = protocol
 	}
 }
 
