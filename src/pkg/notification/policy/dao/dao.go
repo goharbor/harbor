@@ -85,7 +85,7 @@ func (d *dao) Create(ctx context.Context, policy *model.Policy) (int64, error) {
 			err = e
 			return id, err
 		}
-		err = fmt.Errorf("failed to create the notification policy: %v", err)
+		err = fmt.Errorf("failed to create the notification policy: %w", err)
 		return id, err
 	}
 	return id, err

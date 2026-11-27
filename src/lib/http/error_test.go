@@ -16,11 +16,13 @@ package http
 
 import (
 	std_errors "errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	openapi "github.com/go-openapi/errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -83,4 +85,25 @@ func TestAPIError(t *testing.T) {
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"unknown: customized error"}]}`, payload)
 	assert.Contains(t, stacktrace, ``)
 
+	// a database value longer than its column, wrapped without an error code
+	tooLong := &pgconn.PgError{Code: "22001", Message: "value too long for type character varying(255)"}
+	for _, e := range []error{tooLong, fmt.Errorf("failed to create: %w", tooLong), errors.Wrap(tooLong, "failed to create")} {
+		statusCode, payload, _ = apiError(e)
+		assert.Equal(t, http.StatusBadRequest, statusCode)
+		assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"a value in the request is longer than allowed"}]}`, payload)
+	}
+
+	// a NUL byte in a text value
+	statusCode, payload, _ = apiError(fmt.Errorf("failed to create: %w", &pgconn.PgError{Code: "22021"}))
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"a value in the request contains characters that cannot be stored"}]}`, payload)
+
+	// a database error with an explicit code keeps it
+	err = errors.Wrap(tooLong, "conflict").WithCode(errors.ConflictCode)
+	statusCode, _, _ = apiError(err)
+	assert.Equal(t, http.StatusConflict, statusCode)
+
+	// other database errors stay internal
+	statusCode, _, _ = apiError(&pgconn.PgError{Code: "23502"})
+	assert.Equal(t, http.StatusInternalServerError, statusCode)
 }

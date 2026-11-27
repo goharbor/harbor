@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	openapi "github.com/go-openapi/errors"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -84,6 +85,9 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		code = legacyErr.Code
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
 		err = errors.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
+	} else if msg, ok := unstorableValue(err); ok && errors.ErrCode(err) == errors.GeneralCode {
+		code = http.StatusBadRequest
+		err = errors.BadRequestError(nil).WithMessage(msg)
 	} else {
 		code = codeMap[errors.ErrCode(err)]
 	}
@@ -95,4 +99,20 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		fullStack = err.(*errors.Error).StackTrace()
 	}
 	return code, errors.NewErrs(err).Error(), fullStack
+}
+
+// unstorableValue reports whether err comes from the database rejecting a value
+// from the request, and returns the message to send back for it
+func unstorableValue(err error) (string, bool) {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return "", false
+	}
+	switch pgErr.Code {
+	case "22001": // string_data_right_truncation
+		return "a value in the request is longer than allowed", true
+	case "22021": // character_not_in_repertoire, e.g. a NUL byte
+		return "a value in the request contains characters that cannot be stored", true
+	}
+	return "", false
 }
