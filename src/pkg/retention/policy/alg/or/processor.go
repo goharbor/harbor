@@ -45,9 +45,13 @@ func New(parameters []*alg.Parameter) alg.Processor {
 	if len(parameters) > 0 {
 		for _, param := range parameters {
 			if param.Evaluator != nil {
-				if len(param.Selectors) > 0 {
-					p.evaluators[&param.Evaluator] = param.Selectors
-				}
+				// Register the evaluator even when it has no selectors. An empty
+				// selector list means "match all" (see the evaluators field doc),
+				// and the per-rule goroutine already skips the selecting stage in
+				// that case. Dropping such evaluators here silently disables the
+				// rule, so its retain action never runs and the artifacts it should
+				// keep get deleted.
+				p.evaluators[&param.Evaluator] = param.Selectors
 
 				if param.Performer != nil {
 					p.performers[param.Evaluator.Action()] = param.Performer
