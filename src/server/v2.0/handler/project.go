@@ -845,6 +845,9 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 
 		registry, err := registry.Ctl.Get(ctx, *req.RegistryID)
 		if err != nil {
+			if errors.IsNotFoundErr(err) {
+				return errors.BadRequestError(nil).WithMessagef("registry %d not found", *req.RegistryID)
+			}
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
 		}
 

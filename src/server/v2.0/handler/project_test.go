@@ -15,14 +15,18 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/system"
+	"github.com/goharbor/harbor/src/controller/registry"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -30,10 +34,26 @@ import (
 	apiModels "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	registrytesting "github.com/goharbor/harbor/src/testing/controller/registry"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
 )
+
+func TestValidateProjectReqMissingRegistry(t *testing.T) {
+	registryCtl := registrytesting.NewController(t)
+	originalRegistry := registry.Ctl
+	registry.Ctl = registryCtl
+	t.Cleanup(func() { registry.Ctl = originalRegistry })
+	registryCtl.On("Get", mock.Anything, int64(99)).Return(nil, errors.NotFoundError(nil).WithMessage("registry 99 not found"))
+
+	err := (&projectAPI{}).validateProjectReq(context.Background(), &apiModels.ProjectReq{
+		ProjectName: "proxy-project",
+		RegistryID:  swag.Int64(99),
+		Metadata:    &apiModels.ProjectMetadata{},
+	})
+	require.True(t, errors.IsErr(err, errors.BadRequestCode), "got %v", err)
+}
 
 func TestValidateProxyCacheRepositoryFilterUpdate(t *testing.T) {
 	tests := []struct {
