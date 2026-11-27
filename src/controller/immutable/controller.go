@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/immutable"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
@@ -82,6 +83,9 @@ func (r *DefaultAPIController) DeleteImmutableRule(ctx context.Context, id int64
 
 // CreateImmutableRule ...
 func (r *DefaultAPIController) CreateImmutableRule(ctx context.Context, m *model.Metadata) (int64, error) {
+	if err := m.Validate(); err != nil {
+		return 0, errors.BadRequestError(err)
+	}
 	return r.manager.CreateImmutableRule(ctx, m)
 }
 
@@ -96,6 +100,9 @@ func (r *DefaultAPIController) UpdateImmutableRule(ctx context.Context, projectI
 	}
 	if m0.Disabled != m.Disabled {
 		return r.manager.EnableImmutableRule(ctx, m.ID, m.Disabled)
+	}
+	if err := m.Validate(); err != nil {
+		return errors.BadRequestError(err)
 	}
 	return r.manager.UpdateImmutableRule(ctx, projectID, m)
 }

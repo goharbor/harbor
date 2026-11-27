@@ -17,6 +17,7 @@ package pattern
 import (
 	"testing"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -98,6 +99,18 @@ func TestValidateRepositoryFilter(t *testing.T) {
 				assert.NoError(t, err)
 			}
 		})
+	}
+}
+
+func TestValidateDoublestar(t *testing.T) {
+	valid := []string{"", "   ", "**", "release-*", "library/**", "v[0-9]*", "[^a]*", "{a,b}", "{redis,team/app}", "a/{b,c}", `a\*`}
+	for _, p := range valid {
+		assert.NoError(t, ValidateDoublestar(p), "pattern %q", p)
+	}
+
+	invalid := []string{"[release", "[", "[]", "[^", "{a,b", "a}", "{", `release\`}
+	for _, p := range invalid {
+		assert.ErrorIs(t, ValidateDoublestar(p), doublestar.ErrBadPattern, "pattern %q", p)
 	}
 }
 
