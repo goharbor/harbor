@@ -45,16 +45,16 @@ type Label struct {
 // Valid ...
 func (l *Label) Valid() error {
 	if len(l.Name) == 0 {
-		return errors.New("cannot be empty").WithCode(errors.BadRequestCode)
+		return errors.New("label name cannot be empty").WithCode(errors.BadRequestCode)
 	}
 	if len(l.Name) > 128 {
-		return errors.New("max length is 128").WithCode(errors.BadRequestCode)
+		return errors.New("the max length of label name is 128").WithCode(errors.BadRequestCode)
 	}
 
 	if l.Scope != common.LabelScopeGlobal && l.Scope != common.LabelScopeProject {
-		return errors.New(nil).WithMessagef("invalid: %s", l.Scope).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("invalid label scope: %s", l.Scope).WithCode(errors.BadRequestCode)
 	} else if l.Scope == common.LabelScopeProject && l.ProjectID <= 0 {
-		return errors.New(nil).WithMessagef("invalid: %d", l.ProjectID).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("invalid project ID of project label: %d", l.ProjectID).WithCode(errors.BadRequestCode)
 	}
 	return nil
 }

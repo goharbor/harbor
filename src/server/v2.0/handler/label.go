@@ -59,8 +59,22 @@ func (lAPI *labelAPI) CreateLabel(ctx context.Context, params operation.CreateLa
 		label.ProjectID = 0
 	}
 
+	if err := label.Valid(); err != nil {
+		return lAPI.SendError(ctx, err)
+	}
+
 	if err := lAPI.requireAccess(ctx, label, rbac.ActionCreate); err != nil {
 		return lAPI.SendError(ctx, err)
+	}
+
+	if label.Scope == common.LabelScopeProject {
+		exist, err := lAPI.projectCtl.Exists(ctx, label.ProjectID)
+		if err != nil {
+			return lAPI.SendError(ctx, err)
+		}
+		if !exist {
+			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessagef("project %d not found", label.ProjectID))
+		}
 	}
 
 	id, err := lAPI.labelMgr.Create(ctx, label)
