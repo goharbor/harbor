@@ -97,6 +97,12 @@ func (cir *CheckInReport) ToJSON() (string, error) {
 // Job for running scan in the job service with async way
 type Job struct{}
 
+// BulkJob is the scan job for the IMAGE_SCAN_BULK queue to seperate
+// type, as one job type cannot be registered under two names.
+type BulkJob struct {
+	Job
+}
+
 // MaxFails for defining the number of retries
 func (j *Job) MaxFails() uint {
 	return 1

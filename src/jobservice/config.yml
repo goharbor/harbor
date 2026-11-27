@@ -40,3 +40,7 @@ loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
 
+# Max number of jobs of a type that run at the same time
+# job_concurrency:
+#   IMAGE_SCAN_BULK: 10
+#   REPLICATION: 3

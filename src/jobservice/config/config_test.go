@@ -98,6 +98,17 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
 	assert.Equal(suite.T(), "core_url", GetCoreURL(), "expect core url 'core_url' but got '%s'", GetCoreURL())
 }
 
+// TestJobConcurrency checks the job_concurrency section of the config.
+func (suite *ConfigurationTestSuite) TestJobConcurrency() {
+	cfg := &Configuration{}
+	require.NoError(suite.T(), cfg.Load("../config_test.yml", false))
+	assert.Equal(suite.T(), uint(6), cfg.JobConcurrency["IMAGE_SCAN_BULK"])
+	assert.Equal(suite.T(), uint(3), cfg.JobConcurrency["REPLICATION"])
+	assert.Equal(suite.T(), uint(5), cfg.JobConcurrency["IMAGE_SCAN"])
+	// a job without an entry has no configured value
+	assert.Equal(suite.T(), uint(0), cfg.JobConcurrency["WEBHOOK"])
+}
+
 // TestDefaultConfig ...
 func (suite *ConfigurationTestSuite) TestDefaultConfig() {
 	err := DefaultConfig.Load("../config_test.yml", true)

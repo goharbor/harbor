@@ -90,6 +90,9 @@ type Configuration struct {
 
 	// MaxLogSizeReturnedMB is the max size of log returned by job log API
 	MaxLogSizeReturnedMB int `yaml:"max_retrieve_size_mb,omitempty"`
+
+	// JobConcurrency sets the max number of jobs of a type that run simultaneously
+	JobConcurrency map[string]uint `yaml:"job_concurrency,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol

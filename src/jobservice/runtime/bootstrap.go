@@ -315,6 +315,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJobVendorType:      (*scan.Job)(nil),
+			job.ImageScanBulkJobVendorType:  (*scan.BulkJob)(nil),
 			job.PurgeAuditVendorType:        (*purge.Job)(nil),
 			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
 			job.ReplicationVendorType:       (*replication.Replication)(nil),

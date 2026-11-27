@@ -28,6 +28,7 @@ import (
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
@@ -286,4 +287,22 @@ func (j *fakeLongRunJob) Run(ctx job.Context, params job.Parameters) error {
 	_ = ctx.Checkin("done")
 
 	return nil
+}
+
+func TestMaxConcurrencyFor(t *testing.T) {
+	old := config.DefaultConfig.JobConcurrency
+	t.Cleanup(func() { config.DefaultConfig.JobConcurrency = old })
+	config.DefaultConfig.JobConcurrency = map[string]uint{"IMAGE_SCAN_BULK": 6, "ZERO": 0}
+
+	assert.Equal(t, uint(6), maxConcurrencyFor("IMAGE_SCAN_BULK", 0))
+	assert.Equal(t, uint(1), maxConcurrencyFor("GARBAGE_COLLECTION", 1))
+	assert.Equal(t, uint(1), maxConcurrencyFor("ZERO", 1))
+}
+
+func TestUnknownJobConcurrencyKeys(t *testing.T) {
+	old := config.DefaultConfig.JobConcurrency
+	t.Cleanup(func() { config.DefaultConfig.JobConcurrency = old })
+	config.DefaultConfig.JobConcurrency = map[string]uint{"REPLICATION": 3, "REPLICAATION": 3}
+	known := func(n string) bool { return n == "REPLICATION" }
+	assert.Equal(t, []string{"REPLICAATION"}, unknownJobConcurrencyKeys(known))
 }
