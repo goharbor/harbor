@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
@@ -75,6 +76,68 @@ func (p *PolicyTestSuite) TestValidateRetentionPolicy() {
 	// valid cron value
 	p.policy.Trigger.Settings = map[string]any{"cron": "0 0 0 1 1 *"}
 	p.NoError(p.policy.ValidateRetentionPolicy())
+}
+
+func TestValidateRetentionPolicyRules(t *testing.T) {
+	cases := []struct {
+		name     string
+		rule     rule.Metadata
+		errorMsg string
+	}{
+		{
+			name: "rule without parameters",
+			rule: rule.Metadata{Template: "always", Parameters: rule.Parameters{}},
+		},
+		{
+			name: "rule with valid parameter",
+			rule: rule.Metadata{Template: "nDaysSinceLastPull", Parameters: rule.Parameters{"nDaysSinceLastPull": 30}},
+		},
+		{
+			name:     "empty template",
+			rule:     rule.Metadata{Parameters: rule.Parameters{}},
+			errorMsg: "empty rule template ID",
+		},
+		{
+			name:     "unknown template",
+			rule:     rule.Metadata{Template: "unknown", Parameters: rule.Parameters{}},
+			errorMsg: "rule evaluator unknown is not registered",
+		},
+		{
+			name:     "missing required parameter",
+			rule:     rule.Metadata{Template: "nDaysSinceLastPull", Parameters: rule.Parameters{"n_days_since_last_pull": 30}},
+			errorMsg: "missing required parameter nDaysSinceLastPull for rule nDaysSinceLastPull",
+		},
+		{
+			name:     "nil parameters",
+			rule:     rule.Metadata{Template: "latestPushedK"},
+			errorMsg: "missing required parameter latestPushedK for rule latestPushedK",
+		},
+		{
+			name:     "invalid parameter value",
+			rule:     rule.Metadata{Template: "latestPushedK", Parameters: rule.Parameters{"latestPushedK": -10}},
+			errorMsg: "latestPushedK is less than zero",
+		},
+		{
+			name:     "invalid parameter type",
+			rule:     rule.Metadata{Template: "nDaysSinceLastPush", Parameters: rule.Parameters{"nDaysSinceLastPush": "30"}},
+			errorMsg: "nDaysSinceLastPush type error",
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			p := &Metadata{
+				Rules: []rule.Metadata{c.rule},
+			}
+			err := p.ValidateRetentionPolicy()
+			if c.errorMsg == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.Error(t, err)
+			require.True(t, errors.IsErr(err, errors.BadRequestCode))
+			require.Contains(t, err.Error(), c.errorMsg)
+		})
+	}
 }
 
 func TestRule(t *testing.T) {
