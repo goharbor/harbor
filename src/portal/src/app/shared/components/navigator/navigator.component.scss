@@ -84,3 +84,45 @@
 .header-actions {
     flex: 0;
 }
+
+@media screen and (max-width: 767px) {
+    :host {
+        clr-header {
+            flex-wrap: wrap;
+            height: auto !important;
+            min-height: 3rem;
+            padding-bottom: 0.25rem;
+
+            .branding {
+                max-width: 50%;
+                .title {
+                    font-size: 0.75rem;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+            }
+        }
+    }
+
+    .global-search {
+        order: 3;
+        flex: 1 1 100%;
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+
+    .header-actions {
+        order: 2;
+        margin-left: auto;
+
+        .nav-divider {
+            display: none;
+        }
+
+        .nav-icon-width .currentLocale {
+            padding-right: 15px;
+        }
+    }
+}
+
