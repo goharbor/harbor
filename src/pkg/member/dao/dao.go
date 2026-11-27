@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -188,8 +189,18 @@ func (d *dao) UpdateProjectMemberRole(ctx context.Context, projectID int64, pmID
 		return err
 	}
 	sql := "update project_member set role = ? where project_id = ? and id = ?  "
-	_, err = o.Raw(sql, role, projectID, pmID).Exec()
-	return err
+	res, err := o.Raw(sql, role, projectID, pmID).Exec()
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return errors.NotFoundError(nil).WithMessagef("the project member %d is not found in project %d", pmID, projectID)
+	}
+	return nil
 }
 
 func (d *dao) DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid int) error {
