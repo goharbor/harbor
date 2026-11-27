@@ -120,7 +120,7 @@ func (suite *ExportManagerSuite) clearTestData() {
 
 func (suite *ExportManagerSuite) TestExport() {
 	{
-		data, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
+		data, _, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
 		suite.NoError(err)
 		suite.Equal(10, len(data))
 		for _, datum := range data {
@@ -135,7 +135,7 @@ func (suite *ExportManagerSuite) TestExportWithCVEFilter() {
 			ArtifactIDs: []int64{1},
 			CVEIds:      "CVE-ID2",
 		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
+		data, _, err := suite.exportManager.Fetch(suite.Context(), p)
 		suite.NoError(err)
 		suite.Equal(1, len(data))
 		suite.Equal(p.CVEIds, data[0].CVEId)
