@@ -25,6 +25,7 @@
                             class="dropdown"
                             [ngClass]="{ open: ruleIndex === i }">
                             <button
+                                [disabled]="!canEditPolicy"
                                 (click)="openEditor(i)"
                                 class="padding-left-0 dropdown-toggle btn btn-sm btn-link">
                                 {{ 'TAG_RETENTION.ACTION' | translate }}
@@ -156,7 +157,9 @@
             <div class="flex-8p">
                 <button
                     id="add-rule"
-                    [disabled]="retention?.rules?.length >= 15"
+                    [disabled]="
+                        retention?.rules?.length >= 15 || !canEditPolicy
+                    "
                     class="btn btn-primary"
                     (click)="openAddRule()">
                     {{ 'TAG_RETENTION.ADD_RULE' | translate }}
@@ -168,7 +171,7 @@
 <div class="cron-selection">
     <cron-selection
         [labelWidth]="'150px'"
-        [disabled]="!(retention?.rules?.length > 0)"
+        [disabled]="!(retention?.rules?.length > 0) || !canEditPolicy"
         #cronScheduleComponent
         [labelCurrent]="label"
         [labelEdit]="label"
@@ -193,7 +196,7 @@
         <clr-dg-action-bar>
             <button
                 id="run-now"
-                [disabled]="!(retention?.rules?.length > 0)"
+                [disabled]="!(retention?.rules?.length > 0) || !canEditPolicy"
                 class="btn btn-outline"
                 (click)="isRetentionRunOpened = true">
                 <clr-icon shape="play"></clr-icon>
@@ -203,13 +206,15 @@
             </button>
             <button
                 id="dry-run"
-                [disabled]="!(retention?.rules?.length > 0)"
+                [disabled]="!(retention?.rules?.length > 0) || !canEditPolicy"
                 class="btn btn-outline"
                 (click)="whatIfRun()">
                 {{ 'TAG_RETENTION.WHAT_IF_RUN' | translate }}
             </button>
             <button
+                id="abort-run"
                 [disabled]="
+                    !canEditPolicy ||
                     !(
                         selectedItem &&
                         (selectedItem.status === 'InProgress' ||
