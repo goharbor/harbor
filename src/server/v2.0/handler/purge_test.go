@@ -15,14 +15,24 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	tasktesting "github.com/goharbor/harbor/src/testing/controller/task"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {
@@ -96,4 +106,21 @@ func Test_checkRetentionHour(t *testing.T) {
 			assert.Equalf(t, tt.want, got, "retentionHour(%v)", tt.args.m)
 		})
 	}
+}
+
+func TestGetPurgeJobOfAnotherVendor(t *testing.T) {
+	secCtx := &securitytesting.Context{}
+	secCtx.On("IsAuthenticated").Return(true)
+	secCtx.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	execCtl := &tasktesting.ExecutionController{}
+	execCtl.On("Get", mock.Anything, int64(3)).Return(&task.Execution{ID: 3, VendorType: job.GarbageCollectionVendorType}, nil)
+
+	rr := httptest.NewRecorder()
+	(&purgeAPI{executionCtl: execCtl}).GetPurgeJob(ctx, purge.GetPurgeJobParams{
+		HTTPRequest: httptest.NewRequest(http.MethodGet, "/api/v2.0/system/purgeaudit/3", nil),
+		PurgeID:     3,
+	}).WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
