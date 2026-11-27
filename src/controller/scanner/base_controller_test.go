@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -190,6 +191,9 @@ func (suite *ControllerTestSuite) TestSetRegistrationByProject() {
 
 	var pid, pid2 int64 = 1, 2
 
+	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
+	suite.mMgr.On("Get", mock.Anything, "uuid2").Return(suite.sample, nil)
+
 	// not set before
 	suite.mMeta.On("Get", mock.Anything, pid, proScannerMetaKey).Return(m, nil)
 	suite.mMeta.On("Add", mock.Anything, pid, mm).Return(nil)
@@ -203,6 +207,13 @@ func (suite *ControllerTestSuite) TestSetRegistrationByProject() {
 
 	err = suite.c.SetRegistrationByProject(context.TODO(), pid2, "uuid2")
 	require.NoError(suite.T(), err)
+
+	// missing or unknown scanner
+	suite.mMgr.On("Get", mock.Anything, "nope").Return(nil, nil)
+	err = suite.c.SetRegistrationByProject(context.TODO(), pid, "nope")
+	suite.True(errors.IsErr(err, errors.BadRequestCode), "got %v", err)
+	err = suite.c.SetRegistrationByProject(context.TODO(), pid, "")
+	suite.True(errors.IsErr(err, errors.BadRequestCode), "got %v", err)
 }
 
 // TestGetRegistrationByProject tests GetRegistrationByProject

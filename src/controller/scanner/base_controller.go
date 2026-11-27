@@ -206,7 +206,15 @@ func (bc *basicController) SetRegistrationByProject(ctx context.Context, project
 	}
 
 	if len(registrationID) == 0 {
-		return errors.New("missing scanner UUID")
+		return errors.BadRequestError(nil).WithMessage("missing scanner UUID")
+	}
+
+	registration, err := bc.manager.Get(ctx, registrationID)
+	if err != nil {
+		return errors.Wrap(err, "api controller: set project scanner")
+	}
+	if registration == nil {
+		return errors.BadRequestError(nil).WithMessagef("scanner %s not found", registrationID)
 	}
 
 	// Only keep the UUID in the metadata of the given project
