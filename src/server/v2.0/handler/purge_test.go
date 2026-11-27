@@ -15,14 +15,21 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	tasktesting "github.com/goharbor/harbor/src/testing/controller/task"
+	"github.com/goharbor/harbor/src/testing/mock"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {
@@ -96,4 +103,24 @@ func Test_checkRetentionHour(t *testing.T) {
 			assert.Equalf(t, tt.want, got, "retentionHour(%v)", tt.args.m)
 		})
 	}
+}
+
+func TestGetPurgeHistoryReturnsErrorResponder(t *testing.T) {
+	secCtx := &securitytesting.Context{}
+	mock.OnAnything(secCtx, "IsAuthenticated").Return(true)
+	mock.OnAnything(secCtx, "Can").Return(true)
+
+	execCtl := &tasktesting.ExecutionController{}
+	mock.OnAnything(execCtl, "Count").Return(int64(1), nil)
+	mock.OnAnything(execCtl, "List").Return(nil, fmt.Errorf("db error"))
+
+	api := &purgeAPI{executionCtl: execCtl}
+	ctx := security.NewContext(context.Background(), secCtx)
+	responder := api.GetPurgeHistory(ctx, purge.GetPurgeHistoryParams{
+		HTTPRequest: &http.Request{URL: &url.URL{Path: "/api/v2.0/system/purgeaudit"}},
+	})
+
+	assert.NotNil(t, responder)
+	_, ok := responder.(*purge.GetPurgeHistoryOK)
+	assert.False(t, ok, "GetPurgeHistory answered OK after listing the executions failed")
 }
