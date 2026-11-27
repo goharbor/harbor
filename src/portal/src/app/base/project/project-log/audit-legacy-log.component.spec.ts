@@ -56,7 +56,6 @@ describe('ProjectAuditLegacyLogComponent', () => {
             auditLogResolver: '',
         }).pipe(delay(0)),
     };
-    const mockRouter = null;
     const mockedAuditLogs: AuditLog[] = [];
     for (let i = 0; i < 18; i++) {
         let item: AuditLog = {
@@ -120,7 +119,6 @@ describe('ProjectAuditLegacyLogComponent', () => {
             declarations: [ProjectAuditLegacyLogComponent],
             providers: [
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
-                { provide: Router, useValue: mockRouter },
                 { provide: ProjectService, useValue: fakedAuditlogService },
                 {
                     provide: MessageHandlerService,
@@ -131,6 +129,8 @@ describe('ProjectAuditLegacyLogComponent', () => {
     });
 
     beforeEach(() => {
+        mockActivatedRoute.snapshot =
+            TestBed.inject(Router).routerState.snapshot.root;
         fixture = TestBed.createComponent(ProjectAuditLegacyLogComponent);
         component = fixture.componentInstance;
         component.projectName = 'test-project';

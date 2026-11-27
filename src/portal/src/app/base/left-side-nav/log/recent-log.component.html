@@ -1,4 +1,16 @@
 <div>
+    <clr-alert [clrAlertType]="'info'" [clrAlertClosable]="false">
+        <clr-alert-item>
+            <span class="alert-text">
+                {{ 'AUDIT_LOG.LEGACY_LOG_NOTICE' | translate }}
+            </span>
+            <div class="alert-actions">
+                <a routerLink="../audit-log" class="alert-action">
+                    {{ 'SIDE_NAV.AUDIT_LOGS' | translate }}
+                </a>
+            </div>
+        </clr-alert-item>
+    </clr-alert>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
