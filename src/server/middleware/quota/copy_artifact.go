@@ -157,17 +157,18 @@ func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, s
 		art, err := artifactController.GetByReference(ctx, repository, reference, nil)
 		if err != nil {
 			logger.Errorf("get artifact %s failed, error: %v", from, err)
+			return nil
 		}
 
 		projectID, _ := strconv.ParseInt(referenceID, 10, 64)
 		project, err := projectController.Get(ctx, projectID)
 		if err != nil {
-			logger.Errorf("get artifact %s failed, error: %v", from, err)
+			logger.Errorf("get project %d failed, error: %v", projectID, err)
 			return nil
 		}
 
 		var tag string
-		if distribution.IsDigest(reference) {
+		if !distribution.IsDigest(reference) {
 			tag = reference
 		}
 
