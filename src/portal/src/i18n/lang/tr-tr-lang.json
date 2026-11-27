@@ -455,6 +455,7 @@
     },
     "GROUP": {
         "GROUP": "Grup",
+        "FILTER_PLACEHOLDER": "Grupları Filtrele",
         "IMPORT_LDAP_GROUP": "LDAP Grubunu İçe Aktar",
         "IMPORT_HTTP_GROUP": "Yeni HTTP Grubu",
         "IMPORT_OIDC_GROUP": "New OIDC Group",

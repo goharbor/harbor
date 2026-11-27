@@ -454,6 +454,7 @@
     },
     "GROUP": {
         "GROUP": "Gruppe",
+        "FILTER_PLACEHOLDER": "Gruppen filtern",
         "IMPORT_LDAP_GROUP": "Importiere LDAP Gruppe",
         "IMPORT_HTTP_GROUP": "Neue HTTP Gruppe",
         "IMPORT_OIDC_GROUP": "Neue OIDC Gruppe",
