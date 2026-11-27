@@ -151,24 +151,7 @@ func Middleware() func(http.Handler) http.Handler {
 				Size:              art.Size,
 				Digest:            art.Digest,
 			}
-			accData.Type = model.TypeSubject
-			// since oci-spec 1.1, image type may from artifactType if presents, otherwise would be Config.MediaType
-			fromType := mf.Config.MediaType
-			if mf.ArtifactType != "" {
-				fromType = mf.ArtifactType
-			}
-			switch fromType {
-			case ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig:
-				if isNydusImage(mf) {
-					accData.Type = model.TypeNydusAccelerator
-				}
-			case mediaTypeNotationLayer:
-				accData.Type = model.TypeNotationSignature
-			case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
-				accData.Type = model.TypeCosignSignature
-			case mediaTypeHarborSBOM:
-				accData.Type = model.TypeHarborSBOM
-			}
+			accData.Type = accessoryType(mf)
 			if subjectArt != nil {
 				accData.SubArtifactID = subjectArt.ID
 			}
@@ -224,6 +207,30 @@ func Middleware() func(http.Handler) http.Handler {
 
 		return nil
 	})
+}
+
+func accessoryType(mf *ocispec.Manifest) string {
+	// An image configuration takes precedence over the optional artifactType.
+	if mf.Config.MediaType == ocispec.MediaTypeImageConfig || mf.Config.MediaType == schema2.MediaTypeImageConfig {
+		if isNydusImage(mf) {
+			return model.TypeNydusAccelerator
+		}
+		return model.TypeSubject
+	}
+	fromType := mf.Config.MediaType
+	if mf.ArtifactType != "" {
+		fromType = mf.ArtifactType
+	}
+	switch fromType {
+	case mediaTypeNotationLayer:
+		return model.TypeNotationSignature
+	case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
+		return model.TypeCosignSignature
+	case mediaTypeHarborSBOM:
+		return model.TypeHarborSBOM
+	default:
+		return model.TypeSubject
+	}
 }
 
 // isNydusImage checks if the image is a nydus image.

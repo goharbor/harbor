@@ -69,7 +69,7 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 			return err
 		}
-		ok, err := util.SkipPolicyChecking(r, proj.ProjectID, art.ID)
+		ok, err := util.SkipPolicyChecking(r, proj.ProjectID, &art.Artifact)
 		if err != nil {
 			return err
 		}

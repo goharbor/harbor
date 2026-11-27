@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/lib/log"
@@ -65,6 +66,15 @@ func (a *Artifact) String() string {
 func (a *Artifact) IsImageIndex() bool {
 	return a.ManifestMediaType == v1.MediaTypeImageIndex ||
 		a.ManifestMediaType == manifestlist.MediaTypeManifestList
+}
+
+// MayBeRunnable identifies artifacts that must not be treated as signature accessories
+// solely on the basis of accessory records. WASM media types are included because
+// annotations can cause Harbor to store that media type for an image configuration.
+func (a *Artifact) MayBeRunnable() bool {
+	return a.Type == "IMAGE" || a.MediaType == v1.MediaTypeImageConfig ||
+		a.MediaType == schema2.MediaTypeImageConfig ||
+		a.MediaType == "application/vnd.wasm.config.v1+json" || a.IsImageIndex()
 }
 
 // From converts the database level artifact to the business level object

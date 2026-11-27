@@ -186,7 +186,7 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 	)
 
 	walkFn := func(a *ar.Artifact) error {
-		ok, err := bc.isAccessory(ctx, a)
+		ok, runnableAccessory, err := scanAccessoryStatus(ctx, bc.acc, a)
 		if err != nil {
 			return err
 		}
@@ -206,7 +206,7 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 			return nil
 		}
 
-		supported := hasCapability(r, a)
+		supported := hasScanCapability(r, a, runnableAccessory)
 
 		if !supported && a.IsImageIndex() {
 			// image index not supported by the scanner, so continue to walk its children
@@ -901,7 +901,13 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJobParam, opts *Options) error {
 	// don't launch scan job for the artifact which is not supported by the scanner
 	if !hasCapability(param.Registration, param.Artifact) {
-		return nil
+		skip, runnableAccessory, err := scanAccessoryStatus(ctx, bc.acc, param.Artifact)
+		if err != nil {
+			return err
+		}
+		if skip || !hasScanCapability(param.Registration, param.Artifact, runnableAccessory) {
+			return nil
+		}
 	}
 
 	var ck string
@@ -1104,17 +1110,6 @@ func (bc *basicController) getLatestTagOfArtifact(ctx context.Context, artifactI
 	}
 
 	return tags[0].Name, nil
-}
-
-func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (bool, error) {
-	ac, err := bc.acc.List(ctx, q.New(q.KeyWords{"ArtifactID": art.Artifact.ID, "digest": art.Artifact.Digest}))
-	if err != nil {
-		return false, err
-	}
-	if len(ac) > 0 {
-		return true, nil
-	}
-	return false, nil
 }
 
 func getArtifactID(extraAttrs map[string]any) int64 {
