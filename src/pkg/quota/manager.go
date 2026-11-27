@@ -49,6 +49,9 @@ type Manager interface {
 
 	// List list quotas
 	List(ctx context.Context, query *q.Query) ([]*Quota, error)
+
+	// AddUsage atomically adds delta to the usage, see dao.DAO.AddUsage
+	AddUsage(ctx context.Context, reference, referenceID string, delta types.ResourceList, enforce bool) (applied bool, err error)
 }
 
 var (
@@ -105,6 +108,10 @@ func (m *manager) Update(ctx context.Context, q *Quota) error {
 
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*Quota, error) {
 	return m.dao.List(ctx, query)
+}
+
+func (m *manager) AddUsage(ctx context.Context, reference, referenceID string, delta types.ResourceList, enforce bool) (bool, error) {
+	return m.dao.AddUsage(ctx, reference, referenceID, delta, enforce)
 }
 
 // NewManager returns quota manager

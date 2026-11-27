@@ -36,6 +36,16 @@ func HasCommittedKey(ctx context.Context) bool {
 	return false
 }
 
+// InTransaction reports whether the ORM in ctx runs inside a transaction.
+func InTransaction(ctx context.Context) bool {
+	o, err := FromContext(ctx)
+	if err != nil {
+		return false
+	}
+	_, ok := o.(orm.TxOrmer)
+	return ok
+}
+
 // ormerTx transaction which support savepoint
 type ormerTx struct {
 	orm.Ormer

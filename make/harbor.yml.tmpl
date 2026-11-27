@@ -333,11 +333,6 @@ cache:
 # Harbor core configurations
 # Uncomment to enable the following harbor core related configuration items.
 # core:
-#   # The provider for updating project quota(usage), there are 2 options, redis or db,
-#   # by default is implemented by db but you can switch the updation via redis which
-#   # can improve the performance of high concurrent pushing to the same project,
-#   # and reduce the database connections spike and occupies.
-#   # By redis will bring up some delay for quota usage updation for display, so only
-#   # suggest switch provider to redis if you were ran into the db connections spike around
-#   # the scenario of high concurrent pushing to same project, no improvement for other scenes.
-#   quota_update_provider: redis # Or db
+#   # Deprecated and ignored: quota usage is always updated in the database.
+#   # Will be removed in a future release.
+#   quota_update_provider: db
