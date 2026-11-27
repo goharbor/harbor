@@ -173,8 +173,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                         let arr = result.body || [];
                         if (totalCount <= PAGE_SIZE) {
                             // already gotten all Registries
-                            this.targetList = result.body || [];
-                            this.sourceList = result.body || [];
+                            this.setReplicationRegistries(arr);
                         } else {
                             // get all the registries in specified times
                             const times: number = Math.ceil(
@@ -194,8 +193,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                                     res.forEach(item => {
                                         arr = arr.concat(item);
                                     });
-                                    this.sourceList = arr;
-                                    this.targetList = arr;
+                                    this.setReplicationRegistries(arr);
                                 }
                             });
                         }
@@ -205,6 +203,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                     this.errorHandler.error(error);
                 }
             );
+    }
+    private setReplicationRegistries(registries: Registry[]): void {
+        // Hugging Face endpoints are only available to model sync policies.
+        const replicationRegistries = registries.filter(
+            registry => registry.type !== 'huggingface'
+        );
+        this.sourceList = replicationRegistries;
+        this.targetList = replicationRegistries;
     }
     ngOnInit(): void {
         this.getAllLabels();

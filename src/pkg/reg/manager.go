@@ -44,6 +44,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface"
 	// register the Jfrog Artifactory adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/jfrog"
 	// register the Native adapter

@@ -234,7 +234,7 @@ describe('CreateEditRuleComponent (inline template)', () => {
             });
             return of(response).pipe(delay(0));
         },
-        listRegistries() {
+        listRegistries(_params?: RegistryService.ListRegistriesParams) {
             return of(mockEndpoints).pipe(delay(0));
         },
         getRegistryInfo() {
@@ -316,5 +316,52 @@ describe('CreateEditRuleComponent (inline template)', () => {
         expect(closeSpy).toHaveBeenCalled();
         expect(comp.createEditRuleOpened).toBeFalse();
         expect(navigateSpy).toHaveBeenCalledOnceWith(['/harbor/labels']);
+    });
+
+    it('excludes Hugging Face from both registry lists', async () => {
+        await fixture.whenStable();
+        const registries = [
+            ...mockEndpoints,
+            { id: 5, type: 'huggingface', name: 'Hugging Face' },
+        ];
+        spyOn(fakedEndpointService, 'listRegistriesResponse').and.returnValue(
+            of(
+                new HttpResponse({
+                    body: registries,
+                    headers: new HttpHeaders({ 'x-total-count': '5' }),
+                })
+            )
+        );
+
+        comp.getAllRegistries();
+        await fixture.whenStable();
+
+        expect(comp.sourceList).toEqual(mockEndpoints);
+        expect(comp.targetList).toEqual(mockEndpoints);
+    });
+
+    it('excludes Hugging Face from every page of registries', async () => {
+        await fixture.whenStable();
+        spyOn(fakedEndpointService, 'listRegistriesResponse').and.returnValue(
+            of(
+                new HttpResponse({
+                    body: [mockEndpoints[0], { id: 5, type: 'huggingface' }],
+                    headers: new HttpHeaders({ 'x-total-count': '101' }),
+                })
+            )
+        );
+        const listSpy = spyOn(
+            fakedEndpointService,
+            'listRegistries'
+        ).and.returnValue(
+            of([mockEndpoints[1], { id: 6, type: 'huggingface' }])
+        );
+
+        comp.getAllRegistries();
+        await fixture.whenStable();
+
+        expect(listSpy).toHaveBeenCalledWith({ page: 2, pageSize: 100 });
+        expect(comp.sourceList).toEqual(mockEndpoints.slice(0, 2));
+        expect(comp.targetList).toEqual(mockEndpoints.slice(0, 2));
     });
 });
