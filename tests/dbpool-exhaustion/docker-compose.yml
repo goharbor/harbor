@@ -1,0 +1,143 @@
+# A real Harbor core, wedged by concurrent DELETE /api/v2.0/users/{id}.
+#
+# Reproduces goharbor/harbor#23879: transaction.Middleware holds one pooled
+# connection for the whole request, and log.Middleware's audit PreCheck then
+# takes a second one from the same pool via userIDToName -> orm.Context().
+# POSTGRESQL_MAX_OPEN_CONNS concurrent deletes therefore deadlock the pool, and
+# nothing in the stack bounds the wait.
+#
+# Everything runs in containers. No host ports are published and no host tooling
+# beyond a container engine is needed.
+#
+#   ./run.sh                   # pool of 5
+#   DBDEMO_POOL=25 ./run.sh    # the pool size demo.goharbor.io was running
+#
+name: harbor-dbpool-repro
+
+services:
+  postgresql:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: registry
+      PGDATA: /var/lib/postgresql/tmpdata
+    # 200 connections against a core pool of 5: the server can never be what
+    # runs out, so whatever wedges has to be Harbor's own pool.
+    command: [postgres, -c, max_connections=200]
+    tmpfs:
+      - /var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1 -p 5432"]
+      interval: 1s
+      timeout: 5s
+      retries: 60
+      start_period: 3s
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  registry:
+    image: docker.io/library/registry:2
+    environment:
+      OTEL_TRACES_EXPORTER: none
+      OTEL_SDK_DISABLED: "true"
+
+  core:
+    image: docker.io/library/golang:1.26
+    working_dir: /app
+    volumes:
+      - ../..:/app
+      - dbpool-repro-gomod:/go/pkg/mod
+      - dbpool-repro-gocache:/root/.cache/go-build
+    environment:
+      # --- the one knob this reproduction turns --------------------------
+      # The metadata default is 0 (unbounded, in which case the pool cannot be
+      # what runs out); make/harbor.yml.tmpl ships 900; the instance in
+      # goharbor/harbor#23879 ran 25. Five keeps the same structural deadlock
+      # watchable with five requests.
+      POSTGRESQL_MAX_OPEN_CONNS: "${DBDEMO_POOL:-5}"
+      POSTGRESQL_MAX_IDLE_CONNS: "1"
+      # -------------------------------------------------------------------
+      POSTGRESQL_HOST: postgresql
+      POSTGRESQL_PORT: "5432"
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: root123
+      POSTGRESQL_DATABASE: registry
+      POSTGRESQL_SSLMODE: disable
+      POSTGRES_MIGRATION_SCRIPTS_PATH: make/migrations/postgresql/
+      _REDIS_URL_CORE: redis://redis:6379/1
+      _REDIS_URL_REG: redis://redis:6379/2
+      REGISTRY_URL: http://registry:5000
+      REGISTRY_CONTROLLER_URL: http://registryctl:8080
+      REGISTRY_CREDENTIAL_USERNAME: ""
+      REGISTRY_CREDENTIAL_PASSWORD: ""
+      EXT_ENDPOINT: http://core:8080
+      CORE_URL: http://core:8080
+      HARBOR_ADMIN_PASSWORD: Harbor12345
+      # The config cache is off on purpose: the singleflight amplifier is not
+      # needed for this, and leaving it off keeps the cause unambiguous.
+      CACHE_ENABLED: "false"
+      LOG_LEVEL: debug
+      TOKEN_PRIVATE_KEY_PATH: tests/dbpool-exhaustion/token_service_key.pem
+      JOBSERVICE_URL: http://jobservice:8888
+      CORE_SECRET: dbpool-repro-not-a-real-secret
+      JOBSERVICE_SECRET: dbpool-repro-not-a-real-secret
+      PORTAL_URL: http://portal:8080
+      WITH_TRIVY: "false"
+      HEALTHCHECK_PORT: "8080"
+      HEALTHCHECK_ENDPOINT: /api/v2.0/ping
+      GOFLAGS: -buildvcs=false
+    command:
+      - sh
+      - -ec
+      - |
+        cd /app/src
+        mkdir -p /app/tests/dbpool-exhaustion/tmp
+        echo "building core ..."
+        CGO_ENABLED=0 go build -trimpath -o /app/tests/dbpool-exhaustion/tmp/core ./core/
+        cd /app
+        exec /app/tests/dbpool-exhaustion/tmp/core
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/api/v2.0/ping >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 5s
+      retries: 200
+      start_period: 10s
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      registry:
+        condition: service_started
+
+  # Drives the API and reads pg_stat_activity, from inside the compose network,
+  # so the reproduction needs no published ports and no host-side tooling.
+  driver:
+    build:
+      context: .
+      dockerfile: driver.Dockerfile
+    environment:
+      CORE: http://core:8080
+      PGHOST: postgresql
+      PGUSER: postgres
+      PGPASSWORD: root123
+      PGDATABASE: registry
+      DBDEMO_POOL: "${DBDEMO_POOL:-5}"
+    volumes:
+      - ./scenario.sh:/scenario.sh:ro
+      - ./sweep-scenario.sh:/sweep-scenario.sh:ro
+    entrypoint: ["/bin/bash", "/scenario.sh"]
+    depends_on:
+      core:
+        condition: service_healthy
+
+volumes:
+  dbpool-repro-gomod:
+  dbpool-repro-gocache:
