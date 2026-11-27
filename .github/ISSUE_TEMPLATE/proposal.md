@@ -1,6 +1,7 @@
 ---
 name: Proposal
 about: Suggest an idea for this project
+labels: ["needs/triage"]
 
 ---
 
