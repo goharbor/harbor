@@ -49,21 +49,17 @@ jobs:
           for arch in amd64 arm64; do
             src_offline=harbor-offline-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
             dst_offline=harbor-offline-installer-${cur}-${arch}.tgz
-            dst_online=
+            src_online=harbor-online-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
+            dst_online=harbor-online-installer-${cur}-${arch}.tgz
             aws s3 cp s3://${bucket}/${branch}/${src_offline} s3://${bucket}/${branch}/${dst_offline}
-
-            if [ "${{ env.PRERELEASE }}" = "false" ]; then
-              src_online=harbor-online-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
-              dst_online=harbor-online-installer-${cur}-${arch}.tgz
-              aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
-            fi
-            source tools/release/release_utils.sh && getAssets "$bucket" "$branch" "$dst_offline" "$dst_online" "${{ env.PRERELEASE }}" "$assets_path"
+            aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
+            source tools/release/release_utils.sh && getAssets "$bucket" "$branch" "$dst_offline" "$dst_online" "$assets_path"
           done
 
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Install Cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       - name: Sign Release Artifacts
         run: |
           cur=${{ env.CUR_TAG }}
@@ -72,11 +68,9 @@ jobs:
               --bundle=${{ env.ASSETS_DIR }}/harbor-offline-installer-${cur}-${arch}.tgz.sigstore.json \
               ${{ env.ASSETS_DIR }}/harbor-offline-installer-${cur}-${arch}.tgz
 
-            if [ "${{ env.PRERELEASE }}" = "false" ]; then
-              cosign sign-blob --yes \
-                --bundle=${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz.sigstore.json \
-                ${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz
-            fi
+            cosign sign-blob --yes \
+              --bundle=${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz.sigstore.json \
+              ${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz
           done
       # CNCF runners provide Docker; use the runner's engine and user configuration.
       - name: Verify Docker
@@ -126,7 +120,7 @@ jobs:
           source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
           echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
       - name: RC Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         if: ${{ env.PRERELEASE == 'true' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
@@ -135,9 +129,13 @@ jobs:
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-amd64.tgz.sigstore.json
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz.sigstore.json
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-amd64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-amd64.tgz.sigstore.json
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-arm64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-arm64.tgz.sigstore.json
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         if: ${{ env.PRERELEASE == 'false' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}

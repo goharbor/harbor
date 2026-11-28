@@ -16,6 +16,7 @@ package task
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -96,6 +97,25 @@ func (t *taskManagerTestSuite) TestStop() {
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	t.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, "", nil)
 	err := t.mgr.Stop(nil, 1)
+	t.Require().Nil(err)
+	t.dao.AssertExpectations(t.T())
+	t.jsClient.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
+
+	// reset mock
+	t.SetupTest()
+
+	// wrapped job not found
+	t.dao.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
+		ID:          1,
+		ExecutionID: 1,
+		Status:      job.RunningStatus.String(),
+	}, nil)
+	t.jsClient.On("PostAction", mock.Anything, mock.Anything).Return(fmt.Errorf("wrapped error: %w", cjob.ErrJobNotFound))
+	t.dao.On("Update", mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	t.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, "", nil)
+	err = t.mgr.Stop(nil, 1)
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())

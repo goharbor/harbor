@@ -65,6 +65,11 @@ var EventTypes = []string{
 	"delete_member",
 	"update_member",
 	"update_project",
+	"create_role",
+	"delete_role",
+	"update_role",
+	"create_tag",
+	"delete_tag",
 }
 
 // OtherEventTypes defines the types of other audit log event types excludes previous EventTypes: create_artifact, delete_artifact, pull_artifact
