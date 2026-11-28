@@ -92,6 +92,10 @@ func SessionTimeout(ctx context.Context) int64 {
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration(ctx context.Context) (int, error) {
+	err := DefaultMgr().Load(ctx)
+	if err != nil {
+		return 0, err
+	}
 	return DefaultMgr().Get(ctx, common.TokenExpiration).GetInt(), nil
 }
 
